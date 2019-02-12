@@ -6,7 +6,7 @@
 </head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
 
     // default minimum trade amounts
-    var bitmexMin = 9000;
+    var bitmexMin = 95000;
     var bitfinexMin = 1000;
 
 
@@ -345,7 +345,7 @@
 
         getBtcShow(data) {
             if (data.exchangeName==="bitfinex") {
-                return " " + Math.abs(data.btcAmt.toFixed(2)) + " btc "
+                return " " + Math.abs(data.btcAmt.toFixed(1)) + " btc"
             } else {
                 return null;
             }
@@ -777,25 +777,25 @@
 
     .bitmex.size3{
         color: black;
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .bitmex.size4{
         color: black;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
 
     }
     .bitmex.size5{
         color: white;
-        font-size: 24px;
+        font-size: 20px;
         font-weight: bold;
     }
     .bitmex.size6{
         color: yellow;
         border: yellow 3px;
         font-weight: bold;
-        font-size: 26px;
+        font-size: 24px;
     }
 
     .bitfinex.size1 {
@@ -814,26 +814,26 @@
     .bitfinex.size3 {
         color: black;
 
-        font-size: 20px;
+        font-size: 18px;
 
     }
 
     .bitfinex.size4 {
         color: black;
 
-        font-size: 22px;
+        font-size: 20px;
 
     }
 
     .bitfinex.size5 {
         color: white;
 
-        font-size: 24px;
+        font-size: 20px;
 
     }
 
     .bitfinex.size6 {
-        font-size: 26px;
+        font-size: 24px;
 
         color: yellow;
         border: yellow 3px;
@@ -848,6 +848,7 @@
         /*color: #343434;*/
         font-size: 12px;
         padding-right: 5px;
+        padding-left: 5px;
 
     }
 
