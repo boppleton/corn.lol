@@ -3,6 +3,7 @@
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 </head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
 
     // default minimum trade amounts
@@ -345,7 +346,8 @@
 
         getBtcShow(data) {
             if (data.exchangeName==="bitfinex") {
-                return " " + Math.abs(data.btcAmt.toFixed(1)) + " btc"
+                var abs = Math.abs(data.btcAmt)
+                return " " + abs>9?(abs.toFixed(0) + "btc"):(abs.toFixed(1) + " btc")
             } else {
                 return null;
             }
