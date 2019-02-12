@@ -9,6 +9,7 @@
     // default minimum trade amounts
     var bitmexMin = 95000;
     var bitfinexMin = 1000;
+    var coinbaseMin = 100;
 
 
     var showPrices = true;
@@ -16,6 +17,8 @@
     // exchanges on
     var bitmexEnabled = true;
     var bitfinexEnabled = true;
+    var coinbaseEnabled = true;
+
 
     // for font/colors
     var bitmexSize1 = 1;
@@ -27,9 +30,9 @@
     var bitfinexSize1 = 1;
     var bitfinexSize2 = 100;
     var bitfinexSize3 = 1000;
-    var bitfinexSize4 = 10000;
-    var bitfinexSize5 = 50000;
-    var bitfinexSize6 = 100000;
+    var bitfinexSize4 = 50000;
+    var bitfinexSize5 = 100000;
+    var bitfinexSize6 = 200000;
 
     // trades container
     var trades = null;
@@ -42,7 +45,8 @@
             this.instance = this;
 
             this.bitmexWebSocketClient();
-            this.bitfinexWebSocketClient();
+            // this.bitfinexWebSocketClient();
+            this.setupCoinbaseWebsocketClient();
             this.setupSettings();
             this.scrollUpLoop();
         }
@@ -139,6 +143,76 @@
             return trade;
         }
 
+
+        setupCoinbaseWebsocketClient() {
+            var c = this.instance;
+            if (c.coinbaseSocket != null) {c.coinbaseSocket.close();c.coinbaseSocket = null;}
+            c.coinbaseSocket = new WebSocket("wss://ws-feed.pro.coinbase.com")
+            c.coinbaseSocket.onopen = function() {
+                c.coinbaseSocket.send("{\"type\": \"subscribe\", \"product_ids\": [\"BTC-USD\"],\"channels\": [\"matches\"]}")
+            };
+            c.coinbaseSocket.onmessage = function(event) {
+                let tradeRaw = JSON.parse(event.data);
+
+                if (tradeRaw == null || tradeRaw.type !== "match") {return}
+
+                console.log("cb trade size: " + tradeRaw.size + " timestamp: " + tradeRaw.time)
+
+                let trade = Start.coinbaseTrade(tradeRaw)
+
+                console.log("time after func: " + trade.timestamp)
+
+                console.log("size " + trade.size)
+                console.log("current timestamp: " + trades[0].timestamp + " current side: " + trades[0].side + " thistrade timestmap: " + trade.timestamp + " new side: " + trade.side + " ts equal: " + (trades[0].timestamp===trade.timestamp))
+                if (trades != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side==="sell")) {
+                    console.log("ADDING " + trade.size)
+                    trades[0].btcAmt += trade.btcAmt
+                    trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size);
+                        trades[0].lastPrice = trade.price
+                    console.log("new size: " + trades[0].size)
+                } else {
+                    if (trades == null) {
+                        trades = trade;
+                    } else {
+                        if (trades.length >= 1000) {trade.splice(trades.length - 5);}
+                        console.log("newtrade size " + trade.size + "time: " + trade.timestamp)
+                        trades = trade.concat(trades);
+                    }
+                }
+                c.setStreamData({data: trades});
+            };
+        }
+
+        static coinbaseTrade(tradeRaw) {
+
+
+            let size= parseFloat(tradeRaw.size)*parseFloat(tradeRaw.price)
+
+            let time = Date.parse(tradeRaw.time)
+
+            console.log("time parsed: " + time)
+
+            let trade = [];
+            trade.push({
+                symbol: "BTCUSD",
+                price:parseFloat(tradeRaw.price).toFixed(1),
+                size: size,
+                side: tradeRaw.side==="sell",
+                timestamp: time,
+                exchangeName: "coinbase",
+                startTime: Date.now(),
+                btcAmt: tradeRaw.size,
+                firstPrice: parseFloat(tradeRaw.price).toFixed(1),
+                lastPrice: parseFloat(tradeRaw.price).toFixed(1)
+            });
+
+            trade.btcAmt = parseFloat(tradeRaw.size).toFixed(1);
+            trade.timestamp = time;
+            trade.size = parseFloat(size).toFixed(0);
+            trade.side = tradeRaw.side==="sell";
+            return trade;
+        }
+
         setStreamData(data){
             this.setState(data);
         }
@@ -169,6 +243,10 @@
                     bitfinexMin = document.getElementById("bitfinexMinField").value;
                 };
 
+                document.getElementById("coinbaseMinField").onchange = function() {
+                    coinbaseMin = document.getElementById("coinbaseMinField").value;
+                };
+
                 let settingslink = document.getElementById("settingslink");
                 settingslink.onclick = function() {
                     let modal = document.getElementById('myModal');
@@ -196,9 +274,13 @@
 
                 document.getElementById('bitmexMinField').value = bitmexMin;
                 document.getElementById('bitfinexMinField').value = bitfinexMin;
+                document.getElementById('coinbaseMinField').value = coinbaseMin;
+
 
                 document.getElementById('bitmexEnabledButton').checked = bitmexEnabled;
                 document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled;
+                document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled;
+
             };
         }
 
@@ -211,35 +293,39 @@
                 })
             }, 10000);
         }
+
+
+    }
+
+    function getKformat(size, iteration) {
+        if (size < 1000) {return Row.lowFormat(size);}
+        let c = ["k", "m"];
+        let d = (size / 100) / 10.0;
+        let isRound = (d * 10) % 10 === 0;
+        return (d < 1000 ?
+            ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
+                    d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
+            ) + "" + c[iteration]) : getKformat(d, iteration + 1) ) ;
     }
 
     class Row extends React.Component {
         render() {
             const {data} = this.props;
             const row = data.map((data, i) =>
-                <tr className={"traderow " + data.exchangeName + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size)< Row.getMinForExchange(data)?"hide":"")} key={i} bgcolor={Row.getBgColor(data)}>
+                <tr className={"traderow " + (data.exchangeName==="coinbase"?"bitfinex":data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size)< Row.getMinForExchange(data)?"hide":"")} key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{this.getKformat(Math.abs(data.size), 0)}</td>
+                    <td id="tradeSize">{getKformat(Math.abs(parseFloat(data.size)), 0)}</td>
                     <td width="100%" id="spacer">{" "}</td>
                     <td id="slip">{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
-                    <td id="tradePrice">{showPrices?("@ " + data.lastPrice.toFixed(1)):null}</td>
+                    <td id="tradePrice">{showPrices?("@ " + parseFloat(data.lastPrice).toFixed(1)):null}</td>
                     <td id="elapsedTime">{ Row.getTimeElapsed(data)}</td>
                 </tr>
             );
             return (<tbody>{row}</tbody>);
         }
 
-        getKformat(size, iteration) {
-            if (size < 1000) {return Row.lowFormat(size);}
-            let c = ["k", "m"];
-            let d = (size / 100) / 10.0;
-            let isRound = (d * 10) % 10 === 0;
-            return (d < 1000 ?
-                ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
-                        d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
-                ) + "" + c[iteration]) : getKformat(d, iteration + 1) ) ;
-        }
+
 
         static lowFormat(size) {
             return Math.abs(Math.round(size)).toFixed(0);
@@ -257,7 +343,7 @@
         }
 
         static getBtcShow(data) {
-            if (data.exchangeName==="bitfinex") {
+            if (data.exchangeName==="bitfinex" || data.exchangeName==="coinbase") {
                 var abs = Math.abs(data.btcAmt)
                 return " " + abs>9?(abs.toFixed(0) + "btc"):(abs.toFixed(1) + " btc")
             } else {
@@ -279,6 +365,8 @@
                 return bitmexMin;
             } else if (data.exchangeName==="bitfinex") {
                 return bitfinexMin;
+            } else if (data.exchangeName==="coinbase") {
+                return coinbaseMin;
             }
         }
 
@@ -290,7 +378,7 @@
                 } else if (data.size >= bitmexSize3) {return "size3"
                 } else if (data.size >= bitmexSize2) {return "size2"
                 } else {return "size1"}
-            } else if (data.exchangeName==="bitfinex") {
+            } else if (data.exchangeName==="bitfinex" || data.exchangeName==="coinbase") {
                 if (Math.abs(data.size) >= bitfinexSize6) {return "size6"
                 } else if (Math.abs(data.size) >= bitfinexSize5) {return "size5"
                 } else if (Math.abs(data.size) >= bitfinexSize4) {return "size4"
@@ -303,6 +391,7 @@
         static getIcon(data) {
             if (data.exchangeName==="bitmex") {return <img src="https://i.imgur.com/87OPgLV.png" alt="bitmex"/>}
             else if (data.exchangeName==="bitfinex") {return <img src="https://i.imgur.com/tEMPQFj.png" alt="finex"/>}
+            else if (data.exchangeName==="coinbase") {return <img src="https://i.imgur.com/Tc9hxOl.png" alt="gdax"/>}
         }
 
         static getBgColor(data) {
@@ -371,6 +460,12 @@
                                     <input id="bitfinexEnabledButton" type="checkbox" name="bitfinexEnabledButton"/>
                                     <b>  bitfinex  </b>
                                     <input id="bitfinexMinField" type="number" name="bitfinexMinField" min="1" max="10000000"/>
+                                </div>
+
+                                <div className="settingsitem">
+                                    <input id="coinbaseEnabledButton" type="checkbox" name="coinbaseEnabledButton"/>
+                                    <b>  coinbase  </b>
+                                    <input id="coinbaseMinField" type="number" name="coinbaseMinField" min="1" max="10000000"/>
                                 </div>
                             </div>
 
@@ -651,7 +746,7 @@
     }
 
     .bitfinex.size5 {
-        color: white;
+        color: #0078ff;
 
         font-weight: bold;
 
@@ -709,6 +804,7 @@
         font-size: 13px;
         font-weight: normal;
         padding-right: 5px;
+        padding-left: 3px;
 
     }
 
