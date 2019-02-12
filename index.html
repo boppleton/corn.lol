@@ -160,6 +160,8 @@
                     <div id="hiddendiv">
                         <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30" width="30"></img></a>
                         <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30" width="30"></img></a>
+                        <a id="minimizelink" href="#"><img src="https://i.imgur.com/NoBQwYO.png" height="30" width="30"></img></a>
+
                     </div>
                 </div>
 
@@ -207,6 +209,11 @@
                 var clearlink = document.getElementById("clearlink");
                 clearlink.onclick = function() {
                     trades = null;
+                }
+
+                var minimizelink = document.getElementById("minimizelink");
+                minimizelink.onclick = function() {
+                    console.log("minimize table")
                 }
 
 
@@ -678,7 +685,7 @@
     }
 
     #hiddendiv img {
-        padding: 5px 15px 5px 5px;
+        padding: 5px 10px 5px 5px;
         /*float: left;*/
     }
 
@@ -690,7 +697,7 @@
         /*width: fit-content;*/
         /*height: fit-content;*/
 
-        width: 120px;
+        width: 150px;
 
         padding-top: 5px;
 
@@ -885,6 +892,17 @@
         font-weight: normal;
         padding-right: 5px;
 
+    }
+
+
+
+
+
+
+
+    tr:hover {
+        border: 1px solid blueviolet;
+        color: blueviolet;
     }
 
 
