@@ -31,79 +31,69 @@
     var bitfinexSize5 = 50000;
     var bitfinexSize6 = 100000;
 
-    // settings
-
-
-
-
-
     // trades container
     var trades = null;
 
     class Start extends React.Component {
-
 
         constructor(props) {
             super(props);
             this.state = {data: []};
             this.instance = this;
 
-            this.setupSettings();
-
             this.bitmexWebSocketClient();
-
             this.bitfinexWebSocketClient();
-
-
-
-
-            setInterval(function(){
-                document.getElementById("maintablediv").scrollTo({
-                    'behavior': 'smooth',
-                    'left': 0,
-                    'top': 0
-                })
-            }, 10000);
-
+            this.setupSettings();
+            this.scrollUpLoop();
         }
 
 
         bitmexWebSocketClient() {
+            let c = this.instance;
+            if (c.bitmexSocket != null) {c.bitmexSocket.close();c.bitmexSocket = null;}
 
-            var c = this.instance;
-
-            if (c.bitmexSocket != null) {
-                c.bitmexSocket.close();
-                c.bitmexSocket = null;
-            }
             c.bitmexSocket = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD");
-            c.bitmexSocket.onmessage = function(event) {
-                let obj = JSON.parse(event.data);
-                if (obj.data == null) {return;}
-                let trade = average(obj.data, 5);
+            c.bitmexSocket.onmessage = function(tradeMessage) {
+                let tradeRaw = JSON.parse(tradeMessage.data);
+                if (tradeRaw.data == null) {return;}
+                let trade = Start.bitmexTrade(tradeRaw.data);
                 if (trades == null) {
                     trades = trade;
                 } else {
-                    if (trades.length > 300) {trades.splice(trades.length - 5)}
                     trades = trade.concat(trades);
+                    if (trades.length >= 1000) {trades.splice(trades.length - 5)}
                 }
                 c.setStreamData({data: trades});
             };
+        }
 
+        static bitmexTrade(tradeRaw) {
+            let trade = [];
+            let totalSize = 0;
+            for (let i = 0; i < tradeRaw.length; i++) {totalSize += tradeRaw[i].size;}
 
+            let firstPrice = tradeRaw[0].price;
+            let lastPrice = tradeRaw[tradeRaw.length-1].price;
+
+            trade.push({
+                symbol: "XBTUSD",
+                price:lastPrice,
+                timestamp: tradeRaw[0].timestamp,
+                side: tradeRaw[0].side,
+                exchangeName: "bitmex",
+                startTime: Date.now(),
+                firstPrice: firstPrice,
+                lastPrice: lastPrice,
+                size: totalSize
+            });
+            return trade;
         }
 
         bitfinexWebSocketClient() {
-
             var c = this.instance;
-
-            if (c.bitfinexSocket != null) {
-                c.bitfinexSocket.close();
-                c.bitfinexSocket = null;
-            }
+            if (c.bitfinexSocket != null) {c.bitfinexSocket.close();c.bitfinexSocket = null;}
             c.bitfinexSocket = new WebSocket("wss://api.bitfinex.com/ws")
             c.bitfinexSocket.onopen = function() {
-                console.log("onopen, sending subscribe trades")
                 c.bitfinexSocket.send("{\n" +
                     "  \"event\": \"subscribe\",\n" +
                     "  \"channel\": \"trades\",\n" +
@@ -111,37 +101,44 @@
                     "}")
             };
             c.bitfinexSocket.onmessage = function(event) {
-
                 let trade = JSON.parse(event.data);
                 if (trade == null || trade[1] !== "te") {return}
 
-                let trade2 = averageFinex(trade, 5)
+                let trade2 = Start.bitfinexTrade(trade)
 
                 if (trades != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
                     trades[0].btcAmt += trade2[0].btcAmt
                     trades[0].size += trade2[0].size
                     trades[0].lastPrice = trade2[0].price
                 } else {
-
                     if (trades == null) {
                         trades = trade2;
                     } else {
-
-                        if (trades.length > 300) {
-                            trade2.splice(trades.length - 5);
-                        }
+                        if (trades.length >= 1000) {trade2.splice(trades.length - 5);}
                         trades = trade2.concat(trades);
                     }
                 }
-
-
                 c.setStreamData({data: trades});
-
-
             };
-
             c.setStreamData({data: trades});
+        }
 
+
+        static bitfinexTrade(tradeRaw) {
+            let trade = [];
+            trade.push({
+                symbol: "BTCUSD",
+                price:tradeRaw[4],
+                size: parseInt(tradeRaw[5]*tradeRaw[4]),
+                timestamp: tradeRaw[3],
+                side: tradeRaw[5]>0,
+                exchangeName: "bitfinex",
+                startTime: Date.now(),
+                btcAmt: tradeRaw[5],
+                firstPrice: tradeRaw[4],
+                lastPrice: tradeRaw[4]
+            });
+            return trade;
         }
 
         setStreamData(data){
@@ -150,27 +147,16 @@
 
         render() {
             return (
-
                 <div id="tableandbottom">
-
                     <div id="maintablediv">
                         <Table data={this.state.data}/>
                     </div>
-
                     <div id="hiddendiv">
                         <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30" width="30"></img></a>
                         <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30" width="30"></img></a>
                         <a id="minimizelink" href="#"><img src="https://i.imgur.com/NoBQwYO.png" height="30" width="30"></img></a>
-
                     </div>
                 </div>
-
-
-
-
-
-
-
             );
         }
 
@@ -185,25 +171,19 @@
                     bitfinexMin = document.getElementById("bitfinexMinField").value;
                 };
 
-
-
-                var settingslink = document.getElementById("settingslink");
+                let settingslink = document.getElementById("settingslink");
                 settingslink.onclick = function() {
-                    var modal = document.getElementById('myModal');
-                    var span = document.getElementsByClassName("close")[0];
-
+                    let modal = document.getElementById('myModal');
+                    let span = document.getElementsByClassName("close")[0];
                     modal.style.display = "block";
-
                     span.onclick = function() {
                         modal.style.display = "none";
                     }
-
                     window.onclick = function(event) {
-                        if (event.target == modal) {
+                        if (event.target === modal) {
                             modal.style.display = "none";
                         }
                     }
-
                 };
 
                 var clearlink = document.getElementById("clearlink");
@@ -216,38 +196,150 @@
                     console.log("minimize table")
                 }
 
-
                 document.getElementById('bitmexMinField').value = bitmexMin;
                 document.getElementById('bitfinexMinField').value = bitfinexMin;
 
                 document.getElementById('bitmexEnabledButton').checked = bitmexEnabled;
                 document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled;
-
-
-
-
             };
         }
+
+        scrollUpLoop() {
+            setInterval(function(){
+                document.getElementById("maintablediv").scrollTo({
+                    'behavior': 'smooth',
+                    'left': 0,
+                    'top': 0
+                })
+            }, 10000);
+        }
     }
 
-
-    function updateBitmexMin() {
-        console.log("updatebitmexmin")
-        // bitmexMin = document.getElementById("bitmexMin").value;
-
-    }
-
-    class ShowFooter extends React.Component {
-
-
-        constructor(props) {
-            super(props);
-
-
-
+    class Row extends React.Component {
+        render() {
+            const {data} = this.props;
+            const row = data.map((data, i) =>
+                <tr className={"traderow " + data.exchangeName + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size)< Row.getMinForExchange(data)?"hide":"")} key={i} bgcolor={Row.getBgColor(data)}>
+                    <td id="tradeIcon">{Row.getIcon(data)}</td>
+                    <td id="tradeSize">{this.getKformat(Math.abs(data.size), 0)}</td>
+                    <td width="100%" id="spacer">{" "}</td>
+                    <td id="slip">{Row.getSlip(data)}</td>
+                    <td id="btcAmt">{Row.getBtcShow(data)}</td>
+                    <td id="tradePrice">{showPrices?("@ " + data.lastPrice.toFixed(1)):null}</td>
+                    <td id="elapsedTime">{ Row.getTimeElapsed(data)}</td>
+                </tr>
+            );
+            return (<tbody>{row}</tbody>);
         }
 
+        getKformat(size, iteration) {
+            if (size < 1000) {return Row.lowFormat(size);}
+            let c = ["k", "m"];
+            let d = (size / 100) / 10.0;
+            let isRound = (d * 10) % 10 === 0;
+            return (d < 1000 ?
+                ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
+                        d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
+                ) + "" + c[iteration]) : getKformat(d, iteration + 1) ) ;
+        }
 
+        static lowFormat(size) {
+            return Math.abs(Math.round(size)).toFixed(0);
+        }
+
+        static getTimeElapsed(data) {
+            var timeElapsed = parseInt((Date.now()-data.startTime)/1000);
+            if (timeElapsed===0) {
+                return "now";
+            } else if (timeElapsed < 60) {
+                return timeElapsed + "s";
+            } else {
+                return parseInt(timeElapsed/60) + "m"
+            }
+        }
+
+        static getBtcShow(data) {
+            if (data.exchangeName==="bitfinex") {
+                var abs = Math.abs(data.btcAmt)
+                return " " + abs>9?(abs.toFixed(0) + "btc"):(abs.toFixed(1) + " btc")
+            } else {
+                return null;
+            }
+        }
+
+        static getSlip(data) {
+            var slip = data.lastPrice-data.firstPrice
+            if (Math.abs(slip)>=0.5) {
+                return (slip<0?"[↘ ":"[↗ ") + Math.abs(slip).toFixed(1) + "]"
+            } else {
+                return null
+            }
+        }
+
+        static getMinForExchange(data) {
+            if (data.exchangeName==="bitmex") {
+                return bitmexMin;
+            } else if (data.exchangeName==="bitfinex") {
+                return bitfinexMin;
+            }
+        }
+
+        static getSizeGroup(data) {
+            if (data.exchangeName==="bitmex") {
+                if (data.size >= bitmexSize6) {return "size6"
+                } else if (data.size >= bitmexSize5) {return "size5"
+                } else if (data.size >= bitmexSize4) {return "size4"
+                } else if (data.size >= bitmexSize3) {return "size3"
+                } else if (data.size >= bitmexSize2) {return "size2"
+                } else {return "size1"}
+            } else if (data.exchangeName==="bitfinex") {
+                if (Math.abs(data.size) >= bitfinexSize6) {return "size6"
+                } else if (Math.abs(data.size) >= bitfinexSize5) {return "size5"
+                } else if (Math.abs(data.size) >= bitfinexSize4) {return "size4"
+                } else if (Math.abs(data.size) >= bitfinexSize3) {return "size3"
+                } else if (Math.abs(data.size) >= bitfinexSize2) {return "size2"
+                } else {return "size1"}
+            }
+        }
+
+        static getIcon(data) {
+            if (data.exchangeName==="bitmex") {return <img src="https://i.imgur.com/87OPgLV.png" alt="bitmex"/>}
+            else if (data.exchangeName==="bitfinex") {return <img src="https://i.imgur.com/tEMPQFj.png" alt="finex"/>}
+        }
+
+        static getBgColor(data) {
+            var side = data.side;
+            var size = Math.abs(data.size);
+
+            var intensity = Math.abs(size) / 4200;
+
+            if (intensity > 165) {
+                intensity = 165;
+            } else if (intensity < 1) {
+                intensity = 1;
+            }
+
+            if (side) {
+                return rgb2hex(170 - intensity, 255 - intensity / 2, 170 - intensity)
+            } else {
+                return rgb2hex(255 - intensity / 2, 170 - intensity, 170 - intensity)
+            }
+
+            function rgb2hex(red, green, blue) {
+                var rgb = blue | (green << 8) | (red << 16);
+                return '#' + (0x1000000 + rgb).toString(16).slice(1)
+            }
+        }
+    }
+
+    class Table extends React.Component {
+        constructor(props) {super(props)}
+        render() { return (<table className="table1"><Row data={this.props.data} /></table>)}
+    }
+
+    class Footer extends React.Component {
+
+        constructor(props) {super(props);}
 
         render() {
             return (
@@ -282,8 +374,6 @@
                                     <b>  bitfinex  </b>
                                     <input id="bitfinexMinField" type="number" name="bitfinexMinField" min="1" max="10000000"/>
                                 </div>
-
-
                             </div>
 
                             <div className="modal-footer">
@@ -292,285 +382,13 @@
                         </div>
                     </div>
                 </div>
-
-
-
-
             );
         }
     }
-
-    function getMinForExchange(data) {
-        if (data.exchangeName==="bitmex") {
-            return bitmexMin;
-        } else if (data.exchangeName==="bitfinex") {
-            return bitfinexMin;
-        }
-    }
-
-    function lowFormat(size) {
-
-        return Math.abs(Math.round(size)).toFixed(0);
-    }
-
-    function getKformat(size, iteration) {
-
-            if (size < 1000) {
-                return lowFormat(size);
-            }
-
-            var c = ["k", "m"];
-
-            var d = (size / 100) / 10.0;
-            var isRound = (d * 10) % 10 === 0;//true if the decimal part is equal to 0 (then it's trimmed anyway)
-            return (d < 1000 ? //this determines the class, i.e. 'k', 'm' etc
-                ((d > 99.9 || isRound || (!isRound && d > 9.99) ? //this decides whether to trim the decimals
-                        d.toFixed(0) * 10 / 10 : d.toFixed(1) + "" // (int) d * 10 / 10 drops the decimal
-                ) + "" + c[iteration]) : getKformat(d, iteration + 1) ) ;
-
-
-    }
-
-    class Row extends React.Component {
-        render() {
-            const {data} = this.props;
-            const row = data.map((data, i) =>
-                <tr className={"traderow " + data.exchangeName + " " + getSizeGroup(data) + " " + (Math.abs(data.size)<getMinForExchange(data)?"hide":"")} key={i} bgcolor={getBgColor(data)}>
-                    <td id="tradeIcon">{getIcon(data)}</td>
-                    <td id="tradeSize">{getKformat(Math.abs(data.size), 0)}</td>
-                    <td width="100%" id="spacer">{" "}</td>
-
-                    <td id="slip">{this.getSlip(data)}</td>
-
-                    <td id="btcAmt">{this.getBtcShow(data)}</td>
-
-                    <td id="tradePrice">{showPrices?("@ " + data.lastPrice.toFixed(1)):null}</td>
-                    <td id="elapsedTime">{ getTimeElapsed(data)}</td>
-                </tr>
-            );
-            return (<tbody>{row}</tbody>);
-        }
-
-        getBtcShow(data) {
-            if (data.exchangeName==="bitfinex") {
-                var abs = Math.abs(data.btcAmt)
-                return " " + abs>9?(abs.toFixed(0) + "btc"):(abs.toFixed(1) + " btc")
-            } else {
-                return null;
-            }
-        }
-
-        getSlip(data) {
-
-            var slip = data.lastPrice-data.firstPrice
-
-            if (Math.abs(slip)>=0.5) {
-                return (slip<0?"[↘ ":"[↗ ") + Math.abs(slip).toFixed(1) + "]"
-            } else {
-                return null
-            }
-
-        }
-    }
-
-    class Table extends React.Component {
-        constructor(props) {super(props)}
-        render() { return (<table className="table1"><Row data={this.props.data} /></table>)}
-    }
-
-    function getSizeGroup(data) {
-
-        if (data.exchangeName==="bitmex") {
-            if (data.size >= bitmexSize6) {
-                return "size6";
-            } else if (data.size >= bitmexSize5) {
-                return "size5";
-            } else if (data.size >= bitmexSize4) {
-                return "size4";
-            } else if (data.size >= bitmexSize3) {
-                return "size3";
-            } else if (data.size >= bitmexSize2) {
-                return "size2";
-            } else {
-                return "size1";
-            }
-        } else if (data.exchangeName==="bitfinex") {
-            if (Math.abs(data.size) >= bitfinexSize6) {
-                return "size6";
-            } else if (Math.abs(data.size) >= bitfinexSize5) {
-                return "size5";
-            } else if (Math.abs(data.size) >= bitfinexSize4) {
-                return "size4";
-            } else if (Math.abs(data.size) >= bitfinexSize3) {
-                return "size3";
-            } else if (Math.abs(data.size) >= bitfinexSize2) {
-                return "size2";
-            } else {
-                return "size1";
-            }
-        }
-
-    }
-
-    function getTimeElapsed(data) {
-
-        var timeElapsed = parseInt((Date.now()-data.startTime)/1000);
-
-        if (timeElapsed===0) {
-            return "now";
-        } else if (timeElapsed < 60) {
-            return timeElapsed + "s";
-        } else {
-            return parseInt(timeElapsed/60) + "m"
-        }
-
-    }
-
-    function getTime(data) {
-        return parseInt((Date.now()-data.startTime)/1000);
-    }
-
-    function rgb2hex(red, green, blue) {
-        var rgb = blue | (green << 8) | (red << 16);
-        return '#' + (0x1000000 + rgb).toString(16).slice(1)
-    }
-
-    function getBgColor(data) {
-
-        var side = data.side;
-        var size = Math.abs(data.size);
-
-        var intensity = Math.abs(size) / 4200;
-
-        if (intensity > 165) {
-            intensity = 165;
-        } else if (intensity < 1) {
-            intensity = 1;
-        }
-
-        if (side) {
-            // return new Color(170 - intensity, 255 - intensity / 2, 170 - intensity);
-            return rgb2hex(170 - intensity, 255 - intensity / 2, 170 - intensity)
-        } else {
-            // return new Color(255 - intensity / 2, 170 - intensity, 170 - intensity);
-            return rgb2hex(255 - intensity / 2, 170 - intensity, 170 - intensity)
-        }
-
-    }
-
-    function getIcon(data) {
-
-        if (data.exchangeName==="bitmex") {
-            return <img src="https://i.imgur.com/87OPgLV.png"></img>
-        } else if (data.exchangeName==="bitfinex") {
-            return <img src="https://i.imgur.com/tEMPQFj.png"></img>
-        }
-
-    }
-
-
-
-    function formatAMPM(date) {
-        var hours = date.getHours();
-        var minutes = date.getMinutes();
-        var seconds = date.getSeconds();
-        var ampm = hours >= 12 ? 'pm' : 'am';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-        minutes = minutes < 10 ? '0'+minutes : minutes;
-        seconds = seconds < 10 ? '0'+seconds : seconds;
-        var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-        return strTime;
-    }
-
-    function averageFinex(trade) {
-
-        var results = [];
-
-        results.push({
-            symbol: "BTCUSD",
-            price:trade[4],
-            size: parseInt(trade[5]*trade[4]),
-            timestamp: trade[3],
-            side: trade[5]>0,
-            exchangeName: "bitfinex",
-            startTime: Date.now(),
-            btcAmt: trade[5],
-            firstPrice: trade[4],
-            lastPrice: trade[4]
-        });
-
-        return results;
-
-    }
-
-    function average(arr, priceFilter) {
-        var sumSizeArr = {}, sumPriceArr= {}, results = [], timestamp, side;
-
-        var firstPrice;
-        var lastPrice;
-
-        firstPrice = arr[0].price;
-        lastPrice = arr[arr.length-1].price;
-
-
-
-        for (var i = 0; i < arr.length; i++) {
-            var item = arr[i];
-            var key = item.timestamp + item.side;
-            var pr = item.priceSum
-            if (!(key in sumSizeArr)) {
-                sumSizeArr[key] = {};
-                sumSizeArr[key].sizeSum = item.size;
-            } else {
-                sumSizeArr[key].sizeSum += arr[i].size;
-            }
-        }
-
-        for (var i = 0; i < arr.length; i++) {
-            var item = arr[i];
-            var key = item.timestamp + item.side;
-            var sizeItem = sumSizeArr[key];
-            if (!(key in sumPriceArr)) {
-                sumPriceArr[key] = {};
-                sumPriceArr[key].symbol = item.symbol;
-                sumPriceArr[key].priceSum = item.price * item.size / sizeItem.sizeSum;
-                sumPriceArr[key].sizeSum = item.size;
-                sumPriceArr[key].timestamp = formatAMPM(new Date(item.timestamp));
-                sumPriceArr[key].side = item.side;
-            } else {
-                sumPriceArr[key].priceSum += item.price * item.size / sizeItem.sizeSum;
-                sumPriceArr[key].sizeSum += item.size;
-            }
-        }
-
-        for(key in sumPriceArr) {
-            var item = sumPriceArr[key];
-            if (item.sizeSum >= priceFilter)
-            {
-                results.push({
-                    symbol: item.symbol,
-                    price:item.priceSum.toFixed(2),
-                    size: item.sizeSum,
-                    timestamp: item.timestamp,
-                    side: item.side==="Buy",
-                    exchangeName: "bitmex",
-                    startTime: Date.now(),
-                    firstPrice: firstPrice,
-                    lastPrice: lastPrice
-                });
-            }
-        }
-        return results;
-    }
-
-
-
-
 
     ReactDOM.render(<Start />, document.getElementById('root'));
 
-    ReactDOM.render(<ShowFooter />, document.getElementById('footer'));
+    ReactDOM.render(<Footer />, document.getElementById('footer'));
 
 
 </script>
