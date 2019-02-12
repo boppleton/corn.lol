@@ -6,8 +6,8 @@
 </head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
 
     // default minimum trade amounts
-    var bitmexMin = 9000;
-    var bitfinexMin = 101;
+    var bitmexMin = 900;
+    var bitfinexMin = 100;
 
 
     var showPrices = true;
@@ -247,10 +247,10 @@
                     <div id="footerdiv">
                         <div id="footerleft">
                             <b>&hearts; corn.lol </b>
-                            <small>[&copy; 2019 boppleton industries]</small>
+                            <small>[&copy; 2019 boppleton industries] - under construction</small>
                         </div>
                         <div id="footerright">
-                            <a href="github.com/boppleton">github</a>
+                            <a href="https://github.com/boppleton/corn.lol">github</a>
                         </div>
                     </div>
 
@@ -356,7 +356,7 @@
             var slip = data.lastPrice-data.firstPrice
 
             if (Math.abs(slip)>=0.5) {
-                return (slip<0?"↘ ":"↗ ") + Math.abs(slip).toFixed(1)
+                return (slip<0?"[↘ ":"[↗ ") + Math.abs(slip).toFixed(1) + "]"
             } else {
                 return null
             }
@@ -642,7 +642,7 @@
 
         margin: 5px;
         /*padding: 2px;*/
-        width: 240px;
+        width: 250px;
         height: 780px;
 
     }
