@@ -70,7 +70,7 @@
                         trades = trade;
                     } else {
                         trades = trade.concat(trades);
-                        if (trades.length >= 1000) {
+                        if (trades.length >= 500) {
                             trades.splice(trades.length - 5)
                         }
                     }
@@ -168,7 +168,7 @@
                         if (trades == null) {
                             trades = trade2;
                         } else {
-                            if (trades.length >= 1000) {
+                            if (trades.length >= 500) {
                                 trades.splice(trades.length - 5);
                             }
                             trades = trade2.concat(trades);
@@ -222,7 +222,7 @@
                         if (trades == null) {
                             trades = trade;
                         } else {
-                            if (trades.length >= 1000) {
+                            if (trades.length >= 500) {
                                 trades.splice(trades.length - 5);
                             }
                             trades = trade.concat(trades);
@@ -287,7 +287,7 @@
                         trades[0].lastPrice = trade2.price
 
                     } else {
-                        if (trades.length >= 1000) {
+                        if (trades.length >= 500) {
                             trades.splice(trades.length - 5);
                         }
                         trades = trade2.concat(trades);
