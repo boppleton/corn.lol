@@ -80,12 +80,17 @@
         }
 
         static bitmexTrade(tradeRaw) {
+
+
             let trade = [];
             let totalSize = 0;
             for (let i = 0; i < tradeRaw.length; i++) {totalSize += tradeRaw[i].size;}
 
             let firstPrice = tradeRaw[0].price;
             let lastPrice = tradeRaw[tradeRaw.length-1].price;
+
+            document.title = "bitmex: " + tradeRaw[tradeRaw.length-1].price;
+
 
             trade.push({
                 symbol: "XBTUSD",
