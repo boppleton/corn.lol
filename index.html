@@ -5,21 +5,6 @@
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
-    <!-- Default Statcounter code for corn.lol http://corn.lol -->
-    <script type="text/javascript">
-        var sc_project=11947229;
-        var sc_invisible=1;
-        var sc_security="d2cbfc7b";
-        var sc_https=1;
-        var sc_remove_link=1;
-    </script>
-    <script type="text/javascript"
-            src="https://www.statcounter.com/counter/counter.js" async></script>
-    <noscript><div class="statcounter"><img class="statcounter"
-                                            src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/" alt="Web Analytics Made
-Easy - StatCounter"></div></noscript>
-    <!-- End of Statcounter Code -->
-
 </head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
     // https://github.com/boppleton/corn.lol
 
@@ -96,7 +81,7 @@ Easy - StatCounter"></div></noscript>
                 symbol: "XBTUSD",
                 price:lastPrice,
                 timestamp: tradeRaw[0].timestamp,
-                side: tradeRaw[0].side,
+                side: tradeRaw[0].side==="Buy",
                 exchangeName: "bitmex",
                 startTime: Date.now(),
                 firstPrice: firstPrice,
@@ -172,17 +157,14 @@ Easy - StatCounter"></div></noscript>
                 let trade = Start.coinbaseTrade(tradeRaw)
 
                 if (trades != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side==="sell")) {
-                    console.log("ADDING " + trade.size)
-                    trades[0].btcAmt += trade.btcAmt
+                    trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                     trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size);
-                        trades[0].lastPrice = trade.price
-                    console.log("new size: " + trades[0].size)
+                    trades[0].lastPrice = parseFloat(trade.price)
                 } else {
                     if (trades == null) {
                         trades = trade;
                     } else {
                         if (trades.length >= 1000) {trade.splice(trades.length - 5);}
-                        console.log("newtrade size " + trade.size + "time: " + trade.timestamp)
                         trades = trade.concat(trades);
                     }
                 }
@@ -212,6 +194,8 @@ Easy - StatCounter"></div></noscript>
             trade.timestamp = time;
             trade.size = parseFloat(size).toFixed(0);
             trade.side = tradeRaw.side==="sell";
+            trade.firstPrice =  parseFloat(tradeRaw.price).toFixed(1);
+            trade.lastPrice = parseFloat(tradeRaw.price).toFixed(1);
             return trade;
         }
 
@@ -915,5 +899,19 @@ Easy - StatCounter"></div></noscript>
 
 
 </style>
+
+<!-- Default Statcounter code for corn.lol http://corn.lol -->
+<script type="text/javascript">
+    var sc_project=11947229;
+    var sc_invisible=1;
+    var sc_security="d2cbfc7b";
+    var sc_https=1;
+    var sc_remove_link=1;
+</script>
+<script type="text/javascript"
+        src="https://www.statcounter.com/counter/counter.js" async></script>
+<noscript><div class="statcounter"><img class="statcounter" src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/" alt="Web Analytics Made
+Easy - StatCounter"></div></noscript>
+<!-- End of Statcounter Code -->
 
 </body></html>
