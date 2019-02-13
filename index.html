@@ -4,13 +4,28 @@
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-</head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
 
-    // default minimum trade amounts
+    <!-- Default Statcounter code for corn.lol http://corn.lol -->
+    <script type="text/javascript">
+        var sc_project=11947229;
+        var sc_invisible=1;
+        var sc_security="d2cbfc7b";
+        var sc_https=1;
+        var sc_remove_link=1;
+    </script>
+    <script type="text/javascript"
+            src="https://www.statcounter.com/counter/counter.js" async></script>
+    <noscript><div class="statcounter"><img class="statcounter"
+                                            src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/" alt="Web Analytics Made
+Easy - StatCounter"></div></noscript>
+    <!-- End of Statcounter Code -->
+
+</head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
+    // https://github.com/boppleton/corn.lol
+
     var bitmexMin = 95000;
     var bitfinexMin = 1000;
     var coinbaseMin = 100;
-
 
     var showPrices = true;
 
@@ -18,7 +33,6 @@
     var bitmexEnabled = true;
     var bitfinexEnabled = true;
     var coinbaseEnabled = true;
-
 
     // for font/colors
     var bitmexSize1 = 1;
@@ -34,7 +48,6 @@
     var bitfinexSize5 = 100000;
     var bitfinexSize6 = 200000;
 
-    // trades container
     var trades = null;
 
     class Start extends React.Component {
@@ -156,14 +169,8 @@
 
                 if (tradeRaw == null || tradeRaw.type !== "match") {return}
 
-                console.log("cb trade size: " + tradeRaw.size + " timestamp: " + tradeRaw.time)
-
                 let trade = Start.coinbaseTrade(tradeRaw)
 
-                console.log("time after func: " + trade.timestamp)
-
-                console.log("size " + trade.size)
-                console.log("current timestamp: " + trades[0].timestamp + " current side: " + trades[0].side + " thistrade timestmap: " + trade.timestamp + " new side: " + trade.side + " ts equal: " + (trades[0].timestamp===trade.timestamp))
                 if (trades != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side==="sell")) {
                     console.log("ADDING " + trade.size)
                     trades[0].btcAmt += trade.btcAmt
@@ -185,13 +192,8 @@
 
         static coinbaseTrade(tradeRaw) {
 
-
             let size= parseFloat(tradeRaw.size)*parseFloat(tradeRaw.price)
-
             let time = Date.parse(tradeRaw.time)
-
-            console.log("time parsed: " + time)
-
             let trade = [];
             trade.push({
                 symbol: "BTCUSD",
@@ -224,13 +226,14 @@
                         <Table data={this.state.data}/>
                     </div>
                     <div id="hiddendiv">
-                        <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30" width="30"></img></a>
-                        <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30" width="30"></img></a>
-                        <a id="minimizelink" href="#"><img src="https://i.imgur.com/NoBQwYO.png" height="30" width="30"></img></a>
+                        <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30" width="30"/></a>
+                        <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30" width="30"/></a>
                     </div>
                 </div>
             );
         }
+
+        // <a id="minimizelink" href="#"><img src="https://i.imgur.com/NoBQwYO.png" height="30" width="30"/></a>
 
         setupSettings() {
             window.onload = function() {
@@ -267,10 +270,10 @@
                     trades = null;
                 }
 
-                var minimizelink = document.getElementById("minimizelink");
-                minimizelink.onclick = function() {
-                    console.log("minimize table")
-                }
+                // var minimizelink = document.getElementById("minimizelink");
+                // minimizelink.onclick = function() {
+                //     console.log("minimize table")
+                // }
 
                 document.getElementById('bitmexMinField').value = bitmexMin;
                 document.getElementById('bitfinexMinField').value = bitfinexMin;
@@ -389,9 +392,9 @@
         }
 
         static getIcon(data) {
-            if (data.exchangeName==="bitmex") {return <img src="https://i.imgur.com/87OPgLV.png" alt="bitmex"/>}
-            else if (data.exchangeName==="bitfinex") {return <img src="https://i.imgur.com/tEMPQFj.png" alt="finex"/>}
-            else if (data.exchangeName==="coinbase") {return <img src="https://i.imgur.com/Tc9hxOl.png" alt="gdax"/>}
+            if (data.exchangeName==="bitmex") {return <img src="bitmex22.png" alt="bitmex"/>}
+            else if (data.exchangeName==="bitfinex") {return <img src="bitfinex22.png" alt="finex"/>}
+            else if (data.exchangeName==="coinbase") {return <img src="gdax25.png" alt="gdax"/>}
         }
 
         static getBgColor(data) {
@@ -433,11 +436,12 @@
                 <div>
                     <div id="footerdiv">
                         <div id="footerleft">
-                            <b>&hearts; corn.lol </b>
-                            <small>[&copy; 2019 boppleton industries] - under construction</small>
+                            <img src="pine-cone.png" height="16px" width="16px" alt=" "/>
+                            <b> corn.lol </b>
+                            <small> beta</small>
                         </div>
                         <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol">github</a>
+                            <a href="https://github.com/boppleton/corn.lol" target="_blank">github</a>
                         </div>
                     </div>
 
@@ -608,7 +612,7 @@
         /*width: fit-content;*/
         /*height: fit-content;*/
 
-        width: 150px;
+        width: 100px;
 
         padding-top: 5px;
 
@@ -633,7 +637,7 @@
     #maintablediv::-webkit-scrollbar-track
     {
         -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-        background-color: rgba(1, 1, 1, 0.2);
+        background-color: rgba(21, 21, 21, 0.77);
     }
 
     #maintablediv::-webkit-scrollbar
@@ -645,7 +649,7 @@
 
     #maintablediv::-webkit-scrollbar-thumb
     {
-        background-color: rgba(1,1,1,0.4);
+        background-color: rgba(82, 82, 82, 0.6);
         border: 2px solid rgba(100,100,100,0.7);
     }
 
