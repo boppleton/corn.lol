@@ -59,9 +59,9 @@
             setInterval(this.clearTradesLoop, 5000)
 
             this.bitmexWebSocketClient(c)
-            this.bitfinexWebSocketClient();
-            this.setupCoinbaseWebsocketClient();
-            this.binanceWebSocketClient();
+            this.bitfinexWebSocketClient(c);
+            this.setupCoinbaseWebsocketClient(c);
+            this.binanceWebSocketClient(c);
             this.setupSettings()
             this.scrollUpLoop()
 
@@ -69,7 +69,7 @@
 
         clearTradesLoop() {
             function deleteTrades(overQty, sizeLessThan, qtyPerLoop) {
-                if (trades.length >= overQty) {
+                if (trades != null && trades.length >= overQty) {
                     let deleteQty = qtyPerLoop
                     for (let i = trades.length - 1; i > 1; i--) {
                         if (Math.abs(trades[i].size) < sizeLessThan) {
@@ -109,12 +109,12 @@
             }
 
             const socketOpenListener = (event) => {
-                console.log('open')
+                console.log('mex open')
             }
 
             const socketCloseListener = (event) => {
                 if (socket) {
-                    console.error('close')
+                    console.error('mex close')
                 }
                 socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD')
                 socket.addEventListener('open', socketOpenListener)
@@ -188,7 +188,7 @@
 
         }
 
-        bitfinexWebSocketClient() {
+        bitfinexWebSocketClient(c) {
             var socket
 
             const socketMessageListener = (event) => {
@@ -219,7 +219,7 @@
             }
 
             const socketOpenListener = (event) => {
-                console.log('open')
+                console.log('finex open')
                 socket.send("{\n" +
                     "  \"event\": \"subscribe\",\n" +
                     "  \"channel\": \"trades\",\n" +
@@ -229,7 +229,7 @@
 
             const socketCloseListener = (event) => {
                 if (socket) {
-                    console.error('close')
+                    console.error('finex close')
                 }
                 socket = new WebSocket('wss://api.bitfinex.com/ws')
                 socket.addEventListener('open', socketOpenListener)
@@ -258,7 +258,7 @@
         }
 
 
-        setupCoinbaseWebsocketClient() {
+        setupCoinbaseWebsocketClient(c) {
 
             var socket
 
@@ -291,13 +291,13 @@
             }
 
             const socketOpenListener = (event) => {
-                console.log('open')
+                console.log('cb open')
                 socket.send("{\"type\": \"subscribe\", \"product_ids\": [\"BTC-USD\"],\"channels\": [\"matches\"]}")
             }
 
             const socketCloseListener = (event) => {
                 if (socket) {
-                    console.error('close')
+                    console.error('cb close')
                 }
                 socket = new WebSocket('wss://ws-feed.pro.coinbase.com')
                 socket.addEventListener('open', socketOpenListener)
@@ -337,8 +337,7 @@
             return trade
         }
 
-        binanceWebSocketClient() {
-
+        binanceWebSocketClient(c) {
 
             var socket
 
@@ -373,13 +372,12 @@
             }
 
             const socketOpenListener = (event) => {
-                console.log('open')
-                socket.send("{\"type\": \"subscribe\", \"product_ids\": [\"BTC-USD\"],\"channels\": [\"matches\"]}")
+                console.log('binance open')
             }
 
             const socketCloseListener = (event) => {
                 if (socket) {
-                    console.error('close')
+                    console.error('binance close')
                 }
                 socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade')
                 socket.addEventListener('open', socketOpenListener)
