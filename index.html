@@ -1,54 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8"/>
-    <title>corn.lol</title>
+<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>corn.lol</title>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+</head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
 
-</head>
-<body>
-<div id="root"></div>
-<div id="footer"></div>
-<script type="text/babel">
+    // ---------
+    //
+    // corn.lol beta v1.0
+    //
+    // © 2019-2025 boppleton industries
+    //
     // https://github.com/boppleton/corn.lol
+    //
+    // ---------
 
+    //global
+    var trades = null
     var bitmexMin = 99000
     var bitfinexMin = 9000
     var coinbaseMin = 9000
     var binanceMin = 9000
-
-    var showPrices = true
-
-    // exchanges on
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
     var binanceEnabled = true
 
-    // for font/colors
-    var bitmexSize1 = 1
-    var bitmexSize2 = 1000
-    var bitmexSize3 = 10000
-    var bitmexSize4 = 100000
-    var bitmexSize5 = 500000
-    var bitmexSize6 = 1000000
-    var bitfinexSize1 = 1
-    var bitfinexSize2 = 500
-    var bitfinexSize3 = 1000
-    var bitfinexSize4 = 20000
-    var bitfinexSize5 = 100000
-    var bitfinexSize6 = 250000
-
-    var trades = null
-
-    var lastBitmexPong
-
     class Start extends React.Component {
-
         constructor(props) {
             super(props)
             this.state = {data: []}
@@ -59,15 +38,17 @@
             setInterval(this.clearTradesLoop, 5000)
 
             this.bitmexWebSocketClient(c)
-            this.bitfinexWebSocketClient(c);
-            this.setupCoinbaseWebsocketClient(c);
-            this.binanceWebSocketClient(c);
+            this.bitfinexWebSocketClient(c)
+            this.setupCoinbaseWebsocketClient(c)
+            this.binanceWebSocketClient(c)
             this.setupSettings()
             this.scrollUpLoop()
-
         }
 
         clearTradesLoop() {
+            deleteTrades(100, 900, 5)
+            deleteTrades(300, 99000, 1)
+            deleteTrades(500, 1000000, 1)
             function deleteTrades(overQty, sizeLessThan, qtyPerLoop) {
                 if (trades != null && trades.length >= overQty) {
                     let deleteQty = qtyPerLoop
@@ -76,46 +57,29 @@
                             trades.splice(i, 1)
                             deleteQty--
                         }
-                        if (deleteQty <= 0) {
-                            return
-                        }
+                        if (deleteQty <= 0) {return}
                     }
                 }
             }
-
-            deleteTrades(100, 900, 5)
-            deleteTrades(500, 99000, 1)
-            deleteTrades(1000, 1000000, 1)
         }
 
         bitmexWebSocketClient(c) {
-
             var socket
-
             const socketMessageListener = (event) => {
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
-                    if (tradeRaw.data == null) {
-                        return
-                    }
+                    if (tradeRaw.data == null) {return}
                     let trade = Start.bitmexTrade(tradeRaw.data)
-                    if (trades == null) {
-                        trades = trade
-                    } else {
-                        trades = trade.concat(trades)
-                    }
+                    if (trades == null) {trades = trade
+                    } else {trades = trade.concat(trades)}
                     c.setStreamData({data: trades})
                 }
             }
 
-            const socketOpenListener = (event) => {
-                console.log('mex open')
-            }
+            const socketOpenListener = (event) => {console.log('mex open')}
 
             const socketCloseListener = (event) => {
-                if (socket) {
-                    console.error('mex close')
-                }
+                if (socket) {console.error('mex close')}
                 socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
@@ -123,13 +87,10 @@
             }
 
             socketCloseListener()
-
         }
 
 
         static bitmexTrade(tradeRaw) {
-
-
             let trade = []
             let totalSize = 0
             for (let i = 0; i < tradeRaw.length; i++) {
@@ -140,7 +101,6 @@
             let lastPrice = tradeRaw[tradeRaw.length - 1].price
 
             document.title = "bitmex: " + tradeRaw[tradeRaw.length - 1].price
-
 
             trade.push({
                 symbol: "XBTUSD",
@@ -156,47 +116,12 @@
             return trade
         }
 
-        textMessage(s) {
-
-            var c = this.instance
-
-            let message = []
-            message.push({
-                symbol: "message"
-            })
-
-            message.symbol = "message"
-            message.price = 1111
-            message.timestamp = Date.now()
-            message.side = true
-            message.exchangeName = "message"
-            message.startTime = Date.now()
-            message.firstPrice = 0
-            message.lastPrice = 0
-            message.message = s
-            message.size = -2
-
-
-            if (trades == null) {
-                trades = message
-            } else {
-                trades = message.concat(trades)
-            }
-
-            c.setStreamData({data: trades})
-
-
-        }
-
         bitfinexWebSocketClient(c) {
             var socket
-
             const socketMessageListener = (event) => {
                 if (bitfinexEnabled) {
                     let trade = JSON.parse(event.data)
-                    if (trade == null || trade[1] !== "te") {
-                        return
-                    }
+                    if (trade == null || trade[1] !== "te") {return}
 
                     let trade2 = Start.bitfinexTrade(trade)
 
@@ -205,14 +130,8 @@
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
                     } else {
-                        if (trades == null) {
-                            trades = trade2
-                        } else {
-                            if (trades.length >= 500) {
-                                trades.splice(trades.length - 5)
-                            }
-                            trades = trade2.concat(trades)
-                        }
+                        if (trades == null) {trades = trade2
+                        } else {trades = trade2.concat(trades)}
                     }
                     c.setStreamData({data: trades})
                 }
@@ -228,15 +147,12 @@
             }
 
             const socketCloseListener = (event) => {
-                if (socket) {
-                    console.error('finex close')
-                }
+                if (socket) {console.error('finex close')}
                 socket = new WebSocket('wss://api.bitfinex.com/ws')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
                 socket.addEventListener('close', socketCloseListener)
             }
-
             socketCloseListener()
         }
 
@@ -259,32 +175,19 @@
 
 
         setupCoinbaseWebsocketClient(c) {
-
             var socket
-
             const socketMessageListener = (event) => {
                 if (coinbaseEnabled) {
                     let tradeRaw = JSON.parse(event.data)
-
-                    if (tradeRaw == null || tradeRaw.type !== "match") {
-                        return
-                    }
-
+                    if (tradeRaw == null || tradeRaw.type !== "match") {return}
                     let trade = Start.coinbaseTrade(tradeRaw)
-
                     if (trades != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
                     } else {
-                        if (trades == null) {
-                            trades = trade
-                        } else {
-                            if (trades.length >= 500) {
-                                trades.splice(trades.length - 5)
-                            }
-                            trades = trade.concat(trades)
-                        }
+                        if (trades == null) {trades = trade
+                        } else {trades = trade.concat(trades)}
                     }
                     c.setStreamData({data: trades})
                 }
@@ -296,21 +199,16 @@
             }
 
             const socketCloseListener = (event) => {
-                if (socket) {
-                    console.error('cb close')
-                }
+                if (socket) {console.error('cb close')}
                 socket = new WebSocket('wss://ws-feed.pro.coinbase.com')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
                 socket.addEventListener('close', socketCloseListener)
             }
-
             socketCloseListener()
-
         }
 
         static coinbaseTrade(tradeRaw) {
-
             let size = parseFloat(tradeRaw.size) * parseFloat(tradeRaw.price)
             let time = Date.parse(tradeRaw.time)
             let trade = []
@@ -338,47 +236,26 @@
         }
 
         binanceWebSocketClient(c) {
-
             var socket
-
             const socketMessageListener = (event) => {
                 if (binanceEnabled) {
                     let trade = JSON.parse(event.data)
-
-                    if (trade == null || trade.e !== "aggTrade") {
-                        return
-                    }
-
+                    if (trade == null || trade.e !== "aggTrade") {return}
                     let trade2 = Start.binanceTrade(trade)
-
-                    if (trades == null) {
-                        trades = trade2
-                    }
-
+                    if (trades == null) {trades = trade2}
                     if (trades != null && trades[0].timestamp === trade2.timestamp && trades[0].side === trade2.side) {
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
-
-                    } else {
-                        if (trades.length >= 500) {
-                            trades.splice(trades.length - 5)
-                        }
-                        trades = trade2.concat(trades)
-
-                    }
+                    } else {trades = trade2.concat(trades)}
                     c.setStreamData({data: trades})
                 }
             }
 
-            const socketOpenListener = (event) => {
-                console.log('binance open')
-            }
+            const socketOpenListener = (event) => {console.log('binance open')}
 
             const socketCloseListener = (event) => {
-                if (socket) {
-                    console.error('binance close')
-                }
+                if (socket) {console.error('binance close')}
                 socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
@@ -389,12 +266,9 @@
         }
 
         static binanceTrade(tradeRaw) {
-
             let pr = parseFloat(tradeRaw.p)
             let btcSize = parseFloat(tradeRaw.q)
-
             let totalSize = btcSize * pr
-
 
             let trade = []
             trade.push({
@@ -422,9 +296,7 @@
             return trade
         }
 
-        setStreamData(data) {
-            this.setState(data)
-        }
+        setStreamData(data) {this.setState(data)}
 
         render() {
             return (
@@ -441,8 +313,6 @@
                 </div>
             )
         }
-
-        // <a id="minimizelink" href="#"><img src="https://i.imgur.com/NoBQwYO.png" height="30" width="30"/></a>
 
         setupSettings() {
             window.onload = function () {
@@ -491,30 +361,22 @@
                     }
                 }
 
-                var clearlink = document.getElementById("clearlink")
+                let clearlink = document.getElementById("clearlink")
                 clearlink.onclick = function () {
                     trades = null
                     let c = this.instance
                     c.setStreamData({data: trades})
                 }
 
-                // var minimizelink = document.getElementById("minimizelink");
-                // minimizelink.onclick = function() {
-                //     console.log("minimize table")
-                // }
-
                 document.getElementById('bitmexMinField').value = bitmexMin
                 document.getElementById('bitfinexMinField').value = bitfinexMin
                 document.getElementById('coinbaseMinField').value = coinbaseMin
                 document.getElementById('binanceMinField').value = binanceMin
 
-
                 document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
                 document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
                 document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
                 document.getElementById('binanceEnabledButton').checked = binanceEnabled
-
-
             }
         }
 
@@ -527,8 +389,6 @@
                 })
             }, 10000)
         }
-
-
     }
 
     function getKformat(size, iteration) {
@@ -548,6 +408,20 @@
         }
     }
 
+    // for font/colors
+    var bitmexSize1 = 1
+    var bitmexSize2 = 2000
+    var bitmexSize3 = 10000
+    var bitmexSize4 = 100000
+    var bitmexSize5 = 500000
+    var bitmexSize6 = 1000000
+    var bitfinexSize1 = 1
+    var bitfinexSize2 = 500
+    var bitfinexSize3 = 1000
+    var bitfinexSize4 = 20000
+    var bitfinexSize5 = 100000
+    var bitfinexSize6 = 250000
+
     class Row extends React.Component {
         render() {
             const {data} = this.props
@@ -561,13 +435,12 @@
                     <td id="slip">{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
                     <td id="atSign">{"@ "}</td>
-                    <td id="tradePrice">{showPrices ? (parseFloat(data.lastPrice).toFixed(1)) : null}</td>
+                    <td id="tradePrice">{parseFloat(data.lastPrice).toFixed(1)}</td>
                     <td id="elapsedTime">{Row.getTimeElapsed(data)}</td>
                 </tr>
             )
             return (<tbody>{row}</tbody>)
         }
-
 
         static lowFormat(size) {
             return Math.abs(Math.round(size)).toFixed(0)
@@ -794,9 +667,7 @@
     }
 
     ReactDOM.render(<Start/>, document.getElementById('root'))
-
     ReactDOM.render(<Footer/>, document.getElementById('footer'))
-
 
 </script>
 
@@ -1283,21 +1154,4 @@
 
 </style>
 
-<!-- Default Statcounter code for corn.lol http://corn.lol -->
-<script type="text/javascript">
-    var sc_project = 11947229
-    var sc_invisible = 1
-    var sc_security = "d2cbfc7b"
-    var sc_https = 1
-    var sc_remove_link = 1
-</script>
-<script type="text/javascript"
-        src="https://www.statcounter.com/counter/counter.js" async></script>
-<noscript>
-    <div class="statcounter"><img class="statcounter" src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/" alt="Web Analytics Made
-Easy - StatCounter"></div>
-</noscript>
-<!-- End of Statcounter Code -->
-
-</body>
-</html>
+</body></html>
