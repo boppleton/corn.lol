@@ -54,95 +54,78 @@
             this.state = {data: []}
             this.instance = this
 
-            // this.textMessage("startt");
+            let c = this.instance
 
-            this.bitmexWebSocketClient()
-            setInterval(this.bitmexPingloop, 30000)
-            // this.bitfinexWebSocketClient();
-            // this.setupCoinbaseWebsocketClient();
-            // this.binanceWebSocketClient();
+            setInterval(this.clearTradesLoop, 5000)
+
+            this.bitmexWebSocketClient(c)
+            this.bitfinexWebSocketClient();
+            this.setupCoinbaseWebsocketClient();
+            this.binanceWebSocketClient();
             this.setupSettings()
             this.scrollUpLoop()
 
         }
 
-
-        bitmexPingloop() {
-            if (lastBitmexPong < (Date.now() - 40000)) {
-                this.bitmexWebSocketClient()
-                // console.log("lastpong older than 10s, reconnect")
-                // c.bitmexSocket.close(6, "bitmex ws restart from failed pingloop")
-                // c.bitmexSocket = null;
-                // c.bitmexSocket = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD");
-            }
-
-            // if (c.bitmexSocket.readyState===c.bitmexSocket.OPEN) {
-            console.log("sending bitmex ping")
-            c.bitmexSocket.send("\"ping\"")
-        }
-
-        bitmexWebSocketClient() {
-            let c = this.instance
-            if (c.bitmexSocket != null) {
-                c.bitmexSocket.close()
-                c.bitmexSocket = null
-            }
-
-            c.bitmexSocket = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD")
-
-
-            c.bitmexSocket.onopen = function () {
-                console.log("bitmex onopen")
-            }
-
-            c.bitmexSocket.onclose = function () {
-                console.log("bitmex ws onclosed, reconnect")
-                c.bitmexSocket = null
-                c.bitmexSocket = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD")
-            }
-
-            c.bitmexSocket.onmessage = function (tradeMessage) {
-                // console.log("msg: " + JSON.stringify(tradeMessage.data))
-                if (tradeMessage.data === "pong") {
-                    lastBitmexPong = Date.now()
-                    // console.log("last pong: " + lastBitmexPong)
-                } else {
-                    if (bitmexEnabled) {
-                        let tradeRaw = JSON.parse(tradeMessage.data)
-                        if (tradeRaw.data == null) {
+        clearTradesLoop() {
+            function deleteTrades(overQty, sizeLessThan, qtyPerLoop) {
+                if (trades.length >= overQty) {
+                    let deleteQty = qtyPerLoop
+                    for (let i = trades.length - 1; i > 1; i--) {
+                        if (Math.abs(trades[i].size) < sizeLessThan) {
+                            trades.splice(i, 1)
+                            deleteQty--
+                        }
+                        if (deleteQty <= 0) {
                             return
                         }
-                        let trade = Start.bitmexTrade(tradeRaw.data)
-                        if (trades == null) {
-                            trades = trade
-                        } else {
-                            trades = trade.concat(trades)
-                            if (trades.length >= 500) {
-                                trades.splice(trades.length - 5)
-                            }
-                        }
-                        c.setStreamData({data: trades})
                     }
                 }
             }
 
-            function pingLoop() {
-                // console.log("last pong: " + lastBitmexPong + " now: " + Date.now() + " date.now-10: " + (Date.now()-10000))
-                if (lastBitmexPong < (Date.now() - 40000)) {
-                    Start.bitmexWebsocketClient()
-                    // console.log("lastpong older than 10s, reconnect")
-                    // c.bitmexSocket.close(6, "bitmex ws restart from failed pingloop")
-                    // c.bitmexSocket = null;
-                    // c.bitmexSocket = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD");
-                }
+            deleteTrades(100, 900, 5)
+            deleteTrades(500, 99000, 1)
+            deleteTrades(1000, 1000000, 1)
+        }
 
-                // if (c.bitmexSocket.readyState===c.bitmexSocket.OPEN) {
-                console.log("sending bitmex ping")
-                c.bitmexSocket.send("\"ping\"")
-                // }
+        bitmexWebSocketClient(c) {
+
+            var socket
+
+            const socketMessageListener = (event) => {
+                if (bitmexEnabled) {
+                    let tradeRaw = JSON.parse(event.data)
+                    if (tradeRaw.data == null) {
+                        return
+                    }
+                    let trade = Start.bitmexTrade(tradeRaw.data)
+                    if (trades == null) {
+                        trades = trade
+                    } else {
+                        trades = trade.concat(trades)
+                    }
+                    c.setStreamData({data: trades})
+                }
             }
 
+            const socketOpenListener = (event) => {
+                console.log('open')
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('close')
+                }
+                socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+
+            socketCloseListener()
+
         }
+
 
         static bitmexTrade(tradeRaw) {
 
@@ -206,20 +189,9 @@
         }
 
         bitfinexWebSocketClient() {
-            var c = this.instance
-            if (c.bitfinexSocket != null) {
-                c.bitfinexSocket.close()
-                c.bitfinexSocket = null
-            }
-            c.bitfinexSocket = new WebSocket("wss://api.bitfinex.com/ws")
-            c.bitfinexSocket.onopen = function () {
-                c.bitfinexSocket.send("{\n" +
-                    "  \"event\": \"subscribe\",\n" +
-                    "  \"channel\": \"trades\",\n" +
-                    "  \"pair\": \"BTCUSD\"\n" +
-                    "}")
-            }
-            c.bitfinexSocket.onmessage = function (event) {
+            var socket
+
+            const socketMessageListener = (event) => {
                 if (bitfinexEnabled) {
                     let trade = JSON.parse(event.data)
                     if (trade == null || trade[1] !== "te") {
@@ -245,6 +217,27 @@
                     c.setStreamData({data: trades})
                 }
             }
+
+            const socketOpenListener = (event) => {
+                console.log('open')
+                socket.send("{\n" +
+                    "  \"event\": \"subscribe\",\n" +
+                    "  \"channel\": \"trades\",\n" +
+                    "  \"pair\": \"BTCUSD\"\n" +
+                    "}")
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('close')
+                }
+                socket = new WebSocket('wss://api.bitfinex.com/ws')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+
+            socketCloseListener()
         }
 
         static bitfinexTrade(tradeRaw) {
@@ -266,16 +259,10 @@
 
 
         setupCoinbaseWebsocketClient() {
-            var c = this.instance
-            if (c.coinbaseSocket != null) {
-                c.coinbaseSocket.close()
-                c.coinbaseSocket = null
-            }
-            c.coinbaseSocket = new WebSocket("wss://ws-feed.pro.coinbase.com")
-            c.coinbaseSocket.onopen = function () {
-                c.coinbaseSocket.send("{\"type\": \"subscribe\", \"product_ids\": [\"BTC-USD\"],\"channels\": [\"matches\"]}")
-            }
-            c.coinbaseSocket.onmessage = function (event) {
+
+            var socket
+
+            const socketMessageListener = (event) => {
                 if (coinbaseEnabled) {
                     let tradeRaw = JSON.parse(event.data)
 
@@ -302,6 +289,24 @@
                     c.setStreamData({data: trades})
                 }
             }
+
+            const socketOpenListener = (event) => {
+                console.log('open')
+                socket.send("{\"type\": \"subscribe\", \"product_ids\": [\"BTC-USD\"],\"channels\": [\"matches\"]}")
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('close')
+                }
+                socket = new WebSocket('wss://ws-feed.pro.coinbase.com')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+
+            socketCloseListener()
+
         }
 
         static coinbaseTrade(tradeRaw) {
@@ -333,15 +338,11 @@
         }
 
         binanceWebSocketClient() {
-            let c = this.instance
-            if (c.binanceSocket != null) {
-                c.binanceSocket.close()
-                c.binanceSocket = null
-            }
-            c.binanceSocket = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@aggTrade")
-            c.binanceSocket.onopen = function () {
-            }
-            c.binanceSocket.onmessage = function (event) {
+
+
+            var socket
+
+            const socketMessageListener = (event) => {
                 if (binanceEnabled) {
                     let trade = JSON.parse(event.data)
 
@@ -370,6 +371,23 @@
                     c.setStreamData({data: trades})
                 }
             }
+
+            const socketOpenListener = (event) => {
+                console.log('open')
+                socket.send("{\"type\": \"subscribe\", \"product_ids\": [\"BTC-USD\"],\"channels\": [\"matches\"]}")
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('close')
+                }
+                socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+
+            socketCloseListener()
         }
 
         static binanceTrade(tradeRaw) {
@@ -975,6 +993,11 @@
 
     .traderow {
         /*border-top: 1px solid black;*/
+        vertical-align: middle;
+    }
+
+    .traderow img {
+        vertical-align: middle;
     }
 
     .bitmex.size1 {
@@ -1124,7 +1147,7 @@
     }
 
     #atSign {
-        font-size: 10px;
+        font-size: 11px;
         font-style: italic;
         color: rgba(40, 40, 40, 0.76);
         /*padding-right: 2px;*/
