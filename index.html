@@ -2,7 +2,7 @@
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-    <script src="https://unpkg.com/interactjs@1.3/dist/interact.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 </head><body><div id="root"><div id="rootydiv"></div></div><div id="footer"></div><script type="text/babel">
@@ -36,6 +36,8 @@
 
             let c = this.instance
 
+            Start.textMessage("connected")
+
             // setInterval(this.clearTradesLoop, 2000)
             setInterval(this.clearBigTradesLoop, 2000)
 
@@ -47,52 +49,70 @@
             this.scrollUpLoop()
         }
 
+
+
         clearBigTradesLoop() {
 
             let under5kCount = 0
-            let over5kCount = 0
+            let over40kCount = 0
             let over200kCount = 0
 
             for (let i = trades.length - 1; i > 1; i--) {
-                if (Math.abs(trades[i].size) < 5000) {
+
+                if (Math.abs(trades[i].size) < 40000) {
                     under5kCount++
                 } else if (Math.abs(trades[i].size) < 200000) {
-                    over5kCount++
+                    over40kCount++
                 } else {
                     over200kCount++
                 }
+
             }
+
+            console.log("under 5k: " + under5kCount + " over 5k: " + over40kCount + " over200k: " + over200kCount)
 
             if (under5kCount > 100) {
                 let deleteQty = 30
                 for (let i = trades.length - 1; i > 5; i--) {
-                    if (Math.abs(trades[i].size) < 5000) {
-                        trades.splice(i, 1)
-                        deleteQty--
+                    if (trades !== null) {
+                        if (trades[i] !== null && Math.abs(trades[i].size) < 40000) {
+                            trades.splice(i, 1)
+                            deleteQty--
+                        }
+                        if (deleteQty <= 0) {
+                            return
+                        }
                     }
-                    if (deleteQty <= 0) {return}
                 }
             }
 
-            if (over5kCount > 100) {
+            if (over40kCount > 200) {
                 let deleteQty = 10
                 for (let i = trades.length - 1; i > 5; i--) {
-                    if (Math.abs(trades[i].size) > 5000 && Math.abs(trade[i].size < 200000)) {
-                        trades.splice(i, 1)
-                        deleteQty--
+                    if (trades !== null) {
+                        if (trades[i] !== null !== null && Math.abs(trades[i].size) > 40000 && Math.abs(trades[i].size < 200000)) {
+                            trades.splice(i, 1)
+                            deleteQty--
+                        }
+                        if (deleteQty <= 0) {
+                            return
+                        }
                     }
-                    if (deleteQty <= 0) {return}
                 }
             }
 
-            if (over200kCount > 100) {
+            if (over200kCount > 200) {
                 let deleteQty = 5
                 for (let i = trades.length - 1; i > 5; i--) {
-                    if (Math.abs(trades[i].size) > 200000) {
-                        trades.splice(i, 1)
-                        deleteQty--
+                    if (trades !== null) {
+                        if (Math.abs(trades[i].size) > 200000) {
+                            trades.splice(i, 1)
+                            deleteQty--
+                        }
+                        if (deleteQty <= 0) {
+                            return
+                        }
                     }
-                    if (deleteQty <= 0) {return}
                 }
             }
 
@@ -112,7 +132,9 @@
                 }
             }
 
-            const socketOpenListener = (event) => {console.log('mex open')}
+            const socketOpenListener = (event) => {
+                console.log('mex open')
+            }
 
             const socketCloseListener = (event) => {
                 if (socket) {console.error('mex close')}
@@ -150,6 +172,41 @@
                 size: totalSize
             })
             return trade
+        }
+
+        static textMessage(s) {
+            let trade = []
+            trade.push({
+                symbol: "message",
+                price: 5000,
+                size: 500000,
+                timestamp: Date.now,
+                side: true,
+                exchangeName: "message",
+                startTime: Date.now,
+                btcAmt: 0,
+                firstPrice: 5000,
+                lastPrice: 5000,
+                message: s
+            })
+            trade.price = 5000
+            trade.size = 500000
+            trade.timestamp = Date.now
+            trade.side = true
+            trade.exchangeName = "message"
+            trade.startTime = Date.now
+            trade.btcAmt = 0
+            trade.firstPrice = 5000
+            trade.lastPrice = 5000
+            this.message = s
+
+
+            if (trades==null) {
+                trades = trade
+            } else {
+                trades = trade.concat(trades)
+            }
+
         }
 
         bitfinexWebSocketClient(c) {
@@ -288,7 +345,9 @@
                 }
             }
 
-            const socketOpenListener = (event) => {console.log('binance open')}
+            const socketOpenListener = (event) => {
+                console.log('binance open')
+            }
 
             const socketCloseListener = (event) => {
                 if (socket) {console.error('binance close')}
@@ -472,16 +531,16 @@
                 <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size) < Row.getMinForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{data.exchangeName === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0)}</td>
-                    <td width="100%" id="spacer">{" "}</td>
+                    <td id="tradeSize">{data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0)}</td>
+                    <td width="100%" id="spacer">{""}</td>
                     <td id="slip">{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
                     <td id="atSign">{"@ "}</td>
-                    <td id="tradePrice">{parseFloat(data.lastPrice).toFixed(1)}</td>
-                    <td id="elapsedTime">{Row.getTimeElapsed(data)}</td>
+                    <td id="tradePrice">{ data.exchangeName==="message"?"":parseFloat(data.lastPrice).toFixed(1) }</td>
+                    <td id="elapsedTime" width="100%">{Row.getTimeElapsed(data)}</td>
                 </tr>
             )
-            return (<tbody>{row}</tbody>)
+            return (<tbody id="tbodyy">{row}</tbody>)
         }
 
         static lowFormat(size) {
@@ -529,7 +588,7 @@
             } else if (data.exchangeName === "binance") {
                 return binanceMin
             } else {
-                return 5
+                return 0
             }
         }
 
@@ -569,13 +628,13 @@
 
         static getIcon(data) {
             if (data.exchangeName === "bitmex") {
-                return <img src="bitmex22.png" alt="bitmex"/>
+                return <img src="bitmex22new.png" alt="bitmex"/>
             } else if (data.exchangeName === "bitfinex") {
                 return <img src="bitfinex22.png" alt="finex"/>
             } else if (data.exchangeName === "coinbase") {
                 return <img src="gdax25.png" alt="gdax"/>
             } else if (data.exchangeName === "binance") {
-                return <img src="binance.png" alt="safu"/>
+                return <img src="binancenew.png" alt="safu"/>
             }
 
         }
@@ -929,25 +988,42 @@
         border-spacing: 0;
         font-size: 14px;
 
+        width: 100%;
 
     }
 
     .table1 .traderow td {
+
+
+        /*width: 100%;*/
+
         margin: 0px;
         padding: 0px;
         white-space: nowrap;
         /*border-left: 1px solid black;*/
         text-align: left;
         /*font-size: 14px;*/
-        font-family: sans-serif;
+        font-family: 'Rubik', sans-serif;
 
         border: 0;
+
     }
 
+    /*.table1 #tbodyy {*/
+        /*!*display: flex;*!*/
+        /*!*flex-direction: column;*!*/
+        /*overflow-x: hidden;*/
+        /*word-break: unset;*/
+
+        /*!*width: 100%;*!*/
+
+
+    /*}*/
 
     .traderow {
         /*border-top: 1px solid black;*/
         vertical-align: middle;
+
     }
 
     .traderow img {
@@ -1051,7 +1127,11 @@
     }
 
     .message {
-        background-color: blue;
+        background-color: rgba(0, 0, 0, 0.89);
+        color: rgba(16, 255, 0, 0.98);
+        font-size: 13px;
+        border: 1px solid rgb(24, 255, 0);
+
     }
 
     .hide {
@@ -1085,6 +1165,7 @@
 
     #tradePrice {
         font-size: 14px;
+        padding-left: 3px;
         padding-right: 5px;
         font-weight: normal;
         font-style: normal;
