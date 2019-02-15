@@ -1,2 +1,5 @@
 # corn.lol
-browser version of whaleticker - big trades ticker
+
+bitcoin market orders are displayed with their total USD values.
+
+(under construction)
