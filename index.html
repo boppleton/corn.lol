@@ -2,13 +2,14 @@
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <script src="https://unpkg.com/interactjs@1.3/dist/interact.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-</head><body><div id="root"></div><div id="footer"></div><script type="text/babel">
+</head><body><div id="root"><div id="rootydiv"></div></div><div id="footer"></div><script type="text/babel">
 
     // ---------
     //
-    // corn.lol beta v1.0
+    // corn.lol beta v1.1
     //
     // © 2019-2025 boppleton industries
     //
@@ -35,7 +36,8 @@
 
             let c = this.instance
 
-            setInterval(this.clearTradesLoop, 2000)
+            // setInterval(this.clearTradesLoop, 2000)
+            setInterval(this.clearBigTradesLoop, 2000)
 
             this.bitmexWebSocketClient(c)
             this.bitfinexWebSocketClient(c)
@@ -45,22 +47,56 @@
             this.scrollUpLoop()
         }
 
-        clearTradesLoop() {
-            deleteTrades(200, 10000, 1)
-            deleteTrades(250, 90000, 1)
-            deleteTrades(300, 400000, 1)
-            function deleteTrades(overQty, sizeLessThan, qtyPerLoop) {
-                if (trades != null && trades.length >= overQty) {
-                    let deleteQty = qtyPerLoop
-                    for (let i = trades.length - 1; i > 50; i--) {
-                        if (Math.abs(trades[i].size) < sizeLessThan) {
-                            trades.splice(i, 1)
-                            deleteQty--
-                        }
-                        if (deleteQty <= 0) {return}
-                    }
+        clearBigTradesLoop() {
+
+            let under5kCount = 0
+            let over5kCount = 0
+            let over200kCount = 0
+
+            for (let i = trades.length - 1; i > 1; i--) {
+                if (Math.abs(trades[i].size) < 5000) {
+                    under5kCount++
+                } else if (Math.abs(trades[i].size) < 200000) {
+                    over5kCount++
+                } else {
+                    over200kCount++
                 }
             }
+
+            if (under5kCount > 100) {
+                let deleteQty = 30
+                for (let i = trades.length - 1; i > 5; i--) {
+                    if (Math.abs(trades[i].size) < 5000) {
+                        trades.splice(i, 1)
+                        deleteQty--
+                    }
+                    if (deleteQty <= 0) {return}
+                }
+            }
+
+            if (over5kCount > 100) {
+                let deleteQty = 10
+                for (let i = trades.length - 1; i > 5; i--) {
+                    if (Math.abs(trades[i].size) > 5000 && Math.abs(trade[i].size < 200000)) {
+                        trades.splice(i, 1)
+                        deleteQty--
+                    }
+                    if (deleteQty <= 0) {return}
+                }
+            }
+
+            if (over200kCount > 100) {
+                let deleteQty = 5
+                for (let i = trades.length - 1; i > 5; i--) {
+                    if (Math.abs(trades[i].size) > 200000) {
+                        trades.splice(i, 1)
+                        deleteQty--
+                    }
+                    if (deleteQty <= 0) {return}
+                }
+            }
+
+
         }
 
         bitmexWebSocketClient(c) {
@@ -300,22 +336,28 @@
 
         render() {
             return (
-                <div id="tableandbottom">
-                    <div id="maintablediv">
-                        <Table data={this.state.data}/>
-                    </div>
-                    <div id="hiddendiv">
-                        <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                           width="30"/></a>
-                        <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                        width="30"/></a>
+                <div id="rootydiv" className="rootydiv">
+                    <div id="tableandbottom" className="drag">
+                        <div id="maintablediv">
+                            <div>
+                                <Table data={this.state.data}/>
+                            </div>
+                        </div>
+                        <div id="hiddendiv">
+                            <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                                               width="30"/></a>
+                            <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                                            width="30"/></a>
+                        </div>
                     </div>
                 </div>
+
             )
         }
 
         setupSettings() {
             window.onload = function () {
+
 
                 document.getElementById("bitmexMinField").onchange = function () {
                     bitmexMin = document.getElementById("bitmexMinField").value
@@ -416,11 +458,11 @@
     var bitmexSize5 = 500000
     var bitmexSize6 = 1000000
     var bitfinexSize1 = 1
-    var bitfinexSize2 = 500
-    var bitfinexSize3 = 1000
-    var bitfinexSize4 = 20000
-    var bitfinexSize5 = 100000
-    var bitfinexSize6 = 250000
+    var bitfinexSize2 = 1000
+    var bitfinexSize3 = 10000
+    var bitfinexSize4 = 50000
+    var bitfinexSize5 = 200000
+    var bitfinexSize6 = 400000
 
     class Row extends React.Component {
         render() {
@@ -460,7 +502,7 @@
         static getBtcShow(data) {
             if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
                 var abs = Math.abs(data.btcAmt)
-                return " " + abs > 9 ? (abs.toFixed(0) + "btc") : (abs.toFixed(1) + " btc")
+                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1) + " btc")
             } else {
                 return null
             }
@@ -666,12 +708,14 @@
         }
     }
 
-    ReactDOM.render(<Start/>, document.getElementById('root'))
+    ReactDOM.render(<Start/>, document.getElementById('rootydiv'))
+
     ReactDOM.render(<Footer/>, document.getElementById('footer'))
 
 </script>
 
 <style>
+
 
     * {
         margin: 0;
@@ -679,9 +723,9 @@
     }
 
     body, html {
+
         width: 100%;
         height: 100%;
-
 
         overflow: hidden;
 
@@ -692,6 +736,12 @@
         background-color: #282828;
         background-size: 16px 16px;
     }
+
+    #root {
+        width: 100%;
+        height: 100%;
+    }
+
 
     #icon img {
         /*width: 100%;*/
@@ -740,16 +790,45 @@
         text-align: right;
     }
 
+    #rootydiv {
+        height: 100%;
+        width: 100%;
+    }
+
     #maintablediv {
 
         border: 2px solid #525252;
 
         margin: 5px;
         /*padding: 2px;*/
-        width: 225px;
+        width: 245px;
         height: 780px;
 
+
+
     }
+
+    #ghostpane {
+        background: #999;
+        opacity: 0.2;
+
+        width: 45%;
+        height: 45%;
+        top: 20%;
+        left: 20%;
+
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        z-index: 98;
+
+        -webkit-transition: all 0.25s ease-in-out;
+        -moz-transition: all 0.25s ease-in-out;
+        -ms-transition: all 0.25s ease-in-out;
+        -o-transition: all 0.25s ease-in-out;
+        transition: all 0.25s ease-in-out;
+    }
+
 
     .minAmount {
 
@@ -766,7 +845,9 @@
         overflow: hidden;
         resize: both;
 
-        max-height: available;
+        /*max-height: available;*/
+
+
 
     }
 
@@ -785,6 +866,10 @@
 
     #tableandbottom {
         display: inline-block;
+
+        position: absolute;
+        /*z-index: 99;*/
+
     }
 
     #hiddendiv img {
@@ -835,7 +920,6 @@
         background-color: rgba(82, 82, 82, 0.6);
         border: 2px solid rgba(100, 100, 100, 0.7);
     }
-
 
     .table1 {
         border: 5px red;
@@ -1150,6 +1234,7 @@
             opacity: 1
         }
     }
+
 
 
 </style>
