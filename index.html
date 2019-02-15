@@ -54,22 +54,22 @@
         clearBigTradesLoop() {
 
             let under5kCount = 0
-            let over40kCount = 0
-            let over200kCount = 0
+            let over5under50Count = 0
+            let over50kCount = 0
 
             for (let i = trades.length - 1; i > 1; i--) {
 
-                if (Math.abs(trades[i].size) < 40000) {
+                if (Math.abs(trades[i].size) < 5000) {
                     under5kCount++
-                } else if (Math.abs(trades[i].size) < 200000) {
-                    over40kCount++
+                } else if (Math.abs(trades[i].size) < 50000) {
+                    over5under50Count++
                 } else {
-                    over200kCount++
+                    over50kCount++
                 }
 
             }
 
-            console.log("under 5k: " + under5kCount + " over 5k: " + over40kCount + " over200k: " + over200kCount)
+            console.log("under 5k: " + under5kCount + " over 5 under 50: " + over5under50Count + " over50k: " + over50kCount)
 
             if (under5kCount > 100) {
                 let deleteQty = 50
@@ -90,11 +90,11 @@
                 }
             }
 
-            if (over40kCount > 200) {
+            if (over5under50Count > 100) {
                 let deleteQty = 20
                 for (let i = trades.length - 1; i > 5; i--) {
                     if (trades !== null) {
-                        if (trades[i] !== null !== null && Math.abs(trades[i].size) > 40000 && Math.abs(trades[i].size < 200000)) {
+                        if (trades[i] !== null && Math.abs(trades[i].size) > 5000 && Math.abs(trades[i].size < 50000)) {
                             trades.splice(i, 1)
                             deleteQty--
                         }
@@ -105,11 +105,11 @@
                 }
             }
 
-            if (over200kCount > 200) {
+            if (over50kCount > 100) {
                 let deleteQty = 10
                 for (let i = trades.length - 1; i > 5; i--) {
                     if (trades !== null) {
-                        if (Math.abs(trades[i].size) > 200000) {
+                        if (Math.abs(trades[i].size) > 50000) {
                             trades.splice(i, 1)
                             deleteQty--
                         }
