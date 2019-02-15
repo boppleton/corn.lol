@@ -38,8 +38,7 @@
 
             Start.textMessage("connected")
 
-            // setInterval(this.clearTradesLoop, 2000)
-            setInterval(this.clearBigTradesLoop, 2000)
+            setInterval(this.clearBigTradesLoop, 1000)
 
             this.bitmexWebSocketClient(c)
             this.bitfinexWebSocketClient(c)
@@ -66,13 +65,12 @@
                 } else {
                     over50kCount++
                 }
-
             }
 
-            console.log("under 5k: " + under5kCount + " over 5 under 50: " + over5under50Count + " over50k: " + over50kCount)
+            console.log("trade count; under 5k: " + under5kCount + " over 5 under 50: " + over5under50Count + " over50k: " + over50kCount)
 
             if (under5kCount > 100) {
-                let deleteQty = 50
+                let deleteQty = 80
                 for (let i = trades.length - 1; i > 5; i--) {
                     try {
                         if (trades !== null) {
@@ -91,7 +89,7 @@
             }
 
             if (over5under50Count > 100) {
-                let deleteQty = 20
+                let deleteQty = 25
                 for (let i = trades.length - 1; i > 5; i--) {
                     if (trades !== null) {
                         if (trades[i] !== null && Math.abs(trades[i].size) > 5000 && Math.abs(trades[i].size < 50000)) {
@@ -407,10 +405,22 @@
                             </div>
                         </div>
                         <div id="hiddendiv">
-                            <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                               width="30"/></a>
-                            <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                            width="30"/></a>
+                            <div className="singleSettingsDiv">
+                                <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                                                   width="30"/></a>
+                                <span id="settingsButtonText">settings</span>
+                            </div>
+
+                            <span id="pad1"> <hr/> </span>
+
+                            <div className="singleSettingsDiv">
+
+                                <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                                                width="30"/></a>
+                                <span id="settingsButtonText">clear</span>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -427,6 +437,7 @@
                 }
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
+                    document.getElementById("bitmexMinField").disabled = !document.getElementById("bitmexMinField").disabled
                 }
 
                 document.getElementById("bitfinexMinField").onchange = function () {
@@ -434,6 +445,7 @@
                 }
                 document.getElementById("bitfinexEnabledButton").onchange = function () {
                     bitfinexEnabled = document.getElementById("bitfinexEnabledButton").checked
+                    document.getElementById("bitfinexMinField").disabled = !document.getElementById("bitfinexMinField").disabled
                 }
 
                 document.getElementById("coinbaseMinField").onchange = function () {
@@ -441,6 +453,7 @@
                 }
                 document.getElementById("coinbaseEnabledButton").onchange = function () {
                     coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
+                    document.getElementById("coinbaseMinField").disabled = !document.getElementById("coinbaseMinField").disabled
                 }
 
                 document.getElementById("binanceMinField").onchange = function () {
@@ -448,6 +461,7 @@
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
+                    document.getElementById("binanceMinField").disabled = !document.getElementById("binanceMinField").disabled
                 }
 
 
@@ -714,48 +728,38 @@
 
                                     <div className="settingsitem">
 
+                                        <input id="bitmexEnabledButton" type="checkbox"
+                                               name="bitmexEnabledButton" className="checkboxx"/>
                                         <b>bitmex</b>
                                         <input id="bitmexMinField" type="number" name="bitmexMinField"
                                                className="minAmount" min="0" max="10000000" step="1000"/>
-                                        &nbsp;&nbsp;&nbsp;<input id="bitmexEnabledButton" type="checkbox"
-                                                                 name="bitmexEnabledButton"/>
-                                        &nbsp;&nbsp;on
-                                        &nbsp;&nbsp;&nbsp;<input id="setting2" type="checkbox" name="setting2"/>
-                                        &nbsp;&nbsp;test 2
                                     </div>
 
                                     <div className="settingsitem">
-
+                                        <input id="bitfinexEnabledButton" type="checkbox"
+                                               name="bitfinexEnabledButton" className="checkboxx"/>
                                         <b>bitfinex</b>
                                         <input id="bitfinexMinField" type="number" name="bitfinexMinField"
                                                className="minAmount" min="0" max="10000000" step="1000"/>
-                                        &nbsp;&nbsp;&nbsp;<input id="bitfinexEnabledButton" type="checkbox"
-                                                                 name="bitfinexEnabledButton"/>
-                                        &nbsp;&nbsp;on
-                                        &nbsp;&nbsp;&nbsp;<input id="setting2" type="checkbox" name="setting2"/>
-                                        &nbsp;&nbsp;test 2
+
                                     </div>
 
                                     <div className="settingsitem">
+                                        <input id="coinbaseEnabledButton" type="checkbox"
+                                               name="coinbaseEnabledButton" className="checkboxx"/>
                                         <b>coinbase</b>
                                         <input id="coinbaseMinField" type="number" name="coinbaseMinField"
                                                className="minAmount" min="0" max="10000000" step="1000"/>
-                                        &nbsp;&nbsp;&nbsp;<input id="coinbaseEnabledButton" type="checkbox"
-                                                                 name="coinbaseEnabledButton"/>
-                                        &nbsp;&nbsp;on
-                                        &nbsp;&nbsp;&nbsp;<input id="setting2" type="checkbox" name="setting2"/>
-                                        &nbsp;&nbsp;test 2
+
                                     </div>
 
                                     <div className="settingsitem">
+                                        <input id="binanceEnabledButton" type="checkbox"
+                                               name="binanceEnabledButton" className="checkboxx"/>
                                         <b>binance</b>
                                         <input id="binanceMinField" type="number" name="binanceMinField"
                                                className="minAmount" min="0" max="10000000" step="1000"/>
-                                        &nbsp;&nbsp;&nbsp;<input id="binanceEnabledButton" type="checkbox"
-                                                                 name="binanceEnabledButton"/>
-                                        &nbsp;&nbsp;on
-                                        &nbsp;&nbsp;&nbsp;<input id="setting2" type="checkbox" name="setting2"/>
-                                        &nbsp;&nbsp;test 2
+
                                     </div>
                                 </div>
 
@@ -906,6 +910,16 @@
 
     }
 
+    .checkboxx {
+        width: 18px;
+        height: 18px;
+    }
+
+    .minAmount:disabled {
+        background-color: #151515;
+        color: #5b5b5b;
+    }
+
 
     #maintablediv {
         overflow: hidden;
@@ -951,15 +965,16 @@
         /*width: fit-content;*/
         /*height: fit-content;*/
 
-        width: 100px;
+        width: 80px;
 
-        padding-top: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
 
 
         background-color: rgba(1, 1, 1, 0.7);
 
         position: relative;
-        top: -75px;
+        top: -200px;
         left: 23px;
 
 
@@ -968,6 +983,43 @@
         color: white;
 
 
+    }
+
+    #settingsButtonText {
+
+        font-family: 'Raleway', sans-serif;
+
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
+
+        color: rgba(164, 255, 60, 0.6);
+        /*padding: 5px;*/
+        /* Internet Explorer 10 */
+        display:-ms-flexbox;
+        -ms-flex-pack:center;
+        -ms-flex-align:center;
+
+        /* Firefox */
+        display:-moz-box;
+        -moz-box-pack:center;
+        -moz-box-align:center;
+
+        /* Safari, Opera, and Chrome */
+        display:-webkit-box;
+        -webkit-box-pack:center;
+        -webkit-box-align:center;
+
+    }
+
+
+    .singleSettingsDiv {
+        vertical-align: middle;
+    }
+
+    #settingslink:hover > #settingsButtonText {
+        color: red;
     }
 
 
@@ -1025,6 +1077,9 @@
 
 
     /*}*/
+
+    #pad1 {
+    }
 
     .traderow {
         /*border-top: 1px solid black;*/
@@ -1200,11 +1255,21 @@
     }
 
     #betaText {
-        /*color: greenyellow;*/
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
     }
 
     #betaText:hover {
         color: greenyellow;
+    }
+
+    #cornlolText {
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
     }
 
     #cornlolText:hover {
@@ -1216,6 +1281,10 @@
     }
 
     .footerRightSplit {
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
         color: rgba(31, 255, 48, 0.25);
         /*font-weight: bold;*/
         font-size: 14px;
@@ -1298,6 +1367,7 @@
 
 
     .settingsitem {
+
         padding: 2px;
         text-align: right;
     }
@@ -1306,6 +1376,18 @@
         padding: 10px;
         background-color: #418a41;
         color: white;
+    }
+
+    hr {
+
+        margin: 10px;
+
+        /*padding: 10px;*/
+
+        height: 1px;
+        color: rgba(97, 255, 73, 0.1);
+        background-color: rgba(97, 255, 73, 0.1);
+        border: 1px solid rgba(97, 255, 73, 0.1);
     }
 
     /* Add Animation */
