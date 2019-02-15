@@ -9,7 +9,7 @@
 
     // ---------
     //
-    // corn.lol beta v1.1
+    // corn.lol beta v1.2
     //
     // © 2019-2025 boppleton industries
     //
@@ -690,11 +690,13 @@
                     <div id="footerdiv">
                         <div id="footerleft">
                             <img src="img/pine-cone.png" height="16px" width="16px" alt=" "/>
-                            <b> corn.lol </b>
-                            <small> beta</small>
+                            <b><span id="cornlolText"> corn.lol </span></b>
+                            <small><span id="betaText"> beta v1.2</span></small>
                         </div>
                         <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol" target="_blank">github</a>
+                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">info</span></a>
+                            <span className="footerRightSplit"> &#9855; </span>
+                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
                         </div>
                     </div>
 
@@ -865,7 +867,7 @@
 
         margin: 5px;
         /*padding: 2px;*/
-        width: 245px;
+        width: 283px;
         height: 780px;
 
 
@@ -1195,6 +1197,32 @@
 
     tr:hover {
         border: 2px solid black;
+    }
+
+    #betaText {
+        /*color: greenyellow;*/
+    }
+
+    #betaText:hover {
+        color: greenyellow;
+    }
+
+    #cornlolText:hover {
+        color: greenyellow;
+    }
+
+    .footerRightText:hover {
+        color: greenyellow;
+    }
+
+    .footerRightSplit {
+        color: rgba(31, 255, 48, 0.25);
+        /*font-weight: bold;*/
+        font-size: 14px;
+    }
+
+    .footerRightSplit:hover {
+        color: rgba(31, 255, 48, 0.51);
     }
 
 
