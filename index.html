@@ -35,7 +35,7 @@
 
             let c = this.instance
 
-            setInterval(this.clearTradesLoop, 5000)
+            setInterval(this.clearTradesLoop, 2000)
 
             this.bitmexWebSocketClient(c)
             this.bitfinexWebSocketClient(c)
@@ -46,13 +46,13 @@
         }
 
         clearTradesLoop() {
-            deleteTrades(100, 900, 5)
-            deleteTrades(300, 99000, 1)
-            deleteTrades(500, 1000000, 1)
+            deleteTrades(200, 10000, 1)
+            deleteTrades(250, 90000, 1)
+            deleteTrades(300, 400000, 1)
             function deleteTrades(overQty, sizeLessThan, qtyPerLoop) {
                 if (trades != null && trades.length >= overQty) {
                     let deleteQty = qtyPerLoop
-                    for (let i = trades.length - 1; i > 1; i--) {
+                    for (let i = trades.length - 1; i > 50; i--) {
                         if (Math.abs(trades[i].size) < sizeLessThan) {
                             trades.splice(i, 1)
                             deleteQty--
@@ -100,7 +100,7 @@
             let firstPrice = tradeRaw[0].price
             let lastPrice = tradeRaw[tradeRaw.length - 1].price
 
-            document.title = "bitmex: " + tradeRaw[tradeRaw.length - 1].price
+            document.title = tradeRaw[tradeRaw.length - 1].price
 
             trade.push({
                 symbol: "XBTUSD",
@@ -746,7 +746,7 @@
 
         margin: 5px;
         /*padding: 2px;*/
-        width: 220px;
+        width: 225px;
         height: 780px;
 
     }
