@@ -6,14 +6,15 @@
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
 </head><body><div id="root"><div id="rootydiv"></div></div><div id="footer"></div><script type="text/babel">
-
+    /////////
     //
     // corn.lol beta v1.2
     //
-    // ©2019 boppleton industries
+    // © 2019 boppleton industries
     //
     // https://github.com/boppleton/corn.lol
     //
+    /////////
 
 
     // qty of trades to keep in memory
@@ -69,7 +70,7 @@
             this.scrollUpLoop()
         }
 
-        // removes trades over max for each size grouping every n seconds
+        // removes trades over max for each size grouping
         clearBigTradesLoop() {
             let under5count = 0
             let over5under50count = 0
@@ -93,8 +94,8 @@
 
             console.log("trade count; under 5k: " + under5count + " over 5 under 50: " + over5under50count + " over50 under 250: " + over50under250count + " over 250: " + over250count)
 
-            function deleteTrades(totalCount, keep, lessThan, greaterThan) {
-                let deleteQty = totalCount-keep
+            function deleteTrades(count, keep, lessThan, greaterThan) {
+                let deleteQty = count-keep
                 for (let i = trades.length - 1; i > 1; i--) {
                     if (trades !== null) {
                         if (trades[i] !== null && Math.abs(trades[i].size) < lessThan && Math.abs(trades[i].size) > greaterThan) {
@@ -107,16 +108,16 @@
             }
 
             if (under5count > under5mem) {
-                deleteTrades(under5mem, 100, 5000, 0)
+                deleteTrades(under5count, under5mem, 5000, 0)
             }
             if (over5under50count > over5under50mem) {
                 deleteTrades(over5under50count, over5under50mem, 50000, 5000)
             }
             if (over50under250count > over50under250mem) {
-                deleteTrades(over50under250mem, 10, 250000, 50000)
+                deleteTrades(over50under250count, over50under250mem, 250000, 50000)
             }
             if (over250count > over250mem) {
-                deleteTrades(over250mem, 10, 100000000, 250000)
+                deleteTrades(over250count, over250mem, 100000000, 250000)
             }
         }
 
@@ -495,8 +496,6 @@
                 })}, 10000)
         }
     }
-
-
 
     class Row extends React.Component {
 
