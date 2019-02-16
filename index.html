@@ -16,12 +16,14 @@
     //
     /////////
 
+    //
+    let minTradeSize = 100
 
     // qty of trades to keep in memory
-    let under5mem = 100
-    let over5under50mem = 100
-    let over50under250mem = 100
-    let over250mem = 100
+    let under5mem = 50
+    let over5under50mem = 50
+    let over50under250mem = 50
+    let over250mem = 50
 
     // default startup settings
     var bitmexMin = 9000
@@ -128,9 +130,15 @@
                     let tradeRaw = JSON.parse(event.data)
                     if (tradeRaw.data == null) {return}
                     let trade = Start.bitmexTrade(tradeRaw.data)
-                    if (trades == null) {trades = trade
-                    } else {trades = trade.concat(trades)}
-                    c.setStreamData({data: trades})
+                    console.log("mex trade " + trade[0].size)
+                    if (trade[0].size >= minTradeSize) {
+                        if (trades == null) {
+                            trades = trade
+                        } else {
+                            trades = trade.concat(trades)
+                        }
+                        c.setStreamData({data: trades})
+                    }
                 }
             }
             const socketOpenListener = (event) => {console.log('mex open')}
@@ -212,13 +220,17 @@
 
                     let trade2 = Start.bitfinexTrade(trade)
 
+                    console.log("finex trade2size[0]: " + trade2[0].size)
+
                     if (trades != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
-                    } else {
-                        if (trades == null) {trades = trade2
-                        } else {trades = trade2.concat(trades)}
+                    } else if (trade2[0].size >= minTradeSize){
+                        if (trades == null) {
+                            trades = trade2
+                        } else {
+                            trades = trade2.concat(trades)}
                     }
                     c.setStreamData({data: trades})
                 }
@@ -248,7 +260,7 @@
             trade.push({
                 symbol: "BTCUSD",
                 price: tradeRaw[4],
-                size: parseInt(tradeRaw[5] * tradeRaw[4]),
+                size: Math.abs(parseInt(tradeRaw[5] * tradeRaw[4])),
                 timestamp: tradeRaw[3],
                 side: tradeRaw[5] > 0,
                 exchangeName: "bitfinex",
@@ -271,7 +283,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                    } else {
+                    } else if(trade[0].size >= minTradeSize) {
                         if (trades == null) {trades = trade
                         } else {trades = trade.concat(trades)}
                     }
@@ -301,7 +313,7 @@
             trade.push({
                 symbol: "BTCUSD",
                 price: parseFloat(tradeRaw.price).toFixed(1),
-                size: size,
+                size: Math.abs(size).toFixed(0),
                 side: tradeRaw.side === "sell",
                 timestamp: time,
                 exchangeName: "coinbase",
@@ -313,7 +325,7 @@
 
             trade.btcAmt = parseFloat(tradeRaw.size).toFixed(1)
             trade.timestamp = time
-            trade.size = parseFloat(size).toFixed(0)
+            trade.size = Math.abs(size).toFixed(0)
             trade.side = tradeRaw.side === "sell"
             trade.price = parseFloat(tradeRaw.price)
             trade.firstPrice = parseFloat(tradeRaw.price).toFixed(1)
@@ -333,7 +345,11 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
-                    } else {trades = trade2.concat(trades)}
+                    } else if (trade2[0].size >= minTradeSize) {
+                        if (trades == null) {trades = trade
+                        } else {trades = trade2.concat(trades)}
+                    }
+
                     c.setStreamData({data: trades})
                 }
             }
@@ -362,7 +378,7 @@
             trade.push({
                 symbol: "BTCUSDT",
                 price: pr,
-                size: totalSize,
+                size: Math.abs(totalSize),
                 timestamp: tradeRaw.T,
                 side: !tradeRaw.m,
                 exchangeName: "binance",
@@ -372,7 +388,7 @@
                 lastPrice: pr
             })
             trade.price = pr
-            trade.size = totalSize
+            trade.size = Math.abs(totalSize)
             trade.timestamp = tradeRaw.T
             trade.side = !tradeRaw.m
             trade.exchangeName = "binance"
@@ -421,32 +437,50 @@
         setupSettings() {
             window.onload = function () {
 
-                document.getElementById("bitmexMinField").onchange = function () {
-                    bitmexMin = document.getElementById("bitmexMinField").value
+                let bitmexMinField = document.getElementById("bitmexMinField")
+                bitmexMinField.onchange = function () {
+                    if (bitmexMinField.value < minTradeSize) {
+                        bitmexMinField.value = minTradeSize
+                    }
+                    bitmexMin = bitmexMinField.value
                 }
+
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
                     document.getElementById("bitmexMinField").disabled = !document.getElementById("bitmexMinField").disabled
                 }
 
-                document.getElementById("bitfinexMinField").onchange = function () {
-                    bitfinexMin = document.getElementById("bitfinexMinField").value
+                let bitfinexMinField = document.getElementById("bitfinexMinField")
+                bitfinexMinField.onchange = function () {
+                    if (bitfinexMinField.value < minTradeSize) {
+                        bitfinexMinField.value = minTradeSize
+                    }
+                    bitfinexMin = bitfinexMinField.value
                 }
+
                 document.getElementById("bitfinexEnabledButton").onchange = function () {
                     bitfinexEnabled = document.getElementById("bitfinexEnabledButton").checked
                     document.getElementById("bitfinexMinField").disabled = !document.getElementById("bitfinexMinField").disabled
                 }
 
-                document.getElementById("coinbaseMinField").onchange = function () {
-                    coinbaseMin = document.getElementById("coinbaseMinField").value
+                let coinbaseMinField = document.getElementById("coinbaseMinField")
+                coinbaseMinField.onchange = function () {
+                    if (coinbaseMinField.value < minTradeSize) {
+                        coinbaseMinField.value = minTradeSize
+                    }
+                    bitfinexMin = bitfinexMinField.value
                 }
                 document.getElementById("coinbaseEnabledButton").onchange = function () {
                     coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
                     document.getElementById("coinbaseMinField").disabled = !document.getElementById("coinbaseMinField").disabled
                 }
 
-                document.getElementById("binanceMinField").onchange = function () {
-                    binanceMin = document.getElementById("binanceMinField").value
+                let binanceMinField = document.getElementById("binanceMinField")
+                binanceMinField.onchange = function () {
+                    if (binanceMinField.value < minTradeSize) {
+                        binanceMinField.value = minTradeSize
+                    }
+                    bitfinexMin = bitfinexMinField.value
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
