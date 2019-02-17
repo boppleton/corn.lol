@@ -228,7 +228,7 @@
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
-                    } else if (trade2[0].size >= minTradeSize){
+                    } else if (trade2[0].size >= bitfinexMin){
                         if (trades == null) {
                             trades = trade2
                         } else {
@@ -285,7 +285,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                    } else if(trade[0].size >= minTradeSize) {
+                    } else if(trade[0].size >= coinbaseMin) {
                         if (trades == null) {trades = trade
                         } else {trades = trade.concat(trades)}
                     }
@@ -346,7 +346,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
-                    } else if (trade2[0].size >= minTradeSize) {
+                    } else if (trade2[0].size >= binanceMin) {
                         if (trades == null) {trades = trade
                         } else {trades = trade2.concat(trades)}
                     }
