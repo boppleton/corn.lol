@@ -26,10 +26,10 @@
     let over250mem = 100
 
     // default startup settings
-    var bitmexMin = 9000
+    var bitmexMin = 20000
     var bitfinexMin = 5000
     var coinbaseMin = 5000
-    var binanceMin = 25000
+    var binanceMin = 15000
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -75,7 +75,6 @@
         }
 
         setStreamDataLoop(c) {
-            console.log("setstremadata")
             c.setStreamData({data: trades})
         }
 
@@ -224,9 +223,8 @@
                 if (bitfinexEnabled) {
                     let trade = JSON.parse(event.data)
                     if (trade == null || trade[1] !== "te") {return}
-
                     let trade2 = Start.bitfinexTrade(trade)
-                    if (trades != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
+                    if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
@@ -283,7 +281,7 @@
                     let tradeRaw = JSON.parse(event.data)
                     if (tradeRaw == null || tradeRaw.type !== "match") {return}
                     let trade = Start.coinbaseTrade(tradeRaw)
-                    if (trades != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
+                    if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
@@ -344,8 +342,7 @@
                     let trade = JSON.parse(event.data)
                     if (trade == null || trade.e !== "aggTrade") {return}
                     let trade2 = Start.binanceTrade(trade)
-                    if (trades == null) {trades = trade2}
-                    if (trades != null && trades[0].timestamp === trade2.timestamp && trades[0].side === trade2.side) {
+                    if (trades[0] != null && trades[0].timestamp === trade2.timestamp && trades[0].side === trade2.side) {
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
@@ -472,7 +469,7 @@
                     if (coinbaseMinField.value < minTradeSize) {
                         coinbaseMinField.value = minTradeSize
                     }
-                    bitfinexMin = bitfinexMinField.value
+                    coinbaseMin = coinbaseMinField.value
                 }
                 document.getElementById("coinbaseEnabledButton").onchange = function () {
                     coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
@@ -484,7 +481,7 @@
                     if (binanceMinField.value < minTradeSize) {
                         binanceMinField.value = minTradeSize
                     }
-                    bitfinexMin = bitfinexMinField.value
+                    binanceMin = binanceMinField.value
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
@@ -508,9 +505,9 @@
 
                 let clearlink = document.getElementById("clearlink")
                 clearlink.onclick = function () {
-                    trades = null
-                    let c = this.instance
-                    c.setStreamData({data: trades})
+                    trades = []
+                    // let c = this.instance
+                    // c.setStreamData({data: trades})
                 }
 
                 document.getElementById('bitmexMinField').value = bitmexMin
