@@ -285,8 +285,9 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                    } else if(trade[0].size >= coinbaseMin) {
-                        if (trades == null) {trades = trade
+                    } else if (parseFloat(trade[0].size) >= coinbaseMin) {
+                        if (trades == null) {
+                            trades = trade
                         } else {trades = trade.concat(trades)}
                     }
                     // c.setStreamData({data: trades})
