@@ -511,6 +511,21 @@
                     // c.setStreamData({data: trades})
                 }
 
+                let settingsFooterRightlink = document.getElementById("settingsFooterRightLink")
+                settingsFooterRightlink.onclick = function () {
+                    let modal = document.getElementById('myModal')
+                    let span = document.getElementsByClassName("close")[0]
+                    modal.style.display = "block"
+                    span.onclick = function () {
+                        modal.style.display = "none"
+                    }
+                    window.onclick = function (event) {
+                        if (event.target === modal) {
+                            modal.style.display = "none"
+                        }
+                    }
+                }
+
                 document.getElementById('bitmexMinField').value = bitmexMin
                 document.getElementById('bitfinexMinField').value = bitfinexMin
                 document.getElementById('coinbaseMinField').value = coinbaseMin
@@ -696,12 +711,11 @@
                         <div id="footerleft">
                             <img src="img/pine-cone.png" height="16px" width="16px" alt=" "/>
                             <b><span id="cornlolText"> corn.lol </span></b>
-                            <small><span id="betaText"> beta v1.2</span></small>
+                            <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                         </div>
                         <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">settings</span></a>
-                            <span className="footerRightSplit"> &#9855; </span>
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
+                            <span className="footerRightSplit"> &#9855; </span>
                         </div>
                     </div>
 
@@ -865,6 +879,15 @@
         height: 500px;
     }
 
+    #settingsFooterRightLink {
+        font-weight: bold;
+        color: rgba(50, 205, 50, 0.5);
+    }
+
+    #settingsFooterRightLink:hover {
+        color: rgba(50, 205, 50, 0.86);
+    }
+
     #ghostpane {
         background: #999;
         opacity: 0.2;
@@ -925,7 +948,7 @@
     }
 
     #tableandbottom {
-        display: inline-block;
+        display: flex;
         position: absolute;
         /*z-index: 99;*/
     }
@@ -944,6 +967,7 @@
         /*height: fit-content;*/
 
         width: 80px;
+        height: 150px;
 
         padding-top: 10px;
         padding-bottom: 10px;
@@ -1224,6 +1248,7 @@
     }
 
     #cornlolText {
+        color: rgba(31, 255, 48, 0.2);
         -webkit-user-select: none; /* Safari */
         -moz-user-select: none; /* Firefox */
         -ms-user-select: none; /* IE10+/Edge */
@@ -1232,6 +1257,15 @@
 
     #cornlolText:hover {
         color: greenyellow;
+    }
+
+    .footerRightText {
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none;
     }
 
     .footerRightText:hover {
