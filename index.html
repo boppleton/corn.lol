@@ -46,8 +46,8 @@
     var bitfinexSize2 = 1000
     var bitfinexSize3 = 10000
     var bitfinexSize4 = 50000
-    var bitfinexSize5 = 200000
-    var bitfinexSize6 = 400000
+    var bitfinexSize5 = 300000
+    var bitfinexSize6 = 500000
 
     // holds all trades
     var trades = null
@@ -699,7 +699,7 @@
                             <small><span id="betaText"> beta v1.2</span></small>
                         </div>
                         <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">info</span></a>
+                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">settings</span></a>
                             <span className="footerRightSplit"> &#9855; </span>
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
                         </div>
@@ -909,12 +909,12 @@
 
 
     #maintablediv {
-        overflow: hidden;
+        overflow-y: scroll;
         resize: both;
     }
 
     #maintablediv:hover {
-        overflow-y: scroll;
+
 
     }
 
@@ -951,7 +951,7 @@
         background-color: rgba(1, 1, 1, 0.85);
 
         position: relative;
-        top: -200px;
+        top: 10px;
         left: 23px;
 
         text-align: center;
@@ -998,12 +998,12 @@
 
     #maintablediv::-webkit-scrollbar-track {
         -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-        background-color: rgba(21, 21, 21, 0.77);
+        background-color: rgba(21, 21, 20, 0.49);
     }
 
     #maintablediv::-webkit-scrollbar {
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
         background-color: rgba(0, 0, 0, 0);
     }
 
