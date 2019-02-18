@@ -1,4 +1,6 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>corn.lol</title>
+<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+    <title>corn.lol - crypto trade tickers</title>
+    <meta name="description" content="view large market orders and liquidations for the corn.  watch out for arthur~~! ^^"/>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
@@ -16,7 +18,6 @@
     //
     /////////
 
-    //
     let minTradeSize = 100
 
     // qty of trades to keep in memory
@@ -26,10 +27,11 @@
     let over250mem = 100
 
     // default startup settings
-    var bitmexMin = 20000
-    var bitfinexMin = 5000
-    var coinbaseMin = 5000
-    var binanceMin = 15000
+    var bitmexMinMarket = 20000
+    var bitfinexMinMarket = 5000
+    var coinbaseMinMarket = 5000
+    var binanceMinMarket = 15000
+    var bitmexMinLiq = 5000
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -49,8 +51,12 @@
     var bitfinexSize5 = 300000
     var bitfinexSize6 = 500000
 
-    // holds all trades
     var trades = null
+    var liquidations = null
+
+    var hoverable = true;
+
+    var currentPrice = 0
 
     class Start extends React.Component {
         constructor(props) {
@@ -60,10 +66,11 @@
 
             let c = this.instance
 
-            Start.textMessage("connected")
+            Start.textMessage("markets")
+            Start.liquidationTextMessage("liquidations (not working yet)")
 
             setInterval(this.clearBigTradesLoop, 1000)
-
+            setInterval(this.setTitleLoop, 2000)
             this.bitmexWebSocketClient(c)
             this.bitfinexWebSocketClient(c)
             this.setupCoinbaseWebsocketClient(c)
@@ -135,19 +142,61 @@
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
                     if (tradeRaw.data == null) {return}
-                    let trade = Start.bitmexTrade(tradeRaw.data)
-                    // console.log("mex trade " + trade[0].size)
-                    if (trade[0].size >= bitmexMin) {
-                        if (trades == null) {
-                            trades = trade
-                        } else {
-                            trades = trade.concat(trades)
+
+
+                    if (tradeRaw.table ==="trade") {
+                        let trade = Start.bitmexTrade(tradeRaw.data)
+                        // console.log("mex trade " + trade[0].size)
+                        if (trade[0].size >= bitmexMinMarket) {
+                            if (trades == null) {
+                                trades = trade
+                            } else {
+                                trades = trade.concat(trades)
+                            }
+                            // c.setStreamData({data: trades})
                         }
-                        // c.setStreamData({data: trades})
+                    } else if (tradeRaw.table==="liquidation") {
+                        console.log("liq message: " + JSON.stringify(tradeRaw) + ", traderaw.data.length: " + tradeRaw.data.length)
+
+                        for (let i = 0; i < tradeRaw.data.length; i++ ) {
+                            let liq = Start.bitmexLiq(tradeRaw, tradeRaw.action)
+
+                            console.log("this liq object: " + JSON.stringify(liq))
+
+                            //check for existing liq
+                            let existingId, existingIndex = null
+                            for (let i = 0; i < liquidations.length; i++) {
+                                if (liquidations[i].orderID === liq.orderID ) {
+                                    existingId = liq.orderID
+                                    existingIndex = i
+                                    return
+                                }
+                            }
+
+                            console.log("existing: " + existingId)
+
+                            if (existingId!==null) {
+                                liquidations[existingIndex].size = liq.size + liquidations[existingIndex].size
+                                console.log("new size: " + liquidations[existingIndex].size + " id: " + liquidations[existingIndex].orderID)
+                            } else {
+                                if (liquidations==null) {
+                                    console.log("liqs null, adding this one")
+                                    liquidations = liq
+                                } else {
+                                    console.log("adding liq: " + liq.size)
+                                    liquidations = liq.concat(liquidations)
+                                }
+
+                            }
+                        }
+
                     }
                 }
             }
-            const socketOpenListener = (event) => {console.log('mex open')}
+            const socketOpenListener = (event) => {
+                console.log('mex open')
+                socket.send("{\"op\": \"" + "subscribe\", \"args\": [\"" + "liquidation" + ":" + "XBTUSD" + "\"]}");
+            }
             const socketCloseListener = (event) => {
                 if (socket) {console.error('mex close')}
                 socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD')
@@ -158,6 +207,33 @@
             socketCloseListener()
         }
 
+        static bitmexLiq(liqraw, action) {
+            let liq = []
+
+            for (let i = 0; i < liqraw.data.length; i++) {
+                console.log("liq message, id: " + liqraw.data[i].orderID + " type/size: " + liqraw.action + "/" + liqraw.data[i].size)
+
+                liq.push({
+                    exchangeName: "bitmex",
+                    id: liqraw.data[i].orderID,
+                    action: action,
+                    side: liqraw.data[i].side==="Buy",
+                    price: liqraw.data[i].price,
+                    size: liqraw.data[i].leavesQty
+                })
+
+                liq.exchangeName = "bitmex"
+                    liq.id = liqraw.data[i].orderID
+                    liq.action = action
+                    liq.side = liqraw.data[i].side==="Buy"
+                    liq.price = liqraw.data[i].price
+                    liq.size = liqraw.data[i].leavesQty
+            }
+
+
+
+        }
+
         static bitmexTrade(tradeRaw) {
             let trade = []
             let totalSize = 0
@@ -166,7 +242,10 @@
             let firstPrice = tradeRaw[0].price
             let lastPrice = tradeRaw[tradeRaw.length - 1].price
 
-            document.title = tradeRaw[tradeRaw.length - 1].price
+            if (tradeRaw[tradeRaw.length - 1].price !== currentPrice) {
+                currentPrice = tradeRaw[tradeRaw.length - 1].price
+            }
+
 
             trade.push({
                 symbol: "XBTUSD",
@@ -217,6 +296,41 @@
 
         }
 
+        static liquidationTextMessage(s) {
+            let message = []
+            message.push({
+                symbol: "message",
+                price: 5000,
+                size: 0,
+                timestamp: Date.now,
+                side: true,
+                exchangeName: "message",
+                startTime: Date.now,
+                btcAmt: 0,
+                firstPrice: 5000,
+                lastPrice: 5000,
+                message: s,
+                type: "liquidation"
+            })
+            message.price = 5000
+            message.size = 0
+            message.timestamp = Date.now
+            message.side = true
+            message.exchangeName = "message"
+            message.startTime = Date.now
+            message.btcAmt = 0
+            message.firstPrice = 5000
+            message.lastPrice = 5000
+            this.message = s
+
+
+            if (liquidations==null) {
+                liquidations = message
+            } else {
+                liquidations = message.concat(liquidations)
+            }
+        }
+
         bitfinexWebSocketClient(c) {
             var socket
             const socketMessageListener = (event) => {
@@ -228,7 +342,7 @@
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
-                    } else if (trade2[0].size >= bitfinexMin){
+                    } else if (trade2[0].size >= bitfinexMinMarket){
                         if (trades == null) {
                             trades = trade2
                         } else {
@@ -285,7 +399,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                    } else if (parseFloat(trade[0].size) >= coinbaseMin) {
+                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
                         if (trades == null) {
                             trades = trade
                         } else {trades = trade.concat(trades)}
@@ -347,7 +461,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
-                    } else if (trade2[0].size >= binanceMin) {
+                    } else if (trade2[0].size >= binanceMinMarket) {
                         if (trades == null) {trades = trade
                         } else {trades = trade2.concat(trades)}
                     }
@@ -429,22 +543,131 @@
                                 <span id="settingsButtonText">clear</span>
                             </div>
 
+                            <span id="pad1"> <hr/> </span>
 
+                            <div className="singleSettingsDiv">
+
+                                <a id="markethidelink" href="#"><img src="img/closearrow.png" height="30"
+                                                                  width="30"/></a>
+                                <span id="settingsButtonText">close</span>
+                            </div>
                         </div>
                     </div>
+                    <div id="liqMainDiv">
+                        <div id="liqdiv">
+                            <LiqTable data={liquidations}/>
+                        </div>
+
+                        <div id="hiddendivLiq">
+                            <div className="singleSettingsDiv">
+                                <a id="liqsettingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                                                   width="30"/></a>
+                                <span id="settingsButtonText">settings</span>
+                            </div>
+
+                            <span id="pad1"> <hr/> </span>
+
+                            <div className="singleSettingsDiv">
+
+                                <a id="liqclearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                                                width="30"/></a>
+                                <span id="settingsButtonText">clear</span>
+                            </div>
+
+                            <span id="pad1"> <hr/> </span>
+
+                            <div className="singleSettingsDiv">
+
+                                <a id="liqhidelink" href="#"><img src="img/closearrow.png" height="30"
+                                                                width="30"/></a>
+                                <span id="settingsButtonText">close</span>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+
             )
         }
 
         setupSettings() {
             window.onload = function () {
 
+                let bitmexLiqenabledbutton = document.getElementById("bitmexLiqEnabledButton")
+                bitmexLiqenabledbutton.checked = true
+
+                let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
+                bitmexLiqMinAmountField.value = bitmexMinLiq
+
+                bitmexLiqMinAmountField.onchange = function () {
+                    if (bitmexLiqMinAmountField.value < bitmexMinLiq) {
+                        bitmexLiqMinAmountField.value = bitmexMinLiq
+                    }
+                    bitmexMinLiq = bitmexLiqMinAmountField.value
+                }
+
+
+
+
+                let liqEnabledButton = document.getElementById("liqEnabledButton")
+                liqEnabledButton.checked = true
+
+                liqEnabledButton.onclick = function () {
+                    let liqMainDiv = document.getElementById("liqMainDiv")
+                    liqMainDiv.style.display = liqMainDiv.style.display === "none"?"flex":"none"
+                }
+
+                let marketsEnabledButton = document.getElementById("marketsEnabledButton")
+                marketsEnabledButton.checked = true
+
+                marketsEnabledButton.onclick = function () {
+                    let tableandbottom = document.getElementById("tableandbottom")
+                    console.log("tableandbottom display: " + tableandbottom.style.display)
+                    tableandbottom.style.display = tableandbottom.style.display === "none"?"flex":"none"
+                }
+
+
+
+                let hoverEnabledbutton = document.getElementById("hoverEnabledButton")
+
+                hoverEnabledbutton.checked = true
+
+                hoverEnabledbutton.onclick = function () {
+                    hoverable = !hoverable
+                    document.getElementById("tableandbottom").style.pointerEvents = hoverable?"all":"none"
+                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable?"all":"none"
+                }
+
+                let pepeIcon = document.getElementById("pepeIcon")
+
+                let rotation = 20
+
+                pepeIcon.onclick = function () {
+                    pepeIcon.style.transform = "rotate(" + rotation + "deg)";
+                    rotation += 20
+
+                    if (rotation > 360) {
+                        rotation = 0
+                    }
+                }
+
+                let cornloltext = document.getElementById("cornlolText")
+
+                cornloltext.onclick = function () {
+                    pepeIcon.style.transform = "rotate(" + rotation + "deg)";
+                    rotation += 20
+
+                    if (rotation > 360) {
+                        rotation = 0
+                    }
+                }
+
                 let bitmexMinField = document.getElementById("bitmexMinField")
                 bitmexMinField.onchange = function () {
                     if (bitmexMinField.value < minTradeSize) {
                         bitmexMinField.value = minTradeSize
                     }
-                    bitmexMin = bitmexMinField.value
+                    bitmexMinMarket = bitmexMinField.value
                 }
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
@@ -457,7 +680,7 @@
                     if (bitfinexMinField.value < minTradeSize) {
                         bitfinexMinField.value = minTradeSize
                     }
-                    bitfinexMin = bitfinexMinField.value
+                    bitfinexMinMarket = bitfinexMinField.value
                 }
 
                 document.getElementById("bitfinexEnabledButton").onchange = function () {
@@ -470,7 +693,7 @@
                     if (coinbaseMinField.value < minTradeSize) {
                         coinbaseMinField.value = minTradeSize
                     }
-                    coinbaseMin = coinbaseMinField.value
+                    coinbaseMinMarket = coinbaseMinField.value
                 }
                 document.getElementById("coinbaseEnabledButton").onchange = function () {
                     coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
@@ -482,7 +705,7 @@
                     if (binanceMinField.value < minTradeSize) {
                         binanceMinField.value = minTradeSize
                     }
-                    binanceMin = binanceMinField.value
+                    binanceMinMarket = binanceMinField.value
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
@@ -507,8 +730,23 @@
                 let clearlink = document.getElementById("clearlink")
                 clearlink.onclick = function () {
                     trades = []
-                    // let c = this.instance
-                    // c.setStreamData({data: trades})
+                }
+
+                let liqclearlink = document.getElementById("liqclearlink")
+                liqclearlink.onclick = function () {
+                    liquidations = []
+                }
+
+                let liqhidelink = document.getElementById("liqhidelink")
+                liqhidelink.onclick = function () {
+                    document.getElementById("liqMainDiv").style.display = "none"
+                    document.getElementById("liqEnabledButton").checked = false
+                }
+
+                let markethidelink = document.getElementById("markethidelink")
+                markethidelink.onclick = function () {
+                    document.getElementById("tableandbottom").style.display = "none"
+                    document.getElementById("marketsEnabledButton").checked = false
                 }
 
                 let settingsFooterRightlink = document.getElementById("settingsFooterRightLink")
@@ -526,10 +764,10 @@
                     }
                 }
 
-                document.getElementById('bitmexMinField').value = bitmexMin
-                document.getElementById('bitfinexMinField').value = bitfinexMin
-                document.getElementById('coinbaseMinField').value = coinbaseMin
-                document.getElementById('binanceMinField').value = binanceMin
+                document.getElementById('bitmexMinField').value = bitmexMinMarket
+                document.getElementById('bitfinexMinField').value = bitfinexMinMarket
+                document.getElementById('coinbaseMinField').value = coinbaseMinMarket
+                document.getElementById('binanceMinField').value = binanceMinMarket
 
                 document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
                 document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
@@ -548,6 +786,42 @@
         }
 
 
+        setTitleLoop() {
+            document.title = currentPrice
+        }
+    }
+
+    function getKformat(size, iteration) {
+        if (size >= 1) {
+            if (size < 1000) {return lowFormat(size)}
+            let c = ["k", "m"]
+            let d = (size / 100) / 10.0
+            let isRound = (d * 10) % 10 === 0
+            return (d < 1000 ?
+                ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
+                        d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
+                ) + "" + c[iteration]) : getKformat(d, iteration + 1))
+        } else {return 0}
+    }
+
+    function lowFormat(size) {return Math.abs(Math.round(size)).toFixed(0)}
+
+    class LiquidationRow extends React.Component {
+        render() {
+
+            const {data} = this.props
+
+            const row = data.map((data, i) =>
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size) < Row.getMinForExchange(data) ? "hide" : "")}
+                    key={i} bgcolor={Row.getBgColor(data)}>
+                    <td id="tradeIcon">{Row.getIcon(data)}</td>
+                    <td id="tradeSize">{data.symbol==="message"?data.message:getKformat(data.size)}</td>
+                    <td width="100%" id="spacer">{""}</td>
+                </tr>
+            )
+
+            return (<tbody id="tbodyy">{row}</tbody>)
+        }
     }
 
     class Row extends React.Component {
@@ -559,7 +833,7 @@
                 <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size) < Row.getMinForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{data.symbol === "message" ? data.message : this.getKformat(Math.abs(parseFloat(data.size)), 0)}</td>
+                    <td id="tradeSize">{data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0)}</td>
                     <td width="100%" id="spacer">{""}</td>
                     <td id="slip">{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
@@ -571,20 +845,7 @@
             return (<tbody id="tbodyy">{row}</tbody>)
         }
 
-        getKformat(size, iteration) {
-            if (size >= 1) {
-                if (size < 1000) {return Row.lowFormat(size)}
-                let c = ["k", "m"]
-                let d = (size / 100) / 10.0
-                let isRound = (d * 10) % 10 === 0
-                return (d < 1000 ?
-                    ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
-                            d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
-                    ) + "" + c[iteration]) : this.getKformat(d, iteration + 1))
-            } else {return 0}
-        }
 
-        static lowFormat(size) {return Math.abs(Math.round(size)).toFixed(0)}
 
         static getTimeElapsed(data) {
             var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
@@ -615,13 +876,13 @@
 
         static getMinForExchange(data) {
             if (data.exchangeName === "bitmex") {
-                return bitmexMin
+                return bitmexMinMarket
             } else if (data.exchangeName === "bitfinex") {
-                return bitfinexMin
+                return bitfinexMinMarket
             } else if (data.exchangeName === "coinbase") {
-                return coinbaseMin
+                return coinbaseMinMarket
             } else if (data.exchangeName === "binance") {
-                return binanceMin
+                return binanceMinMarket
             } else {return 0}
         }
 
@@ -668,6 +929,12 @@
                 return <img src="img/gdax25.png" alt="gdax"/>
             } else if (data.exchangeName === "binance") {
                 return <img src="img/binancenew.png" alt="safu"/>
+            } else if (data.exchangeName === "message") {
+                if (data.type==="liquidation") {
+                    return <img src="img/arthursmall.png" height="20px" width="20px" alt="text"/>
+                } else {
+                    return <img src="img/pepp2good.png" height="20px" width="20px" alt="text"/>
+                }
             }
         }
 
@@ -701,6 +968,11 @@
         render() {return (<table className="table1"><Row data={this.props.data}/></table>)}
     }
 
+    class LiqTable extends React.Component {
+        constructor(props) {super(props)}
+        render() {return (<table className="table2"><LiquidationRow data={this.props.data}/></table>)}
+    }
+
     class Footer extends React.Component {
         constructor(props) {super(props)}
 
@@ -715,7 +987,7 @@
                         </div>
                         <div id="footerright">
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
-                            <span className="footerRightSplit"> &#9855; </span>
+                            <span id ="rampFooterRightLink" className="footerRightSplit"> &#9855; </span>
                         </div>
                     </div>
 
@@ -724,50 +996,87 @@
                         <div className="modal-content">
                             <div className="modal-header">
                                 <span className="close">&times;</span>
-                                <h2>ticker #1 settings</h2>
+                                <div display="flex">
+                                    <h2>settings</h2>
+                                </div>
+
                             </div>
 
                             <div className="modal-body">
 
-                                <div className="minAmountsDiv">
+                                <div className="mainSettingsDiv">
 
-                                    <div className="settingsitem">
+                                    <div id="marketSettings">
 
-                                        <input id="bitmexEnabledButton" type="checkbox"
-                                               name="bitmexEnabledButton" className="checkboxx"/>
-                                        <b>bitmex</b>
-                                        <input id="bitmexMinField" type="number" name="bitmexMinField"
-                                               className="minAmount" min="0" max="10000000" step="1000"/>
+                                        <div className="settingsitem header">
+                                            <input id="marketsEnabledButton" type="checkbox"
+                                                   name="marketsEnabledButton" className="checkboxx"/>
+                                            <h2>market orders</h2>
+                                        </div>
+
+                                        <div className="settingsitem">
+
+                                            <input id="bitmexEnabledButton" type="checkbox"
+                                                   name="bitmexEnabledButton" className="checkboxx"/>
+                                            <b>bitmex</b>
+                                            <input id="bitmexMinField" type="number" name="bitmexMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+                                        </div>
+
+                                        <div className="settingsitem">
+                                            <input id="bitfinexEnabledButton" type="checkbox"
+                                                   name="bitfinexEnabledButton" className="checkboxx"/>
+                                            <b>bitfinex</b>
+                                            <input id="bitfinexMinField" type="number" name="bitfinexMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                        </div>
+
+                                        <div className="settingsitem">
+                                            <input id="coinbaseEnabledButton" type="checkbox"
+                                                   name="coinbaseEnabledButton" className="checkboxx"/>
+                                            <b>coinbase</b>
+                                            <input id="coinbaseMinField" type="number" name="coinbaseMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                        </div>
+
+                                        <div className="settingsitem">
+                                            <input id="binanceEnabledButton" type="checkbox"
+                                                   name="binanceEnabledButton" className="checkboxx"/>
+                                            <b>binance</b>
+                                            <input id="binanceMinField" type="number" name="binanceMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                        </div>
                                     </div>
 
-                                    <div className="settingsitem">
-                                        <input id="bitfinexEnabledButton" type="checkbox"
-                                               name="bitfinexEnabledButton" className="checkboxx"/>
-                                        <b>bitfinex</b>
-                                        <input id="bitfinexMinField" type="number" name="bitfinexMinField"
-                                               className="minAmount" min="0" max="10000000" step="1000"/>
+                                    <div id="liqSettings">
+                                        <div className="settingsitem header">
+                                            <input id="liqEnabledButton" type="checkbox"
+                                                   name="liqEnabledButton" className="checkboxx"/>
+                                            <h2>liquidations</h2>
+                                        </div>
 
+                                        <div className="settingsitem">
+
+                                            <input id="bitmexLiqEnabledButton" type="checkbox"
+                                                   name="bitmexLiqEnabledButton" className="checkboxx"/>
+                                            <b>bitmex</b>
+                                            <input id="bitmexLiqMinField" type="number" name="bitmexLiqMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+                                        </div>
                                     </div>
 
-                                    <div className="settingsitem">
-                                        <input id="coinbaseEnabledButton" type="checkbox"
-                                               name="coinbaseEnabledButton" className="checkboxx"/>
-                                        <b>coinbase</b>
-                                        <input id="coinbaseMinField" type="number" name="coinbaseMinField"
-                                               className="minAmount" min="0" max="10000000" step="1000"/>
-
+                                    <div id="otherSettings">
+                                        <div className="settingsitem">
+                                            <input id="hoverEnabledButton" type="checkbox"
+                                                   name="hoverEnabledButton" className="checkboxx"/>
+                                            <b>hover for settings</b>
+                                        </div>
                                     </div>
 
-                                    <div className="settingsitem">
-                                        <input id="binanceEnabledButton" type="checkbox"
-                                               name="binanceEnabledButton" className="checkboxx"/>
-                                        <b>binance</b>
-                                        <input id="binanceMinField" type="number" name="binanceMinField"
-                                               className="minAmount" min="0" max="10000000" step="1000"/>
-
-                                    </div>
                                 </div>
-
                             </div>
 
                             <div className="modal-footer">
@@ -850,6 +1159,7 @@
 
     #footerdiv b {
         font-size: 18px;
+        padding-right: 5px;
         color: #9c9c9c;
         /*-webkit-text-stroke: 1px black;*/
     }
@@ -868,6 +1178,18 @@
         text-align: right;
     }
 
+
+
+
+    .settingsitem {
+        display: flex;
+        padding: 5px;
+    }
+
+
+
+
+
     #rootydiv {
         height: 100%;
         width: 100%;
@@ -876,12 +1198,33 @@
 
     #maintablediv {
 
+        position: relative;
+
+        float: top;
+
         border: 2px solid #525252;
 
         margin: 5px;
         /*padding: 2px;*/
         width: 283px;
         height: 500px;
+    }
+
+    #liqdiv {
+
+        /*overflow-y: scroll;*/
+        /*resize: both;*/
+
+        position: relative;
+
+        float: bottom;
+
+        border: 2px solid #525252;
+
+        margin: 5px;
+        /*padding: 2px;*/
+        width: 283px;
+        height: 150px;
     }
 
     #settingsFooterRightLink {
@@ -917,6 +1260,8 @@
 
     .minAmount {
 
+        margin-left: auto;
+
         height: 22px;
         width: 100px;
         background-color: #404040;
@@ -925,10 +1270,16 @@
 
     }
 
+
     .checkboxx {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
+
+
+        text-align: center;
+        vertical-align: middle;
     }
+
 
     .minAmount:disabled {
         background-color: #151515;
@@ -937,12 +1288,23 @@
 
 
     #maintablediv {
-        overflow-y: scroll;
+        overflow-y: hidden;
         overflow-x: hidden;
-        resize: both;
+
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+/Edge */
+        user-select: none; /* Standard */
+
+
     }
 
     #maintablediv:hover {
+
+        overflow-y: scroll;
+
+        resize: both;
+
 
 
     }
@@ -952,10 +1314,36 @@
         float: left;
     }
 
+    #hiddendivLiq {
+        display: none;
+        float: left;
+    }
+
     #tableandbottom {
         display: flex;
-        position: absolute;
+        position: relative;
         /*z-index: 99;*/
+    }
+
+    #liqMainDiv {
+        display: flex;
+        position: relative;
+        resize: none;
+        overflow: hidden;
+
+        top: -5px;
+
+        width: max-content;
+
+    }
+
+    #liqdiv {
+        overflow: hidden;
+    }
+
+    #liqdiv:hover {
+        overflow-y: scroll;
+        resize: both;
     }
 
     #hiddendiv img {
@@ -963,7 +1351,18 @@
         /*float: left;*/
     }
 
+    #hiddendivLiq img {
+        padding: 5px 10px 5px 5px;
+    }
+
+    #tableandbottom {
+
+        width: max-content;
+
+    }
+
     #tableandbottom:hover > #hiddendiv {
+
         display: inline-block;
 
         /*float: left;*/
@@ -972,7 +1371,7 @@
         /*height: fit-content;*/
 
         width: 80px;
-        height: 150px;
+        height: 238px;
 
         padding-top: 10px;
         padding-bottom: 10px;
@@ -982,7 +1381,33 @@
 
         position: relative;
         top: 10px;
-        left: 23px;
+        left: 2px;
+
+        text-align: center;
+
+        color: white;
+    }
+
+    #liqMainDiv:hover > #hiddendivLiq {
+        display: inline-block;
+
+        /*float: left;*/
+
+        /*width: fit-content;*/
+        /*height: fit-content;*/
+
+        width: 80px;
+        height: 248px;
+
+        padding-top: 10px;
+        padding-bottom: 10px;
+
+
+        background-color: rgba(1, 1, 1, 0.85);
+
+        position: relative;
+        top: 10px;
+        left: 2px;
 
         text-align: center;
 
@@ -990,6 +1415,9 @@
     }
 
     #settingsButtonText {
+
+
+        padding-right: 5px;
 
         font-family: 'Raleway', sans-serif;
 
@@ -1021,31 +1449,32 @@
         vertical-align: middle;
     }
 
+
     #settingslink:hover > #settingsButtonText {
         color: red;
     }
 
 
-    #maintablediv::-webkit-scrollbar-track {
+    ::-webkit-scrollbar-track {
         -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
         background-color: rgba(21, 21, 20, 0.49);
     }
 
-    #maintablediv::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
+    ::-webkit-scrollbar {
+        /*width: 10px;*/
+        /*height: 10px;*/
         background-color: rgba(0, 0, 0, 0);
     }
 
-    #maintablediv::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {
         background-color: rgba(82, 82, 82, 0.6);
         border: 2px solid rgba(100, 100, 100, 0.7);
     }
 
     .table1 {
-        border: 5px red;
+        /*border: 5px red;*/
         background-color: rgba(0, 0, 0, 0);
-        border-collapse: collapse;
+        /*border-collapse: */
         border-spacing: 0;
         font-size: 14px;
 
@@ -1064,8 +1493,27 @@
         /*font-size: 14px;*/
         font-family: 'Rubik', sans-serif;
 
-        border: 0;
+        /*border: 0;*/
 
+    }
+
+    .table2 {
+        width: 100%;
+        /*border-collapse: collapse;*/
+        border-spacing: 0;
+    }
+
+    .table2 .traderow td {
+
+        margin: 0px;
+        padding: 0px;
+        white-space: nowrap;
+        /*border-left: 1px solid black;*/
+        text-align: left;
+        /*font-size: 14px;*/
+        font-family: 'Rubik', sans-serif;
+
+        /*border: 0;*/
     }
 
     #pad1 {
@@ -1075,6 +1523,28 @@
         /*border-top: 1px solid black;*/
         vertical-align: middle;
 
+    }
+
+    #marketSettings {
+        padding: 15px;
+        margin: 5px;
+        border: 2px solid black;
+
+
+
+    }
+
+
+    #liqSettings {
+        padding: 15px;
+        margin: 5px;
+        border: 2px solid black;
+    }
+
+    #otherSettings {
+        padding: 15px;
+        margin: 5px;
+        border: 2px solid black;
     }
 
     .traderow img {
@@ -1178,9 +1648,8 @@
     .message {
         background-color: rgba(0, 0, 0, 0.89);
         color: rgba(16, 255, 0, 0.98);
-        font-size: 13px;
-        border: 1px solid rgb(24, 255, 0);
-
+        font-size: 15px;
+        border: 2px solid rgb(24, 255, 0);
     }
 
     .hide {
@@ -1234,11 +1703,6 @@
         font-style: italic;
         color: rgba(40, 40, 40, 0.76);
         /*padding-right: 2px;*/
-    }
-
-
-    tr:hover {
-        border: 2px solid black;
     }
 
     #betaText {
@@ -1350,26 +1814,33 @@
         background-color: #4e4e4e;
     }
 
-    .minAmountsDiv {
-        margin: 20px;
+    .mainSettingsDiv {
+        margin: 2px;
     }
 
-    .minAmountsDiv b {
-        padding: 10px;
-        font-size: 22px;
+    .mainSettingsDiv b {
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: 18px;
         color: #b2b2b2;
     }
 
-    .minAmountsDiv input {
+    .mainSettingsDiv h2 {
+        padding-left: 5px;
+        font-size: 28px;
+        color: #cacaca;
+    }
+
+    .settingsitem.header {
+        /*background-color: #3d3d3c;*/
+        padding: 5px;
+    }
+
+    .mainSettingsDiv input {
         padding: 5px;
     }
 
 
-    .settingsitem {
-
-        padding: 2px;
-        text-align: right;
-    }
 
     .modal-footer {
         padding: 10px;
@@ -1383,7 +1854,7 @@
 
         /*padding: 10px;*/
 
-        height: 1px;
+        height: 2px;
         color: rgba(97, 255, 73, 0.1);
         background-color: rgba(97, 255, 73, 0.1);
         border: 1px solid rgba(97, 255, 73, 0.1);
