@@ -159,6 +159,9 @@
                         console.log("liq message: " + JSON.stringify(tradeRaw) + ", traderaw.data.length: " + tradeRaw.data.length)
 
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
+
+                            console.log("starting " + i + ": " + JSON.stringify(traderaw.data[i]))
+
                             let liq = Start.bitmexLiq(tradeRaw, tradeRaw.action)
 
                             console.log("this liq object: " + JSON.stringify(liq))
@@ -211,7 +214,7 @@
             let liq = []
 
             for (let i = 0; i < liqraw.data.length; i++) {
-                console.log("liq message, id: " + liqraw.data[i].orderID + " type/size: " + liqraw.action + "/" + liqraw.data[i].size)
+                console.log("liq message, id: " + liqraw.data[i].orderID + " type/size: " + liqraw.action + "/" + liqraw.data[i].leavesQty)
 
                 liq.push({
                     exchangeName: "bitmex",
@@ -222,13 +225,15 @@
                     size: liqraw.data[i].leavesQty
                 })
 
-                liq.exchangeName = "bitmex"
-                    liq.id = liqraw.data[i].orderID
-                    liq.action = action
-                    liq.side = liqraw.data[i].side==="Buy"
-                    liq.price = liqraw.data[i].price
-                    liq.size = liqraw.data[i].leavesQty
+                // liq.exchangeName = "bitmex"
+                //     liq.id = liqraw.data[i].orderID
+                //     liq.action = action
+                //     liq.side = liqraw.data[i].side==="Buy"
+                //     liq.price = liqraw.data[i].price
+                //     liq.size = liqraw.data[i].leavesQty
             }
+
+            return liq
 
 
 
@@ -610,11 +615,12 @@
 
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
-                liqEnabledButton.checked = true
+                liqEnabledButton.checked = false
 
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
-                    liqMainDiv.style.display = liqMainDiv.style.display === "none"?"flex":"none"
+                    console.log(liqMainDiv.style.display)
+                    liqMainDiv.style.display = liqMainDiv.style.display === "flex"?"none":"flex"
                 }
 
                 let marketsEnabledButton = document.getElementById("marketsEnabledButton")
@@ -1229,7 +1235,7 @@
 
     #settingsFooterRightLink {
         font-weight: bold;
-        color: rgba(37, 133, 49, 0.71);
+        color: rgba(50, 181, 65, 0.71);
     }
 
     #settingsFooterRightLink:hover {
@@ -1326,7 +1332,7 @@
     }
 
     #liqMainDiv {
-        display: flex;
+        display: none;
         position: relative;
         resize: none;
         overflow: hidden;
@@ -1426,7 +1432,7 @@
         -ms-user-select: none; /* IE10+/Edge */
         user-select: none; /* Standard */
 
-        color: rgba(164, 255, 60, 0.6);
+        color: rgba(164, 255, 60, 0.8);
         /*padding: 5px;*/
         /* Internet Explorer 10 */
         display:-ms-flexbox;
@@ -1729,7 +1735,7 @@
     }
 
     .footerRightText {
-        color: rgba(122, 122, 122, 0.71);
+        color: rgba(122, 191, 51, 0.71);
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
         -khtml-user-select: none; /* Konqueror HTML */
@@ -1747,7 +1753,7 @@
         -moz-user-select: none; /* Firefox */
         -ms-user-select: none; /* IE10+/Edge */
         user-select: none; /* Standard */
-        color: rgba(31, 255, 48, 0.25);
+        color: rgba(26, 244, 45, 0.56);
         /*font-weight: bold;*/
         font-size: 14px;
     }
