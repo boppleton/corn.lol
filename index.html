@@ -66,7 +66,7 @@
 
             let c = this.instance
 
-            Start.textMessage("markets")
+            Start.textMessage("connected")
             Start.liquidationTextMessage("liquidations (not working yet)")
 
             setInterval(this.clearBigTradesLoop, 1000)
@@ -156,41 +156,44 @@
                             // c.setStreamData({data: trades})
                         }
                     } else if (tradeRaw.table==="liquidation") {
-                        console.log("liq message: " + JSON.stringify(tradeRaw) + ", traderaw.data.length: " + tradeRaw.data.length)
+                        console.log("*********** \n liq message: " + JSON.stringify(tradeRaw) + ", traderaw.data.length: " + tradeRaw.data.length)
 
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
-                            console.log("starting " + i + ": " + JSON.stringify(traderaw.data[i]))
+                            console.log("starting " + i + ": " + JSON.stringify(tradeRaw.data[i]))
 
-                            let liq = Start.bitmexLiq(tradeRaw, tradeRaw.action)
+                            let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
 
                             console.log("this liq object: " + JSON.stringify(liq))
 
-                            //check for existing liq
-                            let existingId, existingIndex = null
-                            for (let i = 0; i < liquidations.length; i++) {
-                                if (liquidations[i].orderID === liq.orderID ) {
-                                    existingId = liq.orderID
-                                    existingIndex = i
-                                    return
-                                }
-                            }
-
-                            console.log("existing: " + existingId)
-
-                            if (existingId!==null) {
-                                liquidations[existingIndex].size = liq.size + liquidations[existingIndex].size
-                                console.log("new size: " + liquidations[existingIndex].size + " id: " + liquidations[existingIndex].orderID)
-                            } else {
+                            if (liq.action==="insert") {
                                 if (liquidations==null) {
-                                    console.log("liqs null, adding this one")
+                                    console.log("liqs null, starting with this one.  size: " + liq.size + " id: " + liq.orderID + " side: " + liq.side)
                                     liquidations = liq
                                 } else {
-                                    console.log("adding liq: " + liq.size)
+                                    console.log("adding liq: " + liq.size + " id: " + liq.orderID + " side: " + liq.side)
                                     liquidations = liq.concat(liquidations)
+                                    console.log("liquidations now: " + JSON.stringify(liquidations))
                                 }
-
+                            } else if (liq.action==="update") {
+                                for (let i = 0; i < liquidations.length; i++) {
+                                    if (liquidations[i].orderID===liq.orderID) {
+                                        console.log("updating id: " + liq.orderID)
+                                        liquidations[i].size = liq.size + liquidations[i]
+                                        liquidations[i].updates = liquidations[i].updates + " update" + liq.size
+                                        console.log("new size: " + liquidations[i].size + " ,idfromholder: " + liquidations[i].orderID)
+                                    }
+                                }
+                            } else if (liq.action==="delete") {
+                                console.log("deleting " + liq.orderID)
+                                for (let i = 0; i < liquidations.length; i++) {
+                                    if (liquidations[i].orderID===liq.orderID) {
+                                        console.log("setting to -1 idfromhold: " + liquidations[i].orderID)
+                                        liquidations[i].size = -1
+                                    }
+                                }
                             }
+
                         }
 
                     }
@@ -213,29 +216,24 @@
         static bitmexLiq(liqraw, action) {
             let liq = []
 
-            for (let i = 0; i < liqraw.data.length; i++) {
-                console.log("liq message, id: " + liqraw.data[i].orderID + " type/size: " + liqraw.action + "/" + liqraw.data[i].leavesQty)
-
                 liq.push({
                     exchangeName: "bitmex",
-                    id: liqraw.data[i].orderID,
+                    id: liqraw.orderID,
                     action: action,
-                    side: liqraw.data[i].side==="Buy",
-                    price: liqraw.data[i].price,
-                    size: liqraw.data[i].leavesQty
+                    side: liqraw.side==="Buy",
+                    price: liqraw.price,
+                    size: liqraw.leavesQty
                 })
 
-                // liq.exchangeName = "bitmex"
-                //     liq.id = liqraw.data[i].orderID
-                //     liq.action = action
-                //     liq.side = liqraw.data[i].side==="Buy"
-                //     liq.price = liqraw.data[i].price
-                //     liq.size = liqraw.data[i].leavesQty
-            }
+                liq.exchangeName = "bitmex"
+                    liq.id = liqraw.orderID
+                    liq.action = action
+                    liq.side = liqraw.side==="Buy"
+                    liq.price = liqraw.price
+                    liq.size = liqraw.leavesQty
+
 
             return liq
-
-
 
         }
 
@@ -821,7 +819,7 @@
                 <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size) < Row.getMinForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{data.symbol==="message"?data.message:getKformat(data.size)}</td>
+                    <td id="tradeSize">{data.symbol==="message"?data.message:data.size}</td>
                     <td width="100%" id="spacer">{""}</td>
                 </tr>
             )
@@ -855,10 +853,10 @@
 
         static getTimeElapsed(data) {
             var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
-            if (timeElapsed === 0) {
+            if (timeElapsed < 10) {
                 return "now"
             } else if (timeElapsed < 60) {
-                return timeElapsed + "s"
+                return "<1m"
             } else {
                 return parseInt(timeElapsed / 60) + "m"
             }
@@ -939,7 +937,7 @@
                 if (data.type==="liquidation") {
                     return <img src="img/arthursmall.png" height="20px" width="20px" alt="text"/>
                 } else {
-                    return <img src="img/pepp2good.png" height="20px" width="20px" alt="text"/>
+                    return <img src="img/cornicon.png" height="20px" width="20px" alt="text"/>
                 }
             }
         }
@@ -987,13 +985,13 @@
                 <div>
                     <div id="footerdiv">
                         <div id="footerleft">
-                            <img src="img/pepp2good.png" height="16px" width="16px" alt=" " id="pepeIcon"/>
+                            <img src="img/cornicon.png" height="16px" width="16px" alt=" " id="pepeIcon"/>
                             <b><span id="cornlolText"> corn.lol </span></b>
                             <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                         </div>
                         <div id="footerright">
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
-                            <span id ="rampFooterRightLink" className="footerRightSplit"> &#9855; </span>
+                            /*<span id ="rampFooterRightLink" className="footerRightSplit"> &#9855; </span>*/
                         </div>
                     </div>
 
