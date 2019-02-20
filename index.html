@@ -41,6 +41,7 @@
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 15000
     var bitmexMinLiq = 1
+    var bitmexLiqEnabled = true
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -229,7 +230,7 @@
             let liq = []
 
                 liq.push({
-                    exchangeName: "bitmeliq",
+                    exchangeName: "bitmex",
                     id: liqraw.orderID,
                     action: action,
                     side: liqraw.side==="Buy",
@@ -242,7 +243,7 @@
                     deleted: false
                 })
 
-                liq.exchangeName = "bitmexliq"
+                liq.exchangeName = "bitmex"
                     liq.id = liqraw.orderID
                     liq.action = action
                     liq.side = liqraw.side==="Buy"
@@ -640,6 +641,7 @@
 
 
 
+
                 let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
                 bitmexLiqMinAmountField.value = bitmexMinLiq
 
@@ -647,8 +649,14 @@
                     bitmexMinLiq = bitmexLiqMinAmountField.value
                 }
 
+                let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
+                bitmexLiqEnabledButton.checked = true
 
-
+                bitmexLiqEnabledButton.onclick = function () {
+                    bitmexLiqEnabled = !bitmexLiqEnabled
+                    document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
+                    console.log("bitmexlixenabled: " + bitmexLiqEnabled)
+                }
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
                 liqEnabledButton.checked = true
@@ -656,7 +664,7 @@
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
                     console.log(liqMainDiv.style.display)
-                    liqMainDiv.style.display = liqMainDiv.style.display === "flex"?"none":"flex"
+                    liqMainDiv.style.display =  liqMainDiv.style.display === "none"?"flex":"none"
                 }
 
                 let marketsEnabledButton = document.getElementById("marketsEnabledButton")
