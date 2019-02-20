@@ -206,33 +206,24 @@
 
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
-                            console.log("starting " + i + ": " + JSON.stringify(tradeRaw.data[i]))
-
                             let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
 
-                            console.log("this liq object: " + JSON.stringify(liq))
 
                             if (liq.action==="insert") {
                                 if (liquidations==null) {
-                                    console.log("liqs null, starting with this one.  size: " + liq.size + " id: " + liq.id + " side: " + liq.side)
                                     liquidations = liq
                                 } else {
-                                    console.log("adding liq: " + liq.size + " id: " + liq.id + " side: " + liq.side)
                                     liquidations = liq.concat(liquidations)
-                                    console.log("liquidations now: " + JSON.stringify(liquidations))
                                 }
                             } else if (liq.action==="update") {
                                 for (let i = 0; i < liquidations.length; i++) {
                                     if (liquidations[i].id===liq.id) {
-                                        console.log("updating id: " + liq.id)
                                         liquidations[i].size = liq.size
                                         liquidations[i].updates = liquidations[i].updates + " update" + liq.size
-                                        console.log("new size: " + liquidations[i].size + " ,idfromholder: " + liquidations[i].id)
                                         if (liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
                                         if (liq.price > 0) {liquidations[i].price = liq.price}
 
                                         if (liquidations[i].highestAmount > 1000000) {
-                                            console.log("pushing this liq to top - " + JSON.stringify(liq))
                                             let liqToTop = liquidations[i]
                                             liquidations = liquidations.splice(i, 1)
                                             liquidations = liqToTop.concat(liquidations)
@@ -243,9 +234,9 @@
                                 console.log("deleting " + liq.id)
                                 for (let i = 0; i < liquidations.length; i++) {
                                     if (liquidations[i].id===liq.id) {
-                                        console.log("setting to deleted idfromholder: " + liquidations[i].id)
                                         liquidations[i].deleted = true
                                         liquidations[i].size = 0
+                                        liquidations[i].endTime = Date.now()
                                     }
                                 }
                             }
@@ -1061,10 +1052,12 @@
                     // return <span className="rowIcon"><img src="img/pepp2good.png" height="20px" width="20px" alt="text"/></span>
                 }
             } else if (data.liq) {
-                if (data.deleted) {
+                if (!data.deleted ) {
+                    return <span><img src="img/arthursmall.png" alt="safu" id="arthuriconspin" height="20px" width="20px"/></span>
+                } else if (data.deleted && (parseInt((Date.now() - data.endTime) / 1000) < 10)) {
                     return <span><img src="img/arthursmall.png" alt="safu" id="arthuricon" height="20px" width="20px"/></span>
                 } else {
-                    return <span><img src="img/arthursmall.png" alt="safu" id="arthuriconspin" height="20px" width="20px"/></span>
+                    return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
                 }
             }
         }
