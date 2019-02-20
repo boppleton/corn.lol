@@ -246,6 +246,8 @@
                     }
                 }
             }
+
+
             const socketOpenListener = (event) => {
                 console.log('mex open')
                 socket.send("{\"op\": \"" + "subscribe\", \"args\": [\"" + "liquidation" + ":" + "XBTUSD" + "\"]}");
@@ -677,6 +679,12 @@
 
 
 
+                let donateText = document.getElementById("donateText")
+
+                donateText.onclick = function () {
+                    window.alert("support the continued open-source development of corn.lol <3 \n\n" +
+                        "BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU\n\n")
+                }
 
                 let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
                 bitmexLiqMinAmountField.value = bitmexMinLiq
@@ -1110,6 +1118,7 @@
                             <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                         </div>
                         <div id="footerright">
+                            <span className="footerRightText" id="donateText">donate</span>
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
                         </div>
                     </div>
@@ -1928,6 +1937,7 @@
     }
 
     .footerRightText {
+        padding: 5px;
         color: rgba(122, 191, 51, 0.71);
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
