@@ -144,6 +144,40 @@
             if (over250count > over250mem) {
                 deleteTrades(over250count, over250mem, 100000000, 250000)
             }
+
+            function deleteLiqs(count, keep, lessThan, greaterThan) {
+                let deleteQty = count-keep
+                for (let i = liquidations.length - 1; i > 1; i--) {
+                    if (liquidations !== null) {
+                        if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) < lessThan && Math.abs(trades[i].highestAmount) > greaterThan) {
+                            liquidations.splice(i, 1)
+                            deleteQty--
+                        }
+                        if (deleteQty <= 0) {return}
+                    }
+                }
+            }
+
+            let under100kcount = 0
+            let over100kcount = 0
+
+            for (let i = liquidations.length - 1; i > 1; i--) {
+
+                let tradeSize = Math.abs(trades[i].highestAmount)
+
+                if (tradeSize < 100000) {
+                    under100kcount++
+                } else  {
+                    over100kcount++
+                }
+            }
+
+            if (under100kcount >= 100) {
+                deleteLiqs(under100kcount, 50, 100000, 0)
+            }
+            if (over100kcount >= 100) {
+                deleteLiqs(over100kcount, 50, 100000000, 100000 )
+            }
         }
 
         bitmexWebSocketClient(c) {
@@ -1034,7 +1068,7 @@
 
         static getBgColor(data) {
             var side = data.side
-            var size = Math.abs(data.size)
+            var size = Math.abs(data.highestAmount>0?data.highestAmount:data.size)
 
             var intensity = Math.abs(size) / 4200
 
