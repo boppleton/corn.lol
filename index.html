@@ -6,8 +6,17 @@
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
-</head><body><div id="root"><div id="rootydiv"></div></div><div id="footer"></div><script type="text/babel">
+</head><body>
+<div id="root">
+    <div id="bbb">
+        <div id="rootydiv"></div>
+        <div id="rightside"></div>
+    </div>
+    <div id="footer"></div><script type="text/babel">
     /////////
     //
     // corn.lol beta v1.4
@@ -31,7 +40,7 @@
     var bitfinexMinMarket = 5000
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 15000
-    var bitmexMinLiq = 5000
+    var bitmexMinLiq = 0
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -61,13 +70,13 @@
     class Start extends React.Component {
         constructor(props) {
             super(props)
-            this.state = {data: []}
+            this.state = {marketdata: [], liqdata: []}
             this.instance = this
 
             let c = this.instance
 
             Start.textMessage("connected")
-            Start.liquidationTextMessage("liquidations (not working yet)")
+            Start.liquidationTextMessage("liquidations (testing)")
 
             setInterval(this.clearBigTradesLoop, 1000)
             setInterval(this.setTitleLoop, 2000)
@@ -82,7 +91,7 @@
         }
 
         setStreamDataLoop(c) {
-            c.setStreamData({data: trades})
+            c.setStreamData({marketdata: trades, liqdata: liquidations})
         }
 
         // removes trades over max for each size grouping
@@ -168,28 +177,31 @@
 
                             if (liq.action==="insert") {
                                 if (liquidations==null) {
-                                    console.log("liqs null, starting with this one.  size: " + liq.size + " id: " + liq.orderID + " side: " + liq.side)
+                                    console.log("liqs null, starting with this one.  size: " + liq.size + " id: " + liq.id + " side: " + liq.side)
                                     liquidations = liq
                                 } else {
-                                    console.log("adding liq: " + liq.size + " id: " + liq.orderID + " side: " + liq.side)
+                                    console.log("adding liq: " + liq.size + " id: " + liq.id + " side: " + liq.side)
                                     liquidations = liq.concat(liquidations)
                                     console.log("liquidations now: " + JSON.stringify(liquidations))
                                 }
                             } else if (liq.action==="update") {
                                 for (let i = 0; i < liquidations.length; i++) {
-                                    if (liquidations[i].orderID===liq.orderID) {
-                                        console.log("updating id: " + liq.orderID)
-                                        liquidations[i].size = liq.size + liquidations[i]
+                                    if (liquidations[i].id===liq.id) {
+                                        console.log("updating id: " + liq.id)
+                                        liquidations[i].size = liq.size
                                         liquidations[i].updates = liquidations[i].updates + " update" + liq.size
-                                        console.log("new size: " + liquidations[i].size + " ,idfromholder: " + liquidations[i].orderID)
+                                        console.log("new size: " + liquidations[i].size + " ,idfromholder: " + liquidations[i].id)
+                                        if (liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
+                                        if (liq.price > 0) {liquidations[i].price = liq.price}
                                     }
                                 }
                             } else if (liq.action==="delete") {
-                                console.log("deleting " + liq.orderID)
+                                console.log("deleting " + liq.id)
                                 for (let i = 0; i < liquidations.length; i++) {
-                                    if (liquidations[i].orderID===liq.orderID) {
-                                        console.log("setting to -1 idfromhold: " + liquidations[i].orderID)
-                                        liquidations[i].size = -1
+                                    if (liquidations[i].id===liq.id) {
+                                        console.log("setting to deleted idfromholder: " + liquidations[i].id)
+                                        liquidations[i].deleted = true
+                                        liquidations[i].size = 0
                                     }
                                 }
                             }
@@ -217,20 +229,30 @@
             let liq = []
 
                 liq.push({
-                    exchangeName: "bitmex",
+                    exchangeName: "bitmeliq",
                     id: liqraw.orderID,
                     action: action,
                     side: liqraw.side==="Buy",
                     price: liqraw.price,
-                    size: liqraw.leavesQty
+                    firstPrice: liqraw.price,
+                    size: parseFloat(liqraw.leavesQty).toFixed(0),
+                    update: "",
+                    liq: true,
+                    highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
+                    deleted: false
                 })
 
-                liq.exchangeName = "bitmex"
+                liq.exchangeName = "bitmexliq"
                     liq.id = liqraw.orderID
                     liq.action = action
                     liq.side = liqraw.side==="Buy"
                     liq.price = liqraw.price
-                    liq.size = liqraw.leavesQty
+                    liq.firstPrice = liqraw.price
+                    liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
+                    liq.update = ""
+                    liq.liq = true
+                    liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
+                    liq.deleted = false
 
 
             return liq
@@ -527,12 +549,12 @@
                     <div id="tableandbottom" className="drag">
                         <div id="maintablediv">
                             <div>
-                                <Table data={this.state.data}/>
+                                <Table data={this.state.marketdata}/>
                             </div>
                         </div>
                         <div id="hiddendiv">
                             <div className="singleSettingsDiv">
-                                <a id="settingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                <a id="settingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
                                                                    width="30"/></a>
                                 <span id="settingsButtonText">settings</span>
                             </div>
@@ -541,7 +563,7 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="clearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                <a id="clearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
                                                                 width="30"/></a>
                                 <span id="settingsButtonText">clear</span>
                             </div>
@@ -550,7 +572,7 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="markethidelink" href="#"><img src="img/closearrow.png" height="30"
+                                <a id="markethidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
                                                                   width="30"/></a>
                                 <span id="settingsButtonText">close</span>
                             </div>
@@ -558,12 +580,12 @@
                     </div>
                     <div id="liqMainDiv">
                         <div id="liqdiv">
-                            <LiqTable data={liquidations}/>
+                            <LiqTable data={this.state.liqdata}/>
                         </div>
 
                         <div id="hiddendivLiq">
                             <div className="singleSettingsDiv">
-                                <a id="liqsettingslink" href="#"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                <a id="liqsettingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
                                                                    width="30"/></a>
                                 <span id="settingsButtonText">settings</span>
                             </div>
@@ -572,7 +594,7 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="liqclearlink" href="#"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                <a id="liqclearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
                                                                 width="30"/></a>
                                 <span id="settingsButtonText">clear</span>
                             </div>
@@ -581,7 +603,7 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="liqhidelink" href="#"><img src="img/closearrow.png" height="30"
+                                <a id="liqhidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
                                                                 width="30"/></a>
                                 <span id="settingsButtonText">close</span>
                             </div>
@@ -595,6 +617,29 @@
 
         setupSettings() {
             window.onload = function () {
+
+
+                // new TradingView.widget(
+                //     {
+                //         "autosize": true,
+                //         "symbol": "BITMEX:XBTUSD",
+                //         "interval": "15",
+                //         "timezone": "Etc/UTC",
+                //         "theme": "Dark",
+                //         "style": "1",
+                //         "locale": "en",
+                //         "toolbar_bg": "#f1f3f6",
+                //         "enable_publishing": false,
+                //         "hide_legend": true,
+                //         "hide_side_toolbar": false,
+                //         "allow_symbol_change": true,
+                //         "referral_id": "a",
+                //         "container_id": "tradingview_1a86e"
+                //     }
+                // );
+
+
+
 
                 let bitmexLiqenabledbutton = document.getElementById("bitmexLiqEnabledButton")
                 bitmexLiqenabledbutton.checked = true
@@ -816,10 +861,11 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size) < Row.getMinForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinLiqForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{data.symbol==="message"?data.message:data.size}</td>
+                    <td id="tradeSize">{(data.symbol === "message" ? data.message :(getKformat(data.highestAmount, 0) ) ) + (" (" +  (data.size===0?"filled)":(getKformat(data.size, 0) + " active)")) + (data.side?" short liq ":" long liq "))}</td>
+                    <td id="tradePrice">{("@ " + data.price) + ( "[" + (data.price-data.firstPrice>0?"↘":"↗") + Math.abs(data.price-data.firstPrice) + "] ") + (data.update) }</td>
                     <td width="100%" id="spacer">{""}</td>
                 </tr>
             )
@@ -834,10 +880,10 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data) + " " + (Math.abs(data.size) < Row.getMinForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0)}</td>
+                    <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0)) }</td>
                     <td width="100%" id="spacer">{""}</td>
                     <td id="slip">{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
@@ -878,7 +924,7 @@
             }
         }
 
-        static getMinForExchange(data) {
+        static getMinMarketForExchange(data) {
             if (data.exchangeName === "bitmex") {
                 return bitmexMinMarket
             } else if (data.exchangeName === "bitfinex") {
@@ -890,54 +936,68 @@
             } else {return 0}
         }
 
-        static getSizeGroup(data) {
+        static getMinLiqForExchange(data) {
             if (data.exchangeName === "bitmex") {
-                if (data.size >= bitmexSize6) {
+                return bitmexMinLiq
+            } else {return 0}
+        }
+
+        static getSizeGroup(exchangeName, size) {
+            if (exchangeName === "bitmex") {
+                if (size >= bitmexSize6) {
                     return "size6"
-                } else if (data.size >= bitmexSize5) {
+                } else if (size >= bitmexSize5) {
                     return "size5"
-                } else if (data.size >= bitmexSize4) {
+                } else if (size >= bitmexSize4) {
                     return "size4"
-                } else if (data.size >= bitmexSize3) {
+                } else if (size >= bitmexSize3) {
                     return "size3"
-                } else if (data.size >= bitmexSize2) {
+                } else if (size >= bitmexSize2) {
                     return "size2"
                 } else {
                     return "size1"
                 }
-            } else if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
-                if (Math.abs(data.size) >= bitfinexSize6) {
+            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance") {
+                if (Math.abs(size) >= bitfinexSize6) {
                     return "size6"
-                } else if (Math.abs(data.size) >= bitfinexSize5) {
+                } else if (Math.abs(size) >= bitfinexSize5) {
                     return "size5"
-                } else if (Math.abs(data.size) >= bitfinexSize4) {
+                } else if (Math.abs(size) >= bitfinexSize4) {
                     return "size4"
-                } else if (Math.abs(data.size) >= bitfinexSize3) {
+                } else if (Math.abs(size) >= bitfinexSize3) {
                     return "size3"
-                } else if (Math.abs(data.size) >= bitfinexSize2) {
+                } else if (Math.abs(size) >= bitfinexSize2) {
                     return "size2"
                 } else {
                     return "size1"
                 }
-            } else if (data.exchangeName === "message") {
+            } else if (exchangeName === "message") {
                 return "sizeMsg"
             }
         }
 
         static getIcon(data) {
             if (data.exchangeName === "bitmex") {
-                return <img src="img/bitmex22new.png" alt="bitmex"/>
+                return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
             } else if (data.exchangeName === "bitfinex") {
-                return <img src="img/bitfinex22.png" alt="finex"/>
+                return <span><img src="img/bitfinex22.png" alt="finex"/></span>
             } else if (data.exchangeName === "coinbase") {
-                return <img src="img/gdax25.png" alt="gdax"/>
+                return <span><img src="img/gdax25.png" alt="gdax"/></span>
             } else if (data.exchangeName === "binance") {
-                return <img src="img/binancenew.png" alt="safu"/>
+                return <span><img src="img/binancenew.png" alt="safu"/></span>
             } else if (data.exchangeName === "message") {
                 if (data.type==="liquidation") {
-                    return <img src="img/arthursmall.png" height="20px" width="20px" alt="text"/>
+                    return <span><img src="img/bitmex22.png" alt="safu" id="arthuricon" height="20px" width="20px"/></span>
+                    // return <span><img src="img/arthursmall.png" height="20px" width="20px" alt="text"/></span>
                 } else {
-                    return <img src="img/cornicon.png" height="20px" width="20px" alt="text"/>
+                    return null
+                    // return <span className="rowIcon"><img src="img/pepp2good.png" height="20px" width="20px" alt="text"/></span>
+                }
+            } else if (data.liq) {
+                if (data.deleted) {
+                    return <span><img src="img/arthursmall.png" alt="safu" id="arthuricon" height="20px" width="20px"/></span>
+                } else {
+                    return <span><img src="img/arthursmall.png" alt="safu" id="arthuriconspin" height="20px" width="20px"/></span>
                 }
             }
         }
@@ -991,7 +1051,6 @@
                         </div>
                         <div id="footerright">
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
-                            /*<span id ="rampFooterRightLink" className="footerRightSplit"> &#9855; </span>*/
                         </div>
                     </div>
 
@@ -1095,7 +1154,22 @@
         }
     }
 
+    class Chart extends React.Component {
+        constructor(props) {super(props)}
+        render() {return (
+
+            <div className="tradingview-widget-container">
+                <div id="tradingview_1a86e"></div>
+                <div className="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/BITMEX-XBTUSD/" rel="noopener" target="_blank"><span className="blue-text">XBTUSD chart</span></a> by TradingView</div>
+            </div>
+
+
+        )}
+    }
+
     ReactDOM.render(<Start/>, document.getElementById('rootydiv'))
+
+    ReactDOM.render(<Chart/>, document.getElementById('rightside'))
 
     ReactDOM.render(<Footer/>, document.getElementById('footer'))
 
@@ -1126,6 +1200,30 @@
     #root {
         width: 100%;
         height: 100%;
+    }
+
+    #bbb {
+        display: flex;
+        height: 100%;
+        width: 100%;
+    }
+
+    #rightside {
+        width: 100%;
+        height: 95%;
+        margin: 5px;
+        /*border: 3px solid #585858;*/
+        margin-bottom: 30px;
+    }
+
+    .tradingview-widget-container {
+        width: 100%;
+        height: 100%;
+    }
+
+    #tradingview_1a86e {
+        height: 100%;
+        width: 100%;
     }
 
 
@@ -1196,7 +1294,7 @@
 
     #rootydiv {
         height: 100%;
-        width: 100%;
+        width: max-content;
 
     }
 
@@ -1206,7 +1304,7 @@
 
         float: top;
 
-        border: 2px solid #525252;
+        border: 3px solid #585858;
 
         margin: 5px;
         /*padding: 2px;*/
@@ -1223,7 +1321,7 @@
 
         float: bottom;
 
-        border: 2px solid #525252;
+        border: 3px solid #585858;
 
         margin: 5px;
         /*padding: 2px;*/
@@ -1300,6 +1398,7 @@
         -ms-user-select: none; /* IE10+/Edge */
         user-select: none; /* Standard */
 
+        height: 600px;
 
     }
 
@@ -1315,12 +1414,12 @@
 
     #hiddendiv {
         display: none;
-        float: left;
+        /*float: left;*/
     }
 
     #hiddendivLiq {
         display: none;
-        float: left;
+        /*float: left;*/
     }
 
     #tableandbottom {
@@ -1335,14 +1434,16 @@
         resize: none;
         overflow: hidden;
 
-        top: -5px;
+        /*top: 10px;*/
 
         width: max-content;
+
 
     }
 
     #liqdiv {
         overflow: hidden;
+        height: 140px;
     }
 
     #liqdiv:hover {
@@ -1401,7 +1502,7 @@
         /*height: fit-content;*/
 
         width: 80px;
-        height: 248px;
+        height: 238px;
 
         padding-top: 10px;
         padding-bottom: 10px;
@@ -1416,6 +1517,10 @@
         text-align: center;
 
         color: white;
+    }
+
+    .tradingview-widget-copyright {
+        display: none;
     }
 
     #settingsButtonText {
@@ -1451,6 +1556,24 @@
 
     .singleSettingsDiv {
         vertical-align: middle;
+    }
+
+    #arthuricon {
+
+    }
+
+    #arthuriconspin {
+        animation: rotation 1s infinite linear;
+    }
+
+
+    @keyframes rotation {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(359deg);
+        }
     }
 
 
@@ -1517,7 +1640,6 @@
         /*font-size: 14px;*/
         font-family: 'Rubik', sans-serif;
 
-        /*border: 0;*/
     }
 
     #pad1 {
@@ -1537,6 +1659,9 @@
 
 
     }
+
+
+
 
 
     #liqSettings {
@@ -1567,6 +1692,8 @@
         font-size: 18px;
         border: 1px solid rgba(0, 0, 0, 0.27);
 
+
+
     }
 
     .bitmex.size3 {
@@ -1593,7 +1720,7 @@
 
     .bitmex.size6 {
         color: yellow;
-        border: yellow 3px;
+        border: 3px solid yellow;
         font-weight: bold;
         font-size: 24px;
 
@@ -1721,7 +1848,7 @@
     }
 
     #cornlolText {
-        color: rgba(122, 122, 122, 0.71);
+        color: rgba(158, 158, 158, 0.71);
         -webkit-user-select: none; /* Safari */
         -moz-user-select: none; /* Firefox */
         -ms-user-select: none; /* IE10+/Edge */
@@ -1918,7 +2045,7 @@
 <script type="text/javascript"
         src="https://www.statcounter.com/counter/counter.js"
         async></script>
-<noscript><div class="statcounter"><img class="statcounter"
+<noscript><div className="statcounter"><img className="statcounter"
                                         src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
                                         alt="Web Analytics"></div></noscript>
 <!-- End of Statcounter Code -->
