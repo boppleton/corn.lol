@@ -149,7 +149,7 @@
                 let deleteQty = count-keep
                 for (let i = liquidations.length - 1; i > 1; i--) {
                     if (liquidations !== null) {
-                        if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) < lessThan && Math.abs(trades[i].highestAmount) > greaterThan) {
+                        if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) < lessThan && Math.abs(liquidations[i].highestAmount) > greaterThan) {
                             liquidations.splice(i, 1)
                             deleteQty--
                         }
@@ -163,7 +163,7 @@
 
             for (let i = liquidations.length - 1; i > 1; i--) {
 
-                let tradeSize = Math.abs(trades[i].highestAmount)
+                let tradeSize = Math.abs(liquidations[i].highestAmount)
 
                 if (tradeSize < 100000) {
                     under100kcount++
@@ -171,6 +171,8 @@
                     over100kcount++
                 }
             }
+
+            // console.log("liqs under100k: " + under100kcount + " over: " + over100kcount)
 
             if (under100kcount >= 100) {
                 deleteLiqs(under100kcount, 50, 100000, 0)
@@ -1041,7 +1043,8 @@
         }
 
         static getIcon(data) {
-            if (data.exchangeName === "bitmex") {
+
+            if (data.exchangeName === "bitmex" && !data.liq) {
                 return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
             } else if (data.exchangeName === "bitfinex") {
                 return <span><img src="img/bitfinex22.png" alt="finex"/></span>
