@@ -41,7 +41,7 @@
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 15000
     var bitmexMinLiq = 1
-    var bitmexLiqEnabled = true
+    var bitmexLiqEnabled = false
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -194,6 +194,13 @@
                                         console.log("new size: " + liquidations[i].size + " ,idfromholder: " + liquidations[i].id)
                                         if (liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
                                         if (liq.price > 0) {liquidations[i].price = liq.price}
+
+                                        if (liquidations[i].highestAmount > 1000000) {
+                                            console.log("pushing this liq to top - " + JSON.stringify(liq))
+                                            let liqToTop = liquidations[i]
+                                            liquidations = liquidations.splice(i, 1)
+                                            liquidations = liqToTop.concat(liquidations)
+                                        }
                                     }
                                 }
                             } else if (liq.action==="delete") {
@@ -240,7 +247,8 @@
                     update: "",
                     liq: true,
                     highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
-                    deleted: false
+                    deleted: false,
+                    startTime: Date.now()
                 })
 
                 liq.exchangeName = "bitmex"
@@ -254,6 +262,7 @@
                     liq.liq = true
                     liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
                     liq.deleted = false
+                    liq.startTime = Date.now()
 
 
             return liq
@@ -655,16 +664,14 @@
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
                     document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
-                    console.log("bitmexlixenabled: " + bitmexLiqEnabled)
                 }
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
-                liqEnabledButton.checked = true
+                liqEnabledButton.checked = false
 
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
-                    console.log(liqMainDiv.style.display)
-                    liqMainDiv.style.display =  liqMainDiv.style.display === "none"?"flex":"none"
+                    liqMainDiv.style.display =  liqMainDiv.style.display !== "flex"?"flex":"none"
                 }
 
                 let marketsEnabledButton = document.getElementById("marketsEnabledButton")
@@ -672,7 +679,6 @@
 
                 marketsEnabledButton.onclick = function () {
                     let tableandbottom = document.getElementById("tableandbottom")
-                    console.log("tableandbottom display: " + tableandbottom.style.display)
                     tableandbottom.style.display = tableandbottom.style.display === "none"?"flex":"none"
                 }
 
@@ -867,6 +873,7 @@
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
                     <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
                     <td id="tradePrice">{this.getTradePriceLiq(data)}</td>
+                    <td id="liqTimeElapsed">{Row.getTimeElapsed(data)}</td>
                     <td width="100%" id="spacer">{""}</td>
                 </tr>
             )
@@ -876,7 +883,8 @@
 
         getTradePriceLiq(data) {
             if (data.symbol!=="message") {
-                return ("@ " + data.price) + ( "[" + (data.price-data.firstPrice>0?"↘":"↗") + Math.abs(data.price-data.firstPrice) + "] ") + (data.update)
+                let slip = data.price-data.firstPrice
+                return ("@ " + data.price) + (Math.abs(slip)>=0.5?( "[" + (slip>0?"↘":"↗") + Math.abs(data.price-data.firstPrice) + "] "):"") + (data.update)
             } else {
                 return ""
             }
@@ -915,14 +923,19 @@
 
 
         static getTimeElapsed(data) {
-            var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
-            if (timeElapsed < 10) {
-                return "now"
-            } else if (timeElapsed < 60) {
-                return "<1m"
+            if (data.exchangeName!=="message") {
+                var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
+                if (timeElapsed < 10) {
+                    return "now"
+                } else if (timeElapsed < 60) {
+                    return "<1m"
+                } else {
+                    return parseInt(timeElapsed / 60) + "m"
+                }
             } else {
-                return parseInt(timeElapsed / 60) + "m"
+                return ""
             }
+
         }
 
         static getBtcShow(data) {
@@ -1446,7 +1459,7 @@
     }
 
     #liqMainDiv {
-        display: flex;
+        display: none;
         position: relative;
         resize: none;
         overflow: hidden;
@@ -1821,6 +1834,14 @@
     }
 
     #elapsedTime {
+        font-size: 11px;
+        font-style: italic;
+        font-weight: normal;
+        color: rgba(66, 66, 66, 0.78);
+        padding-right: 5px;
+    }
+
+    #liqTimeElapsed {
         font-size: 11px;
         font-style: italic;
         font-weight: normal;
