@@ -40,7 +40,7 @@
     var bitfinexMinMarket = 5000
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 15000
-    var bitmexMinLiq = 0
+    var bitmexMinLiq = 1
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -76,7 +76,7 @@
             let c = this.instance
 
             Start.textMessage("connected")
-            Start.liquidationTextMessage("liquidations (testing)")
+            Start.liquidationTextMessage("liquidations")
 
             setInterval(this.clearBigTradesLoop, 1000)
             setInterval(this.setTitleLoop, 2000)
@@ -326,7 +326,7 @@
             message.push({
                 symbol: "message",
                 price: 5000,
-                size: 0,
+                size: 1,
                 timestamp: Date.now,
                 side: true,
                 exchangeName: "message",
@@ -338,7 +338,7 @@
                 type: "liquidation"
             })
             message.price = 5000
-            message.size = 0
+            message.size = 1
             message.timestamp = Date.now
             message.side = true
             message.exchangeName = "message"
@@ -640,17 +640,10 @@
 
 
 
-
-                let bitmexLiqenabledbutton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqenabledbutton.checked = true
-
                 let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
                 bitmexLiqMinAmountField.value = bitmexMinLiq
 
                 bitmexLiqMinAmountField.onchange = function () {
-                    if (bitmexLiqMinAmountField.value < bitmexMinLiq) {
-                        bitmexLiqMinAmountField.value = bitmexMinLiq
-                    }
                     bitmexMinLiq = bitmexLiqMinAmountField.value
                 }
 
@@ -658,7 +651,7 @@
 
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
-                liqEnabledButton.checked = false
+                liqEnabledButton.checked = true
 
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
@@ -861,16 +854,32 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinLiqForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{(data.symbol === "message" ? data.message :(getKformat(data.highestAmount, 0) ) ) + (" (" +  (data.size===0?"filled)":(getKformat(data.size, 0) + " active)")) + (data.side?" short liq ":" long liq "))}</td>
-                    <td id="tradePrice">{("@ " + data.price) + ( "[" + (data.price-data.firstPrice>0?"↘":"↗") + Math.abs(data.price-data.firstPrice) + "] ") + (data.update) }</td>
+                    <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
+                    <td id="tradePrice">{this.getTradePriceLiq(data)}</td>
                     <td width="100%" id="spacer">{""}</td>
                 </tr>
             )
 
             return (<tbody id="tbodyy">{row}</tbody>)
+        }
+
+        getTradePriceLiq(data) {
+            if (data.symbol!=="message") {
+                return ("@ " + data.price) + ( "[" + (data.price-data.firstPrice>0?"↘":"↗") + Math.abs(data.price-data.firstPrice) + "] ") + (data.update)
+            } else {
+                return ""
+            }
+        }
+
+        getTradeSizeLiq(data) {
+            if (data.symbol!=="message") {
+                return getKformat(data.highestAmount, 0) + " (" +  (data.size===0?"filled)":(getKformat(data.size, 0) + " active)")) + (data.side?" short liq ":" long liq ")
+            } else {
+                return data.message
+            }
         }
     }
 
@@ -1429,12 +1438,12 @@
     }
 
     #liqMainDiv {
-        display: none;
+        display: flex;
         position: relative;
         resize: none;
         overflow: hidden;
 
-        /*top: 10px;*/
+        top: -5px;
 
         width: max-content;
 
