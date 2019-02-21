@@ -716,6 +716,14 @@
                     // document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
                     bitmexLiqEnabledButton.disabled = !bitmexLiqEnabledButton.disabled
 
+                    if (liqEnabledButton.disabled && bitmexLiqEnabledButton.disabled) {
+                        document.getElementById("bitmexLiqMinField").disabled = true
+                    } else if (!liqEnabledButton.disabled && bitmexLiqEnabledButton.disabled) {
+                        document.getElementById("bitmexLiqMinField").disabled = true
+                    } else if (!liqEnabledButton.disabled && bitmexLiqEnabledButton.checked) {
+                        document.getElementById("bitmexLiqMinField").disabled = false
+                    }
+
                 }
 
                 let marketsEnabledButton = document.getElementById("marketsEnabledButton")
