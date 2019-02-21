@@ -124,8 +124,11 @@
                 for (let i = trades.length - 1; i > 1; i--) {
                     if (trades !== null) {
                         if (trades[i] !== null && Math.abs(trades[i].size) < lessThan && Math.abs(trades[i].size) > greaterThan) {
-                            trades.splice(i, 1)
-                            deleteQty--
+                            if (i > keep) {
+                                trades.splice(i, 1)
+                                deleteQty--
+                            }
+
                         }
                         if (deleteQty <= 0) {return}
                     }
@@ -150,8 +153,11 @@
                 for (let i = liquidations.length - 1; i > 1; i--) {
                     if (liquidations !== null) {
                         if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) < lessThan && Math.abs(liquidations[i].highestAmount) > greaterThan) {
-                            liquidations.splice(i, 1)
-                            deleteQty--
+                            if (i > keep) {
+                                liquidations.splice(i, 1)
+                                deleteQty--
+                            }
+
                         }
                         if (deleteQty <= 0) {return}
                     }
@@ -202,8 +208,6 @@
                             // c.setStreamData({data: trades})
                         }
                     } else if (tradeRaw.table==="liquidation") {
-                        console.log("*********** \n liq message: " + JSON.stringify(tradeRaw) + ", traderaw.data.length: " + tradeRaw.data.length)
-
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
                             let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
@@ -231,7 +235,6 @@
                                     }
                                 }
                             } else if (liq.action==="delete") {
-                                console.log("deleting " + liq.id)
                                 for (let i = 0; i < liquidations.length; i++) {
                                     if (liquidations[i].id===liq.id) {
                                         liquidations[i].deleted = true
@@ -694,12 +697,15 @@
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = true
+                bitmexLiqEnabledButton.checked = false
 
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
                     document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
                 }
+
+                document.getElementById("bitmexLiqMinField").disabled = true
+                bitmexLiqEnabledButton.disabled = true
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
                 liqEnabledButton.checked = false
@@ -707,6 +713,9 @@
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
                     liqMainDiv.style.display =  liqMainDiv.style.display !== "flex"?"flex":"none"
+                    // document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
+                    bitmexLiqEnabledButton.disabled = !bitmexLiqEnabledButton.disabled
+
                 }
 
                 let marketsEnabledButton = document.getElementById("marketsEnabledButton")
@@ -1118,7 +1127,6 @@
                             <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                         </div>
                         <div id="footerright">
-                            <span className="footerRightText" id="donateText">donate</span>
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
                         </div>
                     </div>
@@ -1208,12 +1216,14 @@
                                         </div>
                                     </div>
 
+                                    <div id="donate">
+                                        <span id="donateText">donate</span>
+                                    </div>
+
                                 </div>
                             </div>
 
                             <div className="modal-footer">
-                                <hr/>
-                                <hr/>
                                 <hr/>
                             </div>
                         </div>
@@ -1293,6 +1303,19 @@
     #tradingview_1a86e {
         height: 100%;
         width: 100%;
+    }
+
+    #donate {
+        color: #5cb85c;
+        text-align: center;
+        font-size: 20px;
+
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none;
     }
 
 
