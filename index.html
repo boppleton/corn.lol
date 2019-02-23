@@ -228,9 +228,13 @@
                                         if (liq.price > 0) {liquidations[i].price = liq.price}
 
                                         if (liquidations[i].highestAmount > 1000000) {
-                                            let liqToTop = liquidations[i]
+
+                                            let liqToTop = [liquidations[i]]
+                                            console.log("moving liq to top: " + JSON.stringify(liqToTop))
                                             liquidations = liquidations.splice(i, 1)
                                             liquidations = liqToTop.concat(liquidations)
+
+                                            console.log("new liquidations: " + JSON.stringify(liquidations))
                                         }
                                     }
                                 }
