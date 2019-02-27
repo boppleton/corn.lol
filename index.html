@@ -76,7 +76,7 @@
 
             let c = this.instance
 
-            Start.textMessage("connected")
+            Start.textMessage("trades")
             Start.liquidationTextMessage("liquidations")
 
             setInterval(this.clearBigTradesLoop, 1000)
@@ -90,6 +90,9 @@
 
             setInterval(this.setStreamDataLoop, 500, c)
         }
+
+
+        setStreamData(data) {this.setState(data)}
 
         setStreamDataLoop(c) {
             c.setStreamData({marketdata: trades, liqdata: liquidations})
@@ -223,19 +226,19 @@
                                 for (let i = 0; i < liquidations.length; i++) {
                                     if (liquidations[i].id===liq.id) {
                                         liquidations[i].size = liq.size
-                                        liquidations[i].updates = liquidations[i].updates + " update" + liq.size
+                                        liquidations[i].updates = liquidations[i].updates + " > " + liq.size
                                         if (liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
                                         if (liq.price > 0) {liquidations[i].price = liq.price}
 
-                                        if (liquidations[i].highestAmount > 1000000) {
-
-                                            let liqToTop = [liquidations[i]]
-                                            console.log("moving liq to top: " + JSON.stringify(liqToTop))
-                                            liquidations = liquidations.splice(i, 1)
-                                            liquidations = liqToTop.concat(liquidations)
-
-                                            console.log("new liquidations: " + JSON.stringify(liquidations))
-                                        }
+                                        // if (liquidations[i].highestAmount > 1000000) {
+                                        //
+                                        //     let liqToTop = [liquidations[i]]
+                                        //     console.log("moving liq to top: " + JSON.stringify(liqToTop))
+                                        //     liquidations = liquidations.splice(i, 1)
+                                        //     liquidations = liqToTop.concat(liquidations)
+                                        //
+                                        //     console.log("new liquidations: " + JSON.stringify(liquidations))
+                                        // }
                                     }
                                 }
                             } else if (liq.action==="delete") {
@@ -337,7 +340,7 @@
             trade.push({
                 symbol: "message",
                 price: 5000,
-                size: 0,
+                size: 1,
                 timestamp: Date.now,
                 side: true,
                 exchangeName: "message",
@@ -348,7 +351,7 @@
                 message: s
             })
             trade.price = 5000
-            trade.size = 0
+            trade.size = 1
             trade.timestamp = Date.now
             trade.side = true
             trade.exchangeName = "message"
@@ -587,7 +590,6 @@
             return trade
         }
 
-        setStreamData(data) {this.setState(data)}
 
         render() {
             return (
@@ -928,9 +930,9 @@
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
                     <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
+                    <td width="100%" id="spacer">{""}</td>
                     <td id="tradePrice">{this.getTradePriceLiq(data)}</td>
                     <td id="liqTimeElapsed">{Row.getTimeElapsed(data)}</td>
-                    <td width="100%" id="spacer">{""}</td>
                 </tr>
             )
 
@@ -940,7 +942,7 @@
         getTradePriceLiq(data) {
             if (data.symbol!=="message") {
                 let slip = data.price-data.firstPrice
-                return ("@ " + data.price) + (Math.abs(slip)>=0.5?( "[" + (slip>0?"↘":"↗") + Math.abs(data.price-data.firstPrice) + "] "):"") + (data.update)
+                return ("@ " + data.price) + (Math.abs(slip)>=0.5?( "[" + (slip>0?"↗":"↘") + Math.abs(data.price-data.firstPrice) + "] "):"") + (data.update)
             } else {
                 return ""
             }
@@ -948,7 +950,7 @@
 
         getTradeSizeLiq(data) {
             if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0) + " (" +  (data.size===0?"filled)":(getKformat(data.size, 0) + " active)")) + (data.side?" short liq ":" long liq ")
+                return getKformat(data.highestAmount, 0) + ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled)":"")):("("+getKformat(data.size, 0) + " active)")) + (" liq")
             } else {
                 return data.message
             }
@@ -964,11 +966,11 @@
                 <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0)) }</td>
+                    <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
                     <td width="100%" id="spacer">{""}</td>
-                    <td id="slip">{Row.getSlip(data)}</td>
+                    <td id="slip">{Row.getSlipIcon(data)}{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
-                    <td id="atSign">{"@ "}</td>
+                    <td id="atSign">{(Row.getBtcShow(data)===null?"":"@ ")}</td>
                     <td id="tradePrice">{ data.exchangeName==="message"?"":parseFloat(data.lastPrice).toFixed(1) }</td>
                     <td id="elapsedTime" width="100%">{Row.getTimeElapsed(data)}</td>
                 </tr>
@@ -1005,7 +1007,22 @@
             if (data.exchangeName !== "binance") {
                 var slip = data.lastPrice - data.firstPrice
                 if (Math.abs(slip) >= 0.5) {
-                    return (slip < 0 ? "[↘ " : "[↗ ") + Math.abs(slip).toFixed(1) + "]"
+                    return ( Math.abs(slip).toFixed(1) )
+                } else {return null}
+            }
+        }
+
+        static getSlipIcon(data) {
+            if (data.exchangeName !== "binance") {
+                var slip = data.lastPrice - data.firstPrice
+                if (Math.abs(slip) >= 0.5) {
+                    if (slip > 0) {
+                        return "↗ "
+                        // return <span className="slipIcon"><img src="img/down2.png" alt="up"/></span>
+                    } else {
+                        return "↘ "
+                        // return <span className="slipIcon"><img src="img/down2.png" alt="down"/></span>
+                    }
                 } else {return null}
             }
         }
@@ -1077,7 +1094,7 @@
                     return <span><img src="img/bitmex22.png" alt="safu" id="arthuricon" height="20px" width="20px"/></span>
                     // return <span><img src="img/arthursmall.png" height="20px" width="20px" alt="text"/></span>
                 } else {
-                    return null
+                    return <span><img src="img/pepp2good.png" alt="safu" id="arthuricon" height="15px" width="15px"/></span>
                     // return <span className="rowIcon"><img src="img/pepp2good.png" height="20px" width="20px" alt="text"/></span>
                 }
             } else if (data.liq) {
@@ -1894,7 +1911,8 @@
     #btcAmt {
         /*color: rgba(43, 43, 43, 0.83);*/
         font-size: 13px;
-        padding-right: 2px;
+        padding-right: 3px;
+        text-align: right;
 
     }
 
@@ -1930,16 +1948,38 @@
         font-weight: normal;
         font-style: normal;
         /*color: #5a5a5a;*/
+
     }
 
     #slip {
+        vertical-align: middle;
         /*color: #59cfd9;*/
-        font-size: 13px;
+        font-size: 12px;
         font-weight: normal;
-        padding-right: 5px;
-        padding-left: 2px;
+
+        padding-right: 9px;
+        padding-left: 9px;
+        line-height: 1px;
 
     }
+
+    .slipIcon {
+        padding-right: 4px;
+
+
+    }
+
+    .slipIcon img {
+        height: 10px;
+        width: 10px;
+    }
+
+
+    #slipdiv {
+
+    }
+
+
 
     #atSign {
         font-size: 11px;
