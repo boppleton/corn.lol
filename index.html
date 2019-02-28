@@ -285,6 +285,7 @@
                     size: parseFloat(liqraw.leavesQty).toFixed(0),
                     update: "",
                     liq: true,
+                    startSize: parseFloat(liqraw.leavesQty).toFixed(0),
                     highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
                     deleted: false,
                     startTime: Date.now()
@@ -299,6 +300,7 @@
                     liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
                     liq.update = ""
                     liq.liq = true
+                    liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
                     liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
                     liq.deleted = false
                     liq.startTime = Date.now()
@@ -942,7 +944,7 @@
         getTradePriceLiq(data) {
             if (data.symbol!=="message") {
                 let slip = data.price-data.firstPrice
-                return ("@ " + data.price) + (Math.abs(slip)>=0.5?( "[" + (slip>0?"↗":"↘") + Math.abs(data.price-data.firstPrice) + "] "):"") + (data.update)
+                return ("@ " + data.price)
             } else {
                 return ""
             }
@@ -950,9 +952,17 @@
 
         getTradeSizeLiq(data) {
             if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0) + ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled)":"")):("("+getKformat(data.size, 0) + " active)")) + (" liq")
+                return getKformat(data.highestAmount, 0) + " " +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled)":"✅")):("("+getKformat(data.size, 0) + " active)")) + (" liq")
             } else {
                 return data.message
+            }
+        }
+
+        getLiqStartSize(data) {
+            if (data.startSize !== data.highestAmount) {
+                return "starting size: " + data.startSize
+            } else {
+                return ""
             }
         }
     }
@@ -1939,6 +1949,13 @@
         font-weight: normal;
         color: rgba(66, 66, 66, 0.78);
         padding-right: 5px;
+    }
+
+    #liqStartSize {
+        font-size: 14px;
+        color: rgba(0, 0, 0, 0.78);
+        padding-right: 5px;
+        padding-left: 5px;
     }
 
     #tradePrice {
