@@ -30,10 +30,10 @@
     let minTradeSize = 100
 
     // qty of trades to keep in memory
-    let under5mem = 100
-    let over5under50mem = 100
-    let over50under250mem = 100
-    let over250mem = 100
+    let under5mem = 50
+    let over5under50mem = 50
+    let over50under250mem = 50
+    let over250mem = 50
 
     // default startup settings
     var bitmexMinMarket = 20000
@@ -126,7 +126,7 @@
                 let deleteQty = count-keep
                 for (let i = trades.length - 1; i > 1; i--) {
                     if (trades !== null) {
-                        if (trades[i] !== null && Math.abs(trades[i].size) < lessThan && Math.abs(trades[i].size) > greaterThan) {
+                        if (trades[i] !== null && Math.abs(trades[i].size) <= lessThan && Math.abs(trades[i].size) >= greaterThan) {
                             if (i > keep) {
                                 trades.splice(i, 1)
                                 deleteQty--
@@ -213,8 +213,11 @@
                     } else if (tradeRaw.table==="liquidation") {
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
+                            console.log("\n\nliq message " + JSON.stringify(tradeRaw.data[i]))
+
                             let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
 
+                            console.log("size: " + liq.size + " highestsize: " + liq.highestAmount)
 
                             if (liq.action==="insert") {
                                 if (liquidations==null) {
@@ -952,7 +955,7 @@
 
         getTradeSizeLiq(data) {
             if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0) + " " +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled)":"✅")):("("+getKformat(data.size, 0) + " active)")) + (" liq")
+                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled!)":"✓")):("("+getKformat(data.size, 0) + " active)"))
             } else {
                 return data.message
             }
@@ -1101,7 +1104,7 @@
                 return <span><img src="img/binancenew.png" alt="safu"/></span>
             } else if (data.exchangeName === "message") {
                 if (data.type==="liquidation") {
-                    return <span><img src="img/bitmex22.png" alt="safu" id="arthuricon" height="20px" width="20px"/></span>
+                    return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
                     // return <span><img src="img/arthursmall.png" height="20px" width="20px" alt="text"/></span>
                 } else {
                     return <span><img src="img/pepp2good.png" alt="safu" id="arthuricon" height="15px" width="15px"/></span>
