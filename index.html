@@ -1,13 +1,13 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"/>
-    <title>corn.lol - crypto trade tickers</title>
-    <meta name="description" content="view large market orders and liquidations for the corn.  watch out for arthur~~! ^^"/>
+    <title>corn.lol - crypto trades aggregator</title>
+    <meta name="description" content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
 
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!--<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>-->
 
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
 </head><body>
@@ -213,7 +213,7 @@
                     } else if (tradeRaw.table==="liquidation") {
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
-                            console.log("\n\nliq message " + JSON.stringify(tradeRaw.data[i]))
+                            console.log("\n\nliq message " + JSON.stringify(tradeRaw.action + " " + tradeRaw.data[i]))
 
                             let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
 
@@ -230,7 +230,7 @@
                                     if (liquidations[i].id===liq.id) {
                                         liquidations[i].size = liq.size
                                         liquidations[i].updates = liquidations[i].updates + " > " + liq.size
-                                        if (liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
+                                        if (liq.size > liquidations[i].highestAmount && liq.size!==0) {liquidations[i].highestAmount = liq.size}
                                         if (liq.price > 0) {liquidations[i].price = liq.price}
 
                                         // if (liquidations[i].highestAmount > 1000000) {
