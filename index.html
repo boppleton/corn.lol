@@ -155,7 +155,7 @@
                 let deleteQty = count-keep
                 for (let i = liquidations.length - 1; i > 1; i--) {
                     if (liquidations !== null) {
-                        if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) < lessThan && Math.abs(liquidations[i].highestAmount) > greaterThan) {
+                        if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) <= lessThan && Math.abs(liquidations[i].highestAmount) >= greaterThan) {
                             if (i > keep) {
                                 liquidations.splice(i, 1)
                                 deleteQty--
@@ -708,22 +708,22 @@
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = false
+                bitmexLiqEnabledButton.checked = true
 
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
                     document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
                 }
 
-                document.getElementById("bitmexLiqMinField").disabled = true
-                bitmexLiqEnabledButton.disabled = true
+                // document.getElementById("bitmexLiqMinField").disabled = true
+                bitmexLiqEnabledButton.disabled = false
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
-                liqEnabledButton.checked = false
+                liqEnabledButton.checked = true
 
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
-                    liqMainDiv.style.display =  liqMainDiv.style.display !== "flex"?"flex":"none"
+                    liqMainDiv.style.display =  liqMainDiv.style.display !== "none"?"none":"flex"
                     // document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
                     bitmexLiqEnabledButton.disabled = !bitmexLiqEnabledButton.disabled
 
@@ -1563,7 +1563,7 @@
     }
 
     #liqMainDiv {
-        display: none;
+        display: flex;
         position: relative;
         resize: none;
         overflow: hidden;
