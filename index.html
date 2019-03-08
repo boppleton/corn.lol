@@ -213,7 +213,7 @@
                     } else if (tradeRaw.table==="liquidation") {
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
-                            console.log("\n\nliq message " + JSON.stringify(tradeRaw.action + " " + tradeRaw.data[i]))
+                            console.log("\n\nliq message " + tradeRaw.action + JSON.stringify(tradeRaw.data[i]))
 
                             let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
 
@@ -228,10 +228,13 @@
                             } else if (liq.action==="update") {
                                 for (let i = 0; i < liquidations.length; i++) {
                                     if (liquidations[i].id===liq.id) {
-                                        liquidations[i].size = liq.size
-                                        liquidations[i].updates = liquidations[i].updates + " > " + liq.size
-                                        if (liq.size > liquidations[i].highestAmount && liq.size!==0) {liquidations[i].highestAmount = liq.size}
-                                        if (liq.price > 0) {liquidations[i].price = liq.price}
+                                        if (liq.size !==0 && !isNaN(liq.size)) {
+                                            liquidations[i].size = liq.size
+                                        }
+                                        if (!isNaN(liq.size) && liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
+                                        if (liq.price > 0 && !isNaN(liq.price)) {liquidations[i].price = liq.price}
+
+                                        console.log("updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
 
                                         // if (liquidations[i].highestAmount > 1000000) {
                                         //
