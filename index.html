@@ -752,15 +752,20 @@
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = true
+                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled")
 
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
                     document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
+
+                    setCookie("bitmexLiqEnabled", bitmexLiqEnabledButton.checked, 300)
                 }
 
+
+
+
                 // document.getElementById("bitmexLiqMinField").disabled = true
-                bitmexLiqEnabledButton.disabled = false
+
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
                 liqEnabledButton.checked = true
@@ -835,6 +840,7 @@
                     setCookie("bitmexMin", bitmexMinMarket, 300)
 
                 }
+
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
