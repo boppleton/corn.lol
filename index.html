@@ -232,7 +232,6 @@
         bitmexWebSocketClient(c) {
             var socket
             const socketMessageListener = (event) => {
-                console.log("bitmexenabled: " + bitmexEnabled)
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
                     if (tradeRaw.data == null) {return}
@@ -240,7 +239,6 @@
 
                     if (tradeRaw.table ==="trade") {
                         let trade = Start.bitmexTrade(tradeRaw.data)
-                        console.log("mex trade " + trade[0].size + " minmarket: " +bitmexMinMarket)
                         if (trade[0].size >= bitmexMinMarket) {
                             if (trades == null) {
                                 trades = trade
@@ -735,6 +733,9 @@
 
 
 
+
+
+
                 let donateText = document.getElementById("donateText")
 
                 donateText.onclick = function () {
@@ -747,6 +748,7 @@
 
                 bitmexLiqMinAmountField.onchange = function () {
                     bitmexMinLiq = bitmexLiqMinAmountField.value
+                    setCookie("bitmexLiqMin", bitmexMinLiq, 300)
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
@@ -830,11 +832,14 @@
                     }
                     bitmexMinMarket = bitmexMinField.value
 
+                    setCookie("bitmexMin", bitmexMinMarket, 300)
+
                 }
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
                     document.getElementById("bitmexMinField").disabled = !document.getElementById("bitmexMinField").disabled
+                    setCookie("bitmexEnabled", bitmexEnabled, 300)
                 }
 
                 let bitfinexMinField = document.getElementById("bitfinexMinField")
@@ -843,11 +848,14 @@
                         bitfinexMinField.value = minTradeSize
                     }
                     bitfinexMinMarket = bitfinexMinField.value
+
+                    setCookie("bitfinexMin", bitfinexMinMarket, 300)
                 }
 
                 document.getElementById("bitfinexEnabledButton").onchange = function () {
                     bitfinexEnabled = document.getElementById("bitfinexEnabledButton").checked
                     document.getElementById("bitfinexMinField").disabled = !document.getElementById("bitfinexMinField").disabled
+                    setCookie("bitfinexEnabled", bitfinexEnabled, 300)
                 }
 
                 let coinbaseMinField = document.getElementById("coinbaseMinField")
@@ -856,10 +864,14 @@
                         coinbaseMinField.value = minTradeSize
                     }
                     coinbaseMinMarket = coinbaseMinField.value
+
+                    setCookie("coinbaseMin", coinbaseMinMarket, 300)
+
                 }
                 document.getElementById("coinbaseEnabledButton").onchange = function () {
                     coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
                     document.getElementById("coinbaseMinField").disabled = !document.getElementById("coinbaseMinField").disabled
+                    setCookie("coinbaseEnabled", coinbaseEnabled, 300)
                 }
 
                 let binanceMinField = document.getElementById("binanceMinField")
@@ -868,10 +880,13 @@
                         binanceMinField.value = minTradeSize
                     }
                     binanceMinMarket = binanceMinField.value
+
+                    setCookie("binanceMin", binanceMinMarket, 300)
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
                     document.getElementById("binanceMinField").disabled = !document.getElementById("binanceMinField").disabled
+                    setCookie("binanceEnabled", binanceEnabled, 300)
                 }
 
                 let settingslink = document.getElementById("settingslink")
@@ -926,24 +941,44 @@
                     }
                 }
 
+
+
+                $("#maintablediv").ondragend = function () {
+
+                    console.log("maintablediv onresize h: " + $("#maintablediv").height())
+
+                    setCookie("marketH", $("#maintablediv").height(), 300)
+                    setCookie("marketW", $("#maintablediv").width(), 300)
+                }
+
+                let liqdiv = $("#liqdiv")
+
+                liqdiv.onresize = function () {
+
+                    setCookie("liqH", liqdiv.height(), 300)
+                    setCookie("liqW", liqdiv.width(), 300)
+                }
+
+
+
                 let savesettingsbutton = document.getElementById("savesettingsbutton")
 
                 savesettingsbutton.onclick = function () {
 
-                    setCookie("bitmexMin", document.getElementById('bitmexMinField').value, 300)
-                    setCookie("bitfinexMin", document.getElementById('bitfinexMinField').value, 300)
-                    setCookie("coinbaseMin", document.getElementById('coinbaseMinField').value, 300)
-                    setCookie("binanceMin", document.getElementById('binanceMinField').value, 300)
-
-                    setCookie("bitmexEnabled", document.getElementById('bitmexEnabledButton').checked, 300)
-                    setCookie("bitfinexEnabled", document.getElementById('bitfinexEnabledButton').checked, 300)
-                    setCookie("coinbaseEnabled", document.getElementById('coinbaseEnabledButton').checked, 300)
-                    setCookie("binanceEnabled", document.getElementById('binanceEnabledButton').checked, 300)
-
-                    setCookie("liqEnabled", document.getElementById('liqEnabledButton').checked, 300)
-                    setCookie("bitmexLiqEnabled", document.getElementById('bitmexLiqEnabledButton').checked, 300)
-
-                    setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
+                    // setCookie("bitmexMin", document.getElementById('bitmexMinField').value, 300)
+                    // setCookie("bitfinexMin", document.getElementById('bitfinexMinField').value, 300)
+                    // setCookie("coinbaseMin", document.getElementById('coinbaseMinField').value, 300)
+                    // setCookie("binanceMin", document.getElementById('binanceMinField').value, 300)
+                    //
+                    // setCookie("bitmexEnabled", document.getElementById('bitmexEnabledButton').checked, 300)
+                    // setCookie("bitfinexEnabled", document.getElementById('bitfinexEnabledButton').checked, 300)
+                    // setCookie("coinbaseEnabled", document.getElementById('coinbaseEnabledButton').checked, 300)
+                    // setCookie("binanceEnabled", document.getElementById('binanceEnabledButton').checked, 300)
+                    //
+                    // setCookie("liqEnabled", document.getElementById('liqEnabledButton').checked, 300)
+                    // setCookie("bitmexLiqEnabled", document.getElementById('bitmexLiqEnabledButton').checked, 300)
+                    //
+                    // setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
 
                     setCookie("marketH", $("#maintablediv").height(), 300)
                     setCookie("marketW", $("#maintablediv").width(), 300)
@@ -952,7 +987,8 @@
                     setCookie("liqW", $("#liqdiv").width(), 300)
 
 
-                    window.alert("settings have been saved to your browser")
+                    window.alert("saved dimensions: \n market orders: height." + $("#maintablediv").height().toFixed(0) + " width." + $("#maintablediv").width().toFixed(0)
+                    + "\n liquidations: height." + $("#liqdiv").height().toFixed(0) + " width." + $("#liqdiv").width().toFixed(0) )
 
 
                 }
@@ -1080,7 +1116,7 @@
 
         getTradeSizeLiq(data) {
             if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled!)":"✓")):("("+getKformat(data.size, 0) + " active)"))
+                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 60)?"(filled!)":"")):("("+getKformat(data.size, 0) + " active)"))
             } else {
                 return data.message
             }
@@ -1385,7 +1421,7 @@
                                     </div>
 
                                     <div id="savesettings">
-                                        <span id="savesettingsbutton">save to browser cookie</span>
+                                        <span id="savesettingsbutton">save window sizes</span>
                                     </div>
 
                                     <div id="donate">
