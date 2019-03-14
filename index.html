@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
 
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
     <!--<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>-->
 
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
@@ -41,7 +43,7 @@
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 15000
     var bitmexMinLiq = 1
-    var bitmexLiqEnabled = false
+    var bitmexLiqEnabled = true
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -67,6 +69,38 @@
     var hoverable = true;
 
     var currentPrice = 0
+
+    const setCookie = (cookieKey, cookieValue, expirationDays) => {
+        let expiryDate = '';
+
+        if (expirationDays) {
+            const date = new Date();
+
+            date.setTime(`${date.getTime()}${(expirationDays || 30 * 24 * 60 * 60 * 1000)}`);
+
+            expiryDate = `; expiryDate=" ${date.toUTCString()}`;
+        }
+
+        document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
+    }
+
+    const getCookie = (cookieKey) => {
+        let cookieName = `${cookieKey}=`;
+
+        let cookieArray = document.cookie.split(';');
+
+        for (let cookie of cookieArray) {
+
+            while (cookie.charAt(0) == ' ') {
+                cookie = cookie.substring(1, cookie.length);
+            }
+
+            if (cookie.indexOf(cookieName) == 0) {
+                return cookie.substring(cookieName.length, cookie.length);
+            }
+        }
+    }
+
 
     class Start extends React.Component {
         constructor(props) {
@@ -194,6 +228,7 @@
         bitmexWebSocketClient(c) {
             var socket
             const socketMessageListener = (event) => {
+                console.log("bitmexenabled: " + bitmexEnabled)
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
                     if (tradeRaw.data == null) {return}
@@ -201,7 +236,7 @@
 
                     if (tradeRaw.table ==="trade") {
                         let trade = Start.bitmexTrade(tradeRaw.data)
-                        // console.log("mex trade " + trade[0].size)
+                        console.log("mex trade " + trade[0].size + " minmarket: " +bitmexMinMarket)
                         if (trade[0].size >= bitmexMinMarket) {
                             if (trades == null) {
                                 trades = trade
@@ -790,6 +825,7 @@
                         bitmexMinField.value = minTradeSize
                     }
                     bitmexMinMarket = bitmexMinField.value
+
                 }
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
@@ -886,15 +922,82 @@
                     }
                 }
 
-                document.getElementById('bitmexMinField').value = bitmexMinMarket
-                document.getElementById('bitfinexMinField').value = bitfinexMinMarket
-                document.getElementById('coinbaseMinField').value = coinbaseMinMarket
-                document.getElementById('binanceMinField').value = binanceMinMarket
+                let savesettingsbutton = document.getElementById("savesettingsbutton")
 
-                document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
-                document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
-                document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
-                document.getElementById('binanceEnabledButton').checked = binanceEnabled
+                savesettingsbutton.onclick = function () {
+
+                    setCookie("bitmexMin", document.getElementById('bitmexMinField').value, 300)
+                    setCookie("bitfinexMin", document.getElementById('bitfinexMinField').value, 300)
+                    setCookie("coinbaseMin", document.getElementById('coinbaseMinField').value, 300)
+                    setCookie("binanceMin", document.getElementById('binanceMinField').value, 300)
+
+                    setCookie("bitmexEnabled", document.getElementById('bitmexEnabledButton').checked, 300)
+                    setCookie("bitfinexEnabled", document.getElementById('bitfinexEnabledButton').checked, 300)
+                    setCookie("coinbaseEnabled", document.getElementById('coinbaseEnabledButton').checked, 300)
+                    setCookie("binanceEnabled", document.getElementById('binanceEnabledButton').checked, 300)
+
+                    setCookie("liqEnabled", document.getElementById('liqEnabledButton').checked, 300)
+                    setCookie("bitmexLiqEnabled", document.getElementById('bitmexLiqEnabledButton').checked, 300)
+
+                    setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
+
+                    window.alert("settings have been saved to your browser")
+
+
+                }
+
+                console.log(getCookie("bitmexMin"))
+
+                if (getCookie("bitmexMin")!==undefined) {
+                    document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
+                    document.getElementById('bitfinexMinField').value = getCookie("bitfinexMin")
+                    document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
+                    document.getElementById('binanceMinField').value = getCookie("binanceMin")
+
+                    document.getElementById('bitmexMinField').disabled = !getCookie("bitmexEnabled")
+                    document.getElementById('bitfinexMinField').disabled = !getCookie("bitfinexEnabled")
+                    document.getElementById('coinbaseMinField').disabled = !getCookie("coinbaseEnabled")
+                    document.getElementById('binanceMinField').disabled = !getCookie("binanceEnabled")
+
+                    document.getElementById('bitmexEnabledButton').checked = getCookie("bitmexEnabled")
+                    document.getElementById('bitfinexEnabledButton').checked = getCookie("bitfinexEnabled")
+                    document.getElementById('coinbaseEnabledButton').checked = getCookie("coinbaseEnabled")
+                    document.getElementById('binanceEnabledButton').checked = getCookie("binanceEnabled")
+
+                    document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
+                    document.getElementById("bitmexLiqMinField").disabled = !getCookie("bitmexLiqEnabled")
+
+                    // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
+                    document.getElementById("bitmexLiqEnabledButton").checked = getCookie("bitmexLiqEnabled")
+
+                    bitmexMinMarket = getCookie("bitmexMin")
+                    bitfinexMinMarket = getCookie("bitfinexMin")
+                    coinbaseMinMarket = getCookie("coinbaseMin")
+                    binanceMinMarket = getCookie("binanceMin")
+
+                    bitmexMinLiq = getCookie("bitmexLiqMin")
+
+
+                    bitmexEnabled = getCookie("bitmexEnabled")
+                    bitfinexEnabled = getCookie("bitfinexEnabled")
+                    coinbaseEnabled = getCookie("coinbaseEnabled")
+                    binanceEnabled = getCookie("binanceEnabled")
+
+                    bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
+
+                } else {
+                    document.getElementById('bitmexMinField').value = bitmexMinMarket
+                    document.getElementById('bitfinexMinField').value = bitfinexMinMarket
+                    document.getElementById('coinbaseMinField').value = coinbaseMinMarket
+                    document.getElementById('binanceMinField').value = binanceMinMarket
+
+                    document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
+                    document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
+                    document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
+                    document.getElementById('binanceEnabledButton').checked = binanceEnabled
+                }
+
+
             }
         }
 
@@ -1193,6 +1296,7 @@
 
                                     <div id="marketSettings">
 
+
                                         <div className="settingsitem header">
                                             <input id="marketsEnabledButton" type="checkbox"
                                                    name="marketsEnabledButton" className="checkboxx"/>
@@ -1259,6 +1363,10 @@
                                                    name="hoverEnabledButton" className="checkboxx"/>
                                             <b>show scroll/resize</b>
                                         </div>
+                                    </div>
+
+                                    <div id="savesettings">
+                                        <span id="savesettingsbutton">save to browser cookie</span>
                                     </div>
 
                                     <div id="donate">
@@ -1351,6 +1459,7 @@
     }
 
     #donate {
+        padding: 15px;
         color: #5cb85c;
         text-align: center;
         font-size: 20px;
@@ -1361,6 +1470,29 @@
         -moz-user-select: none; /* Firefox */
         -ms-user-select: none; /* Internet Explorer/Edge */
         user-select: none;
+    }
+
+    #donate:hover {
+        color: deepskyblue;
+    }
+
+    #savesettings {
+
+        padding: 15px;
+        color: #5cb85c;
+        text-align: center;
+        font-size: 20px;
+
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none;
+    }
+
+    #savesettings:hover {
+        color: deepskyblue;
     }
 
 
@@ -2154,6 +2286,7 @@
         background-color: #418a41;
         color: white;
     }
+
 
     hr {
 
