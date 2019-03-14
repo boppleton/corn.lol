@@ -4,6 +4,10 @@
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+
+    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
 
@@ -941,6 +945,13 @@
 
                     setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
 
+                    setCookie("marketH", $("#maintablediv").height(), 300)
+                    setCookie("marketW", $("#maintablediv").width(), 300)
+
+                    setCookie("liqH", $("#liqdiv").height(), 300)
+                    setCookie("liqW", $("#liqdiv").width(), 300)
+
+
                     window.alert("settings have been saved to your browser")
 
 
@@ -984,6 +995,14 @@
                     binanceEnabled = getCookie("binanceEnabled")
 
                     bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
+
+                    $("#maintablediv").height(getCookie("marketH"))
+                    $("#maintablediv").width(getCookie("marketW"))
+
+                    $("#liqdiv").height(getCookie("liqH"))
+                    $("#liqdiv").width(getCookie("liqW"))
+
+
 
                 } else {
                     document.getElementById('bitmexMinField').value = bitmexMinMarket
