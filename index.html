@@ -739,8 +739,18 @@
                 let donateText = document.getElementById("donateText")
 
                 donateText.onclick = function () {
-                    window.alert("support the continued open-source development of corn.lol <3 \n\n" +
-                        "BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU\n\n")
+
+                    var win = window.open("https://www.deribit.com/reg-4066.3101", '_blank');
+                    win.focus();
+
+                }
+
+                let donate2Text = document.getElementById("donateText2")
+
+                donate2Text.onclick = function () {
+
+                    window.alert("support me by donating some bitcone <3  BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU")
+
                 }
 
                 let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
@@ -1456,7 +1466,11 @@
                                     </div>
 
                                     <div id="donate">
-                                        <span id="donateText">donate</span>
+                                        <span id="donateText">deribit 10% off fees reflink!</span>
+                                    </div>
+
+                                    <div id="donate2">
+                                        <span id="donateText2">donate btc</span>
                                     </div>
 
                                 </div>
@@ -1544,11 +1558,14 @@
         width: 100%;
     }
 
-    #donate {
-        padding: 15px;
-        color: #5cb85c;
+    #donate  {
+        padding: 10px;
+        color: #ff93a0;
         text-align: center;
-        font-size: 20px;
+        font-size: 22px;
+
+
+        font-weight: bold;
 
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
@@ -1558,11 +1575,35 @@
         user-select: none;
     }
 
-    #donate:hover {
+    #donate:hover  {
+        color: deepskyblue;
+    }
+
+    #donate2  {
+        padding: 10px;
+        color: #5cb85c;
+        text-align: center;
+        font-size: 16px;
+
+
+        font-weight: bold;
+
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none;
+    }
+
+    #donate2:hover  {
         color: deepskyblue;
     }
 
     #savesettings {
+
+        font-weight: bold;
+
 
         padding: 15px;
         color: #5cb85c;
