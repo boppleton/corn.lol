@@ -752,7 +752,7 @@
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled")
+                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled")===undefined?true:getCookie("bitmexLiqEnabled")
 
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
