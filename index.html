@@ -999,7 +999,31 @@
 
                 }
 
-                console.log(getCookie("bitmexMin"))
+
+                if (getCookie("bitmexMin")===undefined) {
+                    setCookie("bitmexLiqEnabled", bitmexLiqEnabled, 300)
+
+                    setCookie("bitmexMinLiq", bitmexMinLiq, 300)
+
+                    setCookie("bitmexMin", bitmexMinMarket, 300)
+                    setCookie("bitfinexMin", bitfinexMinMarket, 300)
+                    setCookie("coinbaseMin", coinbaseMinMarket, 300)
+                    setCookie("binanceMin", binanceMinMarket, 300)
+
+                    setCookie("bitmexEnabled", bitmexEnabled, 300)
+                    setCookie("bitfinexEnabled", bitfinexEnabled, 300)
+                    setCookie("coinbaseEnabled", coinbaseEnabled, 300)
+                    setCookie("binanceEnabled", binanceEnabled, 300)
+
+
+                    setCookie("marketH", 600, 300)
+                    setCookie("marketW", 300, 300)
+                    setCookie("liqH", 150, 300)
+                    setCookie("liqW", 300, 300)
+                }
+
+
+
 
                 if (getCookie("bitmexMin")!==undefined) {
                     document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
@@ -1022,6 +1046,7 @@
 
                     // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
                     document.getElementById("bitmexLiqEnabledButton").checked = getCookie("bitmexLiqEnabled")
+
 
                     bitmexMinMarket = getCookie("bitmexMin")
                     bitfinexMinMarket = getCookie("bitfinexMin")
