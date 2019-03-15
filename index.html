@@ -916,9 +916,12 @@
                     setCookie("binanceMin", binanceMinMarket, 300)
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
+                    console.log("binanceEnabledButton onchange- ")
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
                     document.getElementById("binanceMinField").disabled = !document.getElementById("binanceMinField").disabled
                     setCookie("binanceEnabled", binanceEnabled, 300)
+
+                    console.log("set binanceEnabled: " + binanceEnabled)
                 }
 
                 let settingslink = document.getElementById("settingslink")
@@ -1035,26 +1038,32 @@
 
 
                 if (getCookie("bitmexMin")!==undefined) {
+
                     document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
                     document.getElementById('bitfinexMinField').value = getCookie("bitfinexMin")
                     document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
                     document.getElementById('binanceMinField').value = getCookie("binanceMin")
 
-                    document.getElementById('bitmexMinField').disabled = !getCookie("bitmexEnabled")
-                    document.getElementById('bitfinexMinField').disabled = !getCookie("bitfinexEnabled")
-                    document.getElementById('coinbaseMinField').disabled = !getCookie("coinbaseEnabled")
-                    document.getElementById('binanceMinField').disabled = !getCookie("binanceEnabled")
+                    $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled")==="false")
+                    $('#bitfinexMinField').prop("disabled", getCookie("bitfinexEnabled")==="false")
+                    $('#coinbaseMinField').prop("disabled", getCookie("coinbaseEnabled")==="false")
+                    $('#binanceMinField').prop("disabled", getCookie("binanceEnabled")==="false")
 
-                    document.getElementById('bitmexEnabledButton').checked = getCookie("bitmexEnabled")
-                    document.getElementById('bitfinexEnabledButton').checked = getCookie("bitfinexEnabled")
-                    document.getElementById('coinbaseEnabledButton').checked = getCookie("coinbaseEnabled")
-                    document.getElementById('binanceEnabledButton').checked = getCookie("binanceEnabled")
+
+                    $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled")==="true")
+                    $('#bitfinexEnabledButton').prop("checked", getCookie("bitfinexEnabled")==="true")
+                    $('#coinbaseEnabledButton').prop("checked", getCookie("coinbaseEnabled")==="true")
+                    $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled")==="true")
+
+
 
                     document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
-                    document.getElementById("bitmexLiqMinField").disabled = !getCookie("bitmexLiqEnabled")
+                    $("#bitmexLiqMinField").prop("disabled", getCookie("bitmexLiqEnabled")==="false")
 
                     // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
-                    document.getElementById("bitmexLiqEnabledButton").checked = getCookie("bitmexLiqEnabled")
+                    $("#bitmexLiqEnabledButton").prop("checked", getCookie("bitmexLiqEnabled")==="true")
+
+                    // console.log("bitmexliiqenabled: " + getCookie("bitmexLiqEnabled"))
 
 
                     bitmexMinMarket = getCookie("bitmexMin")
