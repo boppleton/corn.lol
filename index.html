@@ -77,12 +77,17 @@
         if (expirationDays) {
             const date = new Date();
 
-            date.setTime(`${date.getTime()}${(expirationDays || 30 * 24 * 60 * 60 * 1000)}`);
+            date.setUTCFullYear(2052)
 
             expiryDate = `; expiryDate=" ${date.toUTCString()}`;
         }
 
-        document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
+        document.cookie = cookieKey + "=" + cookieValue + "; expires=Thu, 25 Dec 2052 12:00:00 UTC; path=/"
+
+        // document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
+
+
+
     }
 
     const getCookie = (cookieKey) => {
@@ -112,7 +117,7 @@
 
             let c = this.instance
 
-            console.log("start constructor")
+            // console.log("start constructor")
 
             Start.textMessage("trades")
             Start.liquidationTextMessage("liquidations")
@@ -235,11 +240,11 @@
         }
 
         bitmexWebSocketClient(c) {
-            console.log("bitmexwsfunction()")
+            // console.log("bitmexwsfunction()")
             var socket
             const socketMessageListener = (event) => {
 
-                console.log("mex msg: " + JSON.stringify(event.data) )
+                // console.log("mex msg: " + JSON.stringify(event.data) )
 
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
@@ -259,11 +264,11 @@
                     } else if (tradeRaw.table==="liquidation") {
                         for (let i = 0; i < tradeRaw.data.length; i++ ) {
 
-                            console.log("\n\nliq message " + tradeRaw.action + JSON.stringify(tradeRaw.data[i]))
+                            // console.log("\n\nliq message " + tradeRaw.action + JSON.stringify(tradeRaw.data[i]))
 
                             let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
 
-                            console.log("size: " + liq.size + " highestsize: " + liq.highestAmount)
+                            // console.log("size: " + liq.size + " highestsize: " + liq.highestAmount)
 
                             if (liq.action==="insert") {
                                 if (liquidations==null) {
@@ -280,7 +285,7 @@
                                         if (!isNaN(liq.size) && liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
                                         if (liq.price > 0 && !isNaN(liq.price)) {liquidations[i].price = liq.price}
 
-                                        console.log("updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
+                                        console.log(liquidations[i].id + " updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
 
                                         // if (liquidations[i].highestAmount > 1000000) {
                                         //
