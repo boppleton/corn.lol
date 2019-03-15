@@ -82,8 +82,6 @@
             expiryDate = `; expiryDate=" ${date.toUTCString()}`;
         }
 
-        console.log("expirydate: " + expiryDate)
-
         document.cookie = cookieKey + "=" + cookieValue + "; expires=Thu, 25 Dec 2052 12:00:00 UTC; path=/"
 
         // document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
