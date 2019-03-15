@@ -4,14 +4,8 @@
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-
-    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
-
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
-
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
     <!--<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>-->
 
@@ -47,7 +41,7 @@
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 15000
     var bitmexMinLiq = 1
-    var bitmexLiqEnabled = true
+    var bitmexLiqEnabled = false
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
@@ -73,38 +67,6 @@
     var hoverable = true;
 
     var currentPrice = 0
-
-    const setCookie = (cookieKey, cookieValue, expirationDays) => {
-        let expiryDate = '';
-
-        if (expirationDays) {
-            const date = new Date();
-
-            date.setTime(`${date.getTime()}${(expirationDays || 30 * 24 * 60 * 60 * 1000)}`);
-
-            expiryDate = `; expiryDate=" ${date.toUTCString()}`;
-        }
-
-        document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
-    }
-
-    const getCookie = (cookieKey) => {
-        let cookieName = `${cookieKey}=`;
-
-        let cookieArray = document.cookie.split(';');
-
-        for (let cookie of cookieArray) {
-
-            while (cookie.charAt(0) == ' ') {
-                cookie = cookie.substring(1, cookie.length);
-            }
-
-            if (cookie.indexOf(cookieName) == 0) {
-                return cookie.substring(cookieName.length, cookie.length);
-            }
-        }
-    }
-
 
     class Start extends React.Component {
         constructor(props) {
@@ -239,6 +201,7 @@
 
                     if (tradeRaw.table ==="trade") {
                         let trade = Start.bitmexTrade(tradeRaw.data)
+                        // console.log("mex trade " + trade[0].size)
                         if (trade[0].size >= bitmexMinMarket) {
                             if (trades == null) {
                                 trades = trade
@@ -318,35 +281,35 @@
         static bitmexLiq(liqraw, action) {
             let liq = []
 
-                liq.push({
-                    exchangeName: "bitmex",
-                    id: liqraw.orderID,
-                    action: action,
-                    side: liqraw.side==="Buy",
-                    price: liqraw.price,
-                    firstPrice: liqraw.price,
-                    size: parseFloat(liqraw.leavesQty).toFixed(0),
-                    update: "",
-                    liq: true,
-                    startSize: parseFloat(liqraw.leavesQty).toFixed(0),
-                    highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
-                    deleted: false,
-                    startTime: Date.now()
-                })
+            liq.push({
+                exchangeName: "bitmex",
+                id: liqraw.orderID,
+                action: action,
+                side: liqraw.side==="Buy",
+                price: liqraw.price,
+                firstPrice: liqraw.price,
+                size: parseFloat(liqraw.leavesQty).toFixed(0),
+                update: "",
+                liq: true,
+                startSize: parseFloat(liqraw.leavesQty).toFixed(0),
+                highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
+                deleted: false,
+                startTime: Date.now()
+            })
 
-                liq.exchangeName = "bitmex"
-                    liq.id = liqraw.orderID
-                    liq.action = action
-                    liq.side = liqraw.side==="Buy"
-                    liq.price = liqraw.price
-                    liq.firstPrice = liqraw.price
-                    liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
-                    liq.update = ""
-                    liq.liq = true
-                    liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
-                    liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
-                    liq.deleted = false
-                    liq.startTime = Date.now()
+            liq.exchangeName = "bitmex"
+            liq.id = liqraw.orderID
+            liq.action = action
+            liq.side = liqraw.side==="Buy"
+            liq.price = liqraw.price
+            liq.firstPrice = liqraw.price
+            liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
+            liq.update = ""
+            liq.liq = true
+            liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
+            liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
+            liq.deleted = false
+            liq.startTime = Date.now()
 
 
             return liq
@@ -648,7 +611,7 @@
                         <div id="hiddendiv">
                             <div className="singleSettingsDiv">
                                 <a id="settingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                                   width="30"/></a>
+                                                                                    width="30"/></a>
                                 <span id="settingsButtonText">settings</span>
                             </div>
 
@@ -657,7 +620,7 @@
                             <div className="singleSettingsDiv">
 
                                 <a id="clearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                                width="30"/></a>
+                                                                                 width="30"/></a>
                                 <span id="settingsButtonText">clear</span>
                             </div>
 
@@ -666,7 +629,7 @@
                             <div className="singleSettingsDiv">
 
                                 <a id="markethidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
-                                                                  width="30"/></a>
+                                                                                      width="30"/></a>
                                 <span id="settingsButtonText">close</span>
                             </div>
                         </div>
@@ -679,7 +642,7 @@
                         <div id="hiddendivLiq">
                             <div className="singleSettingsDiv">
                                 <a id="liqsettingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                                   width="30"/></a>
+                                                                                       width="30"/></a>
                                 <span id="settingsButtonText">settings</span>
                             </div>
 
@@ -688,7 +651,7 @@
                             <div className="singleSettingsDiv">
 
                                 <a id="liqclearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                                width="30"/></a>
+                                                                                    width="30"/></a>
                                 <span id="settingsButtonText">clear</span>
                             </div>
 
@@ -697,7 +660,7 @@
                             <div className="singleSettingsDiv">
 
                                 <a id="liqhidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
-                                                                width="30"/></a>
+                                                                                   width="30"/></a>
                                 <span id="settingsButtonText">close</span>
                             </div>
                         </div>
@@ -733,24 +696,11 @@
 
 
 
-
-
-
                 let donateText = document.getElementById("donateText")
 
                 donateText.onclick = function () {
-
-                    var win = window.open("https://www.deribit.com/reg-4066.3101", '_blank');
-                    win.focus();
-
-                }
-
-                let donate2Text = document.getElementById("donateText2")
-
-                donate2Text.onclick = function () {
-
-                    window.alert("support me by donating some bitcone <3  BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU")
-
+                    window.alert("support the continued open-source development of corn.lol <3 \n\n" +
+                        "BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU\n\n")
                 }
 
                 let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
@@ -758,24 +708,18 @@
 
                 bitmexLiqMinAmountField.onchange = function () {
                     bitmexMinLiq = bitmexLiqMinAmountField.value
-                    setCookie("bitmexLiqMin", bitmexMinLiq, 300)
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled")===undefined?true:getCookie("bitmexLiqEnabled")
+                bitmexLiqEnabledButton.checked = true
 
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
                     document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
-
-                    setCookie("bitmexLiqEnabled", bitmexLiqEnabledButton.checked, 300)
                 }
 
-
-
-
                 // document.getElementById("bitmexLiqMinField").disabled = true
-
+                bitmexLiqEnabledButton.disabled = false
 
                 let liqEnabledButton = document.getElementById("liqEnabledButton")
                 liqEnabledButton.checked = true
@@ -846,16 +790,11 @@
                         bitmexMinField.value = minTradeSize
                     }
                     bitmexMinMarket = bitmexMinField.value
-
-                    setCookie("bitmexMin", bitmexMinMarket, 300)
-
                 }
-
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
                     document.getElementById("bitmexMinField").disabled = !document.getElementById("bitmexMinField").disabled
-                    setCookie("bitmexEnabled", bitmexEnabled, 300)
                 }
 
                 let bitfinexMinField = document.getElementById("bitfinexMinField")
@@ -864,14 +803,11 @@
                         bitfinexMinField.value = minTradeSize
                     }
                     bitfinexMinMarket = bitfinexMinField.value
-
-                    setCookie("bitfinexMin", bitfinexMinMarket, 300)
                 }
 
                 document.getElementById("bitfinexEnabledButton").onchange = function () {
                     bitfinexEnabled = document.getElementById("bitfinexEnabledButton").checked
                     document.getElementById("bitfinexMinField").disabled = !document.getElementById("bitfinexMinField").disabled
-                    setCookie("bitfinexEnabled", bitfinexEnabled, 300)
                 }
 
                 let coinbaseMinField = document.getElementById("coinbaseMinField")
@@ -880,14 +816,10 @@
                         coinbaseMinField.value = minTradeSize
                     }
                     coinbaseMinMarket = coinbaseMinField.value
-
-                    setCookie("coinbaseMin", coinbaseMinMarket, 300)
-
                 }
                 document.getElementById("coinbaseEnabledButton").onchange = function () {
                     coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
                     document.getElementById("coinbaseMinField").disabled = !document.getElementById("coinbaseMinField").disabled
-                    setCookie("coinbaseEnabled", coinbaseEnabled, 300)
                 }
 
                 let binanceMinField = document.getElementById("binanceMinField")
@@ -896,13 +828,10 @@
                         binanceMinField.value = minTradeSize
                     }
                     binanceMinMarket = binanceMinField.value
-
-                    setCookie("binanceMin", binanceMinMarket, 300)
                 }
                 document.getElementById("binanceEnabledButton").onchange = function () {
                     binanceEnabled = document.getElementById("binanceEnabledButton").checked
                     document.getElementById("binanceMinField").disabled = !document.getElementById("binanceMinField").disabled
-                    setCookie("binanceEnabled", binanceEnabled, 300)
                 }
 
                 let settingslink = document.getElementById("settingslink")
@@ -957,143 +886,15 @@
                     }
                 }
 
+                document.getElementById('bitmexMinField').value = bitmexMinMarket
+                document.getElementById('bitfinexMinField').value = bitfinexMinMarket
+                document.getElementById('coinbaseMinField').value = coinbaseMinMarket
+                document.getElementById('binanceMinField').value = binanceMinMarket
 
-
-                $("#maintablediv").ondragend = function () {
-
-                    console.log("maintablediv onresize h: " + $("#maintablediv").height())
-
-                    setCookie("marketH", $("#maintablediv").height(), 300)
-                    setCookie("marketW", $("#maintablediv").width(), 300)
-                }
-
-                let liqdiv = $("#liqdiv")
-
-                liqdiv.onresize = function () {
-
-                    setCookie("liqH", liqdiv.height(), 300)
-                    setCookie("liqW", liqdiv.width(), 300)
-                }
-
-
-
-                let savesettingsbutton = document.getElementById("savesettingsbutton")
-
-                savesettingsbutton.onclick = function () {
-
-                    // setCookie("bitmexMin", document.getElementById('bitmexMinField').value, 300)
-                    // setCookie("bitfinexMin", document.getElementById('bitfinexMinField').value, 300)
-                    // setCookie("coinbaseMin", document.getElementById('coinbaseMinField').value, 300)
-                    // setCookie("binanceMin", document.getElementById('binanceMinField').value, 300)
-                    //
-                    // setCookie("bitmexEnabled", document.getElementById('bitmexEnabledButton').checked, 300)
-                    // setCookie("bitfinexEnabled", document.getElementById('bitfinexEnabledButton').checked, 300)
-                    // setCookie("coinbaseEnabled", document.getElementById('coinbaseEnabledButton').checked, 300)
-                    // setCookie("binanceEnabled", document.getElementById('binanceEnabledButton').checked, 300)
-                    //
-                    // setCookie("liqEnabled", document.getElementById('liqEnabledButton').checked, 300)
-                    // setCookie("bitmexLiqEnabled", document.getElementById('bitmexLiqEnabledButton').checked, 300)
-                    //
-                    // setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
-
-                    setCookie("marketH", $("#maintablediv").height(), 300)
-                    setCookie("marketW", $("#maintablediv").width(), 300)
-
-                    setCookie("liqH", $("#liqdiv").height(), 300)
-                    setCookie("liqW", $("#liqdiv").width(), 300)
-
-
-                    window.alert("saved dimensions: \n market orders: height." + $("#maintablediv").height().toFixed(0) + " width." + $("#maintablediv").width().toFixed(0)
-                    + "\n liquidations: height." + $("#liqdiv").height().toFixed(0) + " width." + $("#liqdiv").width().toFixed(0) )
-
-
-                }
-
-
-                if (getCookie("bitmexMin")===undefined) {
-                    setCookie("bitmexLiqEnabled", bitmexLiqEnabled, 300)
-
-                    setCookie("bitmexLiqMin", bitmexMinLiq, 300)
-
-                    setCookie("bitmexMin", bitmexMinMarket, 300)
-                    setCookie("bitfinexMin", bitfinexMinMarket, 300)
-                    setCookie("coinbaseMin", coinbaseMinMarket, 300)
-                    setCookie("binanceMin", binanceMinMarket, 300)
-
-                    setCookie("bitmexEnabled", bitmexEnabled, 300)
-                    setCookie("bitfinexEnabled", bitfinexEnabled, 300)
-                    setCookie("coinbaseEnabled", coinbaseEnabled, 300)
-                    setCookie("binanceEnabled", binanceEnabled, 300)
-
-
-                    setCookie("marketH", 600, 300)
-                    setCookie("marketW", 300, 300)
-                    setCookie("liqH", 150, 300)
-                    setCookie("liqW", 300, 300)
-                }
-
-
-
-
-                if (getCookie("bitmexMin")!==undefined) {
-                    document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
-                    document.getElementById('bitfinexMinField').value = getCookie("bitfinexMin")
-                    document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
-                    document.getElementById('binanceMinField').value = getCookie("binanceMin")
-
-                    document.getElementById('bitmexMinField').disabled = !getCookie("bitmexEnabled")
-                    document.getElementById('bitfinexMinField').disabled = !getCookie("bitfinexEnabled")
-                    document.getElementById('coinbaseMinField').disabled = !getCookie("coinbaseEnabled")
-                    document.getElementById('binanceMinField').disabled = !getCookie("binanceEnabled")
-
-                    document.getElementById('bitmexEnabledButton').checked = getCookie("bitmexEnabled")
-                    document.getElementById('bitfinexEnabledButton').checked = getCookie("bitfinexEnabled")
-                    document.getElementById('coinbaseEnabledButton').checked = getCookie("coinbaseEnabled")
-                    document.getElementById('binanceEnabledButton').checked = getCookie("binanceEnabled")
-
-                    document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
-                    document.getElementById("bitmexLiqMinField").disabled = !getCookie("bitmexLiqEnabled")
-
-                    // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
-                    document.getElementById("bitmexLiqEnabledButton").checked = getCookie("bitmexLiqEnabled")
-
-
-                    bitmexMinMarket = getCookie("bitmexMin")
-                    bitfinexMinMarket = getCookie("bitfinexMin")
-                    coinbaseMinMarket = getCookie("coinbaseMin")
-                    binanceMinMarket = getCookie("binanceMin")
-
-                    bitmexMinLiq = getCookie("bitmexLiqMin")
-
-
-                    bitmexEnabled = getCookie("bitmexEnabled")
-                    bitfinexEnabled = getCookie("bitfinexEnabled")
-                    coinbaseEnabled = getCookie("coinbaseEnabled")
-                    binanceEnabled = getCookie("binanceEnabled")
-
-                    bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
-
-                    $("#maintablediv").height(getCookie("marketH"))
-                    $("#maintablediv").width(getCookie("marketW"))
-
-                    $("#liqdiv").height(getCookie("liqH"))
-                    $("#liqdiv").width(getCookie("liqW"))
-
-
-
-                } else {
-                    document.getElementById('bitmexMinField').value = bitmexMinMarket
-                    document.getElementById('bitfinexMinField').value = bitfinexMinMarket
-                    document.getElementById('coinbaseMinField').value = coinbaseMinMarket
-                    document.getElementById('binanceMinField').value = binanceMinMarket
-
-                    document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
-                    document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
-                    document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
-                    document.getElementById('binanceEnabledButton').checked = binanceEnabled
-                }
-
-
+                document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
+                document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
+                document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
+                document.getElementById('binanceEnabledButton').checked = binanceEnabled
             }
         }
 
@@ -1157,7 +958,7 @@
 
         getTradeSizeLiq(data) {
             if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 60)?"(filled!)":"")):("("+getKformat(data.size, 0) + " active)"))
+                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 30)?"(filled!)":"✓")):("("+getKformat(data.size, 0) + " active)"))
             } else {
                 return data.message
             }
@@ -1392,7 +1193,6 @@
 
                                     <div id="marketSettings">
 
-
                                         <div className="settingsitem header">
                                             <input id="marketsEnabledButton" type="checkbox"
                                                    name="marketsEnabledButton" className="checkboxx"/>
@@ -1461,16 +1261,8 @@
                                         </div>
                                     </div>
 
-                                    <div id="savesettings">
-                                        <span id="savesettingsbutton">save window sizes</span>
-                                    </div>
-
                                     <div id="donate">
-                                        <span id="donateText">deribit 10% off fees reflink!</span>
-                                    </div>
-
-                                    <div id="donate2">
-                                        <span id="donateText2">donate btc</span>
+                                        <span id="donateText">donate</span>
                                     </div>
 
                                 </div>
@@ -1507,983 +1299,931 @@
 
 </script>
 
-<style>
-
-    * {
-        margin: 0;
-        padding: 0;
-    }
-
-    body, html {
-
-        width: 100%;
-        height: 100%;
-
-        overflow: hidden;
-
-        background: radial-gradient(black 15%, transparent 16%) 0 0,
-        radial-gradient(black 15%, transparent 16%) 8px 8px,
-        radial-gradient(rgba(255, 255, 255, .1) 15%, transparent 20%) 0 1px,
-        radial-gradient(rgba(255, 255, 255, .1) 15%, transparent 20%) 8px 9px;
-        background-color: #282828;
-        background-size: 16px 16px;
-    }
-
-    #root {
-        width: 100%;
-        height: 100%;
-    }
-
-    #bbb {
-        display: flex;
-        height: 100%;
-        width: 100%;
-    }
-
-    #rightside {
-        width: 100%;
-        height: 95%;
-        margin: 5px;
-        /*border: 3px solid #585858;*/
-        margin-bottom: 30px;
-    }
-
-    .tradingview-widget-container {
-        width: 100%;
-        height: 100%;
-    }
-
-    #tradingview_1a86e {
-        height: 100%;
-        width: 100%;
-    }
-
-    #donate  {
-        padding: 10px;
-        color: #ff93a0;
-        text-align: center;
-        font-size: 22px;
-
-
-        font-weight: bold;
-
-        -webkit-touch-callout: none; /* iOS Safari */
-        -webkit-user-select: none; /* Safari */
-        -khtml-user-select: none; /* Konqueror HTML */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-        user-select: none;
-    }
-
-    #donate:hover  {
-        color: deepskyblue;
-    }
-
-    #donate2  {
-        padding: 10px;
-        color: #5cb85c;
-        text-align: center;
-        font-size: 16px;
-
-
-        font-weight: bold;
-
-        -webkit-touch-callout: none; /* iOS Safari */
-        -webkit-user-select: none; /* Safari */
-        -khtml-user-select: none; /* Konqueror HTML */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-        user-select: none;
-    }
-
-    #donate2:hover  {
-        color: deepskyblue;
-    }
-
-    #savesettings {
-
-        font-weight: bold;
-
-
-        padding: 15px;
-        color: #5cb85c;
-        text-align: center;
-        font-size: 20px;
-
-        -webkit-touch-callout: none; /* iOS Safari */
-        -webkit-user-select: none; /* Safari */
-        -khtml-user-select: none; /* Konqueror HTML */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-        user-select: none;
-    }
-
-    #savesettings:hover {
-        color: deepskyblue;
-    }
-
-
-    #icon img {
-        /*width: 100%;*/
-    }
-
-
-    a {
-        color: #858585;
-    }
-
-    #pepeIcon:hover {
-        height: 20px;
-        width: 20px;
-    }
-
-    #footer {
-        font-family: 'Raleway', sans-serif;
-
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: #4f4f4f;
-        color: #858585;
-        text-align: left;
-
-
-    }
-
-    #footerdiv {
-        padding: 5px;
-    }
-
-    #footerdiv b {
-        font-size: 18px;
-        padding-right: 5px;
-        color: #9c9c9c;
-        /*-webkit-text-stroke: 1px black;*/
-    }
-
-    #footerleft {
-        float: left;
-        text-align: left;
-
-    }
-
-    #footerleft {
-        text-align: center;
-    }
-
-    #footerright {
-        text-align: right;
-    }
-
-
-
-
-    .settingsitem {
-        display: flex;
-        padding: 5px;
-    }
-
-
-
-
-
-    #rootydiv {
-        height: 100%;
-        width: max-content;
-
-    }
-
-    #maintablediv {
-
-        position: relative;
-
-        float: top;
-
-        border: 3px solid #585858;
-
-        margin: 5px;
-        /*padding: 2px;*/
-        width: 283px;
-        height: 500px;
-    }
-
-    #liqdiv {
-
-        /*overflow-y: scroll;*/
-        /*resize: both;*/
-
-        position: relative;
-
-        float: bottom;
-
-        border: 3px solid #585858;
-
-        margin: 5px;
-        /*padding: 2px;*/
-        width: 283px;
-        height: 150px;
-    }
-
-    #settingsFooterRightLink {
-        font-weight: bold;
-        color: rgba(50, 181, 65, 0.71);
-    }
-
-    #settingsFooterRightLink:hover {
-        color: rgba(50, 205, 50, 0.86);
-    }
-
-    #ghostpane {
-        background: #999;
-        opacity: 0.2;
-
-        width: 45%;
-        height: 45%;
-        top: 20%;
-        left: 20%;
-
-        position: absolute;
-        margin: 0;
-        padding: 0;
-        z-index: 98;
-
-        -webkit-transition: all 0.25s ease-in-out;
-        -moz-transition: all 0.25s ease-in-out;
-        -ms-transition: all 0.25s ease-in-out;
-        -o-transition: all 0.25s ease-in-out;
-        transition: all 0.25s ease-in-out;
-    }
-
-
-    .minAmount {
-
-        margin-left: auto;
-
-        height: 22px;
-        width: 100px;
-        background-color: #404040;
-        color: white;
-        font-size: 20px;
-
-    }
-
-
-    .checkboxx {
-        width: 22px;
-        height: 22px;
-
-
-        text-align: center;
-        vertical-align: middle;
-    }
-
-
-    .minAmount:disabled {
-        background-color: #151515;
-        color: #5b5b5b;
-    }
-
-
-    #maintablediv {
-        overflow-y: hidden;
-        overflow-x: hidden;
-
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* IE10+/Edge */
-        user-select: none; /* Standard */
-
-        height: 600px;
-
-    }
-
-    #maintablediv:hover {
-
-        overflow-y: scroll;
-
-        resize: both;
-
-
-
-    }
-
-    #hiddendiv {
-        display: none;
-        /*float: left;*/
-    }
-
-    #hiddendivLiq {
-        display: none;
-        /*float: left;*/
-    }
-
-    #tableandbottom {
-        display: flex;
-        position: relative;
-        /*z-index: 99;*/
-    }
-
-    #liqMainDiv {
-        display: flex;
-        position: relative;
-        resize: none;
-        overflow: hidden;
-
-        top: -5px;
-
-        width: max-content;
-
-
-    }
-
-    #liqdiv {
-        overflow: hidden;
-        height: 140px;
-    }
-
-    #liqdiv:hover {
-        overflow-y: scroll;
-        resize: both;
-    }
-
-    #hiddendiv img {
-        padding: 5px 10px 5px 5px;
-        /*float: left;*/
-    }
-
-    #hiddendivLiq img {
-        padding: 5px 10px 5px 5px;
-    }
-
-    #tableandbottom {
-
-        width: max-content;
-
-    }
-
-    #tableandbottom:hover > #hiddendiv {
-
-        /*display: inline-block;*/
-
-        /*!*float: left;*!*/
-
-        /*!*width: fit-content;*!*/
-        /*!*height: fit-content;*!*/
-
-        /*width: 80px;*/
-        /*height: 238px;*/
-
-        /*padding-top: 10px;*/
-        /*padding-bottom: 10px;*/
-
-
-        /*background-color: rgba(1, 1, 1, 0.85);*/
-
-        /*position: relative;*/
-        /*top: 10px;*/
-        /*left: 2px;*/
-
-        /*text-align: center;*/
-
-        /*color: white;*/
-    }
-
-    #liqMainDiv:hover > #hiddendivLiq {
-        /*display: inline-block;*/
-
-        /*!*float: left;*!*/
-
-        /*!*width: fit-content;*!*/
-        /*!*height: fit-content;*!*/
-
-        /*width: 80px;*/
-        /*height: 238px;*/
-
-        /*padding-top: 10px;*/
-        /*padding-bottom: 10px;*/
-
-
-        /*background-color: rgba(1, 1, 1, 0.85);*/
-
-        /*position: relative;*/
-        /*top: 10px;*/
-        /*left: 2px;*/
-
-        /*text-align: center;*/
-
-        /*color: white;*/
-    }
-
-    .tradingview-widget-copyright {
-        display: none;
-    }
-
-    #settingsButtonText {
-
-
-        padding-right: 5px;
-
-        font-family: 'Raleway', sans-serif;
-
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* IE10+/Edge */
-        user-select: none; /* Standard */
-
-        color: rgba(164, 255, 60, 0.8);
-        /*padding: 5px;*/
-        /* Internet Explorer 10 */
-        display:-ms-flexbox;
-        -ms-flex-pack:center;
-        -ms-flex-align:center;
-
-        /* Firefox */
-        display:-moz-box;
-        -moz-box-pack:center;
-        -moz-box-align:center;
-
-        /* Safari, Opera, and Chrome */
-        display:-webkit-box;
-        -webkit-box-pack:center;
-        -webkit-box-align:center;
-    }
-
-
-    .singleSettingsDiv {
-        vertical-align: middle;
-    }
-
-    #arthuricon {
-
-    }
-
-    #arthuriconspin {
-        animation: rotation 1s infinite linear;
-    }
-
-
-    @keyframes rotation {
-        from {
-            transform: rotate(0deg);
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
         }
-        to {
-            transform: rotate(359deg);
+
+        body, html {
+
+            width: 100%;
+            height: 100%;
+
+            overflow: hidden;
+
+            background: radial-gradient(black 15%, transparent 16%) 0 0,
+            radial-gradient(black 15%, transparent 16%) 8px 8px,
+            radial-gradient(rgba(255, 255, 255, .1) 15%, transparent 20%) 0 1px,
+            radial-gradient(rgba(255, 255, 255, .1) 15%, transparent 20%) 8px 9px;
+            background-color: #282828;
+            background-size: 16px 16px;
         }
-    }
 
-
-    #settingslink:hover > #settingsButtonText {
-        color: red;
-    }
-
-
-    ::-webkit-scrollbar-track {
-        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-        background-color: rgba(21, 21, 20, 0.49);
-    }
-
-    ::-webkit-scrollbar {
-        /*width: 10px;*/
-        /*height: 10px;*/
-        background-color: rgba(0, 0, 0, 0);
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background-color: rgba(82, 82, 82, 0.6);
-        border: 2px solid rgba(100, 100, 100, 0.7);
-    }
-
-    .table1 {
-        /*border: 5px red;*/
-        background-color: rgba(0, 0, 0, 0);
-        /*border-collapse: */
-        border-spacing: 0;
-        font-size: 14px;
-
-        width: 100%;
-
-    }
-
-    .table1 .traderow td {
-        /*width: 100%;*/
-
-        margin: 0px;
-        padding: 0px;
-        white-space: nowrap;
-        /*border-left: 1px solid black;*/
-        text-align: left;
-        /*font-size: 14px;*/
-        font-family: 'Rubik', sans-serif;
-
-        /*border: 0;*/
-
-    }
-
-    .table2 {
-        width: 100%;
-        /*border-collapse: collapse;*/
-        border-spacing: 0;
-    }
-
-    .table2 .traderow td {
-
-        margin: 0px;
-        padding: 0px;
-        white-space: nowrap;
-        /*border-left: 1px solid black;*/
-        text-align: left;
-        /*font-size: 14px;*/
-        font-family: 'Rubik', sans-serif;
-
-    }
-
-    #pad1 {
-    }
-
-    .traderow {
-        /*border-top: 1px solid black;*/
-        vertical-align: middle;
-
-    }
-
-    #marketSettings {
-        padding: 15px;
-        margin: 5px;
-        border: 2px solid black;
-
-
-
-    }
-
-
-
-
-
-    #liqSettings {
-        padding: 15px;
-        margin: 5px;
-        border: 2px solid black;
-    }
-
-    #otherSettings {
-        padding: 15px;
-        margin: 5px;
-        border: 2px solid black;
-    }
-
-    .traderow img {
-        vertical-align: middle;
-    }
-
-    .bitmex.size1 {
-        color: #5d5d5d;
-        font-style: italic;
-        font-size: 16px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-    }
-
-    .bitmex.size2 {
-        color: #414141;
-        font-size: 18px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-
-
-    }
-
-    .bitmex.size3 {
-        color: black;
-        font-size: 18px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-    }
-
-    .bitmex.size4 {
-        color: black;
-        font-size: 20px;
-        font-weight: bold;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-    }
-
-    .bitmex.size5 {
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-    }
-
-    .bitmex.size6 {
-        color: yellow;
-        border: 3px solid yellow;
-        font-weight: bold;
-        font-size: 24px;
-
-    }
-
-    .bitfinex.size1 {
-        color: #5d5d5d;
-        font-style: italic;
-        font-size: 16px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-
-    }
-
-    .bitfinex.size2 {
-        color: #414141;
-        font-size: 18px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-    }
-
-    .bitfinex.size3 {
-        color: black;
-
-        font-size: 18px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-    }
-
-    .bitfinex.size4 {
-        color: black;
-        font-weight: bold;
-        font-size: 20px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-    }
-
-    .bitfinex.size5 {
-        color: #fcfffa;
-
-        font-weight: bold;
-
-        font-size: 20px;
-        border: 1px solid rgba(0, 0, 0, 0.27);
-
-    }
-
-    .bitfinex.size6 {
-        font-size: 24px;
-        font-weight: bold;
-        color: yellow;
-        border: yellow 3px;
-
-    }
-
-    .message {
-        background-color: rgba(0, 0, 0, 0.89);
-        color: rgba(16, 255, 0, 0.98);
-        font-size: 15px;
-        border: 2px solid rgb(24, 255, 0);
-    }
-
-    .hide {
-        display: none;
-    }
-
-    #btcAmt {
-        /*color: rgba(43, 43, 43, 0.83);*/
-        font-size: 13px;
-        padding-right: 3px;
-        text-align: right;
-
-    }
-
-    #tradeSize {
-        padding-left: 5px;
-    }
-
-    #tradeIcon {
-        padding: 0px;
-        padding-left: 4px;
-    }
-
-    #elapsedTime {
-        font-size: 11px;
-        font-style: italic;
-        font-weight: normal;
-        color: rgba(66, 66, 66, 0.78);
-        padding-right: 5px;
-    }
-
-    #liqTimeElapsed {
-        font-size: 11px;
-        font-style: italic;
-        font-weight: normal;
-        color: rgba(66, 66, 66, 0.78);
-        padding-right: 5px;
-    }
-
-    #liqStartSize {
-        font-size: 14px;
-        color: rgba(0, 0, 0, 0.78);
-        padding-right: 5px;
-        padding-left: 5px;
-    }
-
-    #tradePrice {
-        font-size: 14px;
-        padding-left: 3px;
-        padding-right: 5px;
-        font-weight: normal;
-        font-style: normal;
-        /*color: #5a5a5a;*/
-
-    }
-
-    #slip {
-        vertical-align: middle;
-        /*color: #59cfd9;*/
-        font-size: 12px;
-        font-weight: normal;
-
-        padding-right: 9px;
-        padding-left: 9px;
-        line-height: 1px;
-
-    }
-
-    .slipIcon {
-        padding-right: 4px;
-
-
-    }
-
-    .slipIcon img {
-        height: 10px;
-        width: 10px;
-    }
-
-
-    #slipdiv {
-
-    }
-
-
-
-    #atSign {
-        font-size: 11px;
-        font-style: italic;
-        color: rgba(40, 40, 40, 0.76);
-        /*padding-right: 2px;*/
-    }
-
-    #betaText {
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* IE10+/Edge */
-        user-select: none; /* Standard */
-    }
-
-    #betaText:hover {
-        color: greenyellow;
-    }
-
-    #cornlolText {
-        color: rgba(158, 158, 158, 0.71);
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* IE10+/Edge */
-        user-select: none; /* Standard */
-    }
-
-    #cornlolText:hover {
-        color: greenyellow;
-    }
-
-    .footerRightText {
-        padding: 5px;
-        color: rgba(122, 191, 51, 0.71);
-        -webkit-touch-callout: none; /* iOS Safari */
-        -webkit-user-select: none; /* Safari */
-        -khtml-user-select: none; /* Konqueror HTML */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-        user-select: none;
-    }
-
-    .footerRightText:hover {
-        color: greenyellow;
-    }
-
-    .footerRightSplit {
-        -webkit-user-select: none; /* Safari */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* IE10+/Edge */
-        user-select: none; /* Standard */
-        color: rgba(26, 244, 45, 0.56);
-        /*font-weight: bold;*/
-        font-size: 14px;
-    }
-
-    .footerRightSplit:hover {
-        color: rgba(31, 255, 48, 0.51);
-        font-size: 14px;
-    }
-
-
-    /* The Modal (background) */
-    .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Sit on top */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0, 0, 0); /* Fallback color */
-        background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-        -webkit-animation-name: fadeIn; /* Fade in the background */
-        -webkit-animation-duration: 0.4s;
-        animation-name: fadeIn;
-        animation-duration: 0.4s
-    }
-
-    /* Modal Content */
-    .modal-content {
-        position: fixed;
-        bottom: 0;
-        background-color: #fefefe;
-        width: fit-content;
-        -webkit-animation-name: slideIn;
-        -webkit-animation-duration: 0.4s;
-        animation-name: slideIn;
-        animation-duration: 0.4s
-    }
-
-    /* The Close Button */
-    .close {
-        color: white;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-    }
-
-    .close:hover,
-    .close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .modal-header {
-        padding: 2px 16px;
-        background-color: #5cb85c;
-        color: white;
-    }
-
-    .modal-body {
-        padding: 10px;
-        background-color: #4e4e4e;
-    }
-
-    .mainSettingsDiv {
-        margin: 2px;
-    }
-
-    .mainSettingsDiv b {
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: 18px;
-        color: #b2b2b2;
-    }
-
-    .mainSettingsDiv h2 {
-        padding-left: 5px;
-        font-size: 28px;
-        color: #cacaca;
-    }
-
-    .settingsitem.header {
-        /*background-color: #3d3d3c;*/
-        padding: 5px;
-    }
-
-    .mainSettingsDiv input {
-        padding: 5px;
-    }
-
-
-
-    .modal-footer {
-        padding: 10px;
-        background-color: #418a41;
-        color: white;
-    }
-
-
-    hr {
-
-        margin: 10px;
-
-        /*padding: 10px;*/
-
-        height: 2px;
-        color: rgba(97, 255, 73, 0.1);
-        background-color: rgba(97, 255, 73, 0.1);
-        border: 1px solid rgba(97, 255, 73, 0.1);
-    }
-
-    /* Add Animation */
-    @-webkit-keyframes slideIn {
-        from {
-            bottom: -300px;
-            opacity: 0
+        #root {
+            width: 100%;
+            height: 100%;
         }
-        to {
+
+        #bbb {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        #rightside {
+            width: 100%;
+            height: 95%;
+            margin: 5px;
+            /*border: 3px solid #585858;*/
+            margin-bottom: 30px;
+        }
+
+        .tradingview-widget-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #tradingview_1a86e {
+            height: 100%;
+            width: 100%;
+        }
+
+        #donate {
+            color: #5cb85c;
+            text-align: center;
+            font-size: 20px;
+
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+        }
+
+
+        #icon img {
+            /*width: 100%;*/
+        }
+
+
+        a {
+            color: #858585;
+        }
+
+        #pepeIcon:hover {
+            height: 20px;
+            width: 20px;
+        }
+
+        #footer {
+            font-family: 'Raleway', sans-serif;
+
+            position: fixed;
+            left: 0;
             bottom: 0;
-            opacity: 1
-        }
-    }
+            width: 100%;
+            background-color: #4f4f4f;
+            color: #858585;
+            text-align: left;
 
-    @keyframes slideIn {
-        from {
-            bottom: -300px;
-            opacity: 0
+
         }
-        to {
+
+        #footerdiv {
+            padding: 5px;
+        }
+
+        #footerdiv b {
+            font-size: 18px;
+            padding-right: 5px;
+            color: #9c9c9c;
+            /*-webkit-text-stroke: 1px black;*/
+        }
+
+        #footerleft {
+            float: left;
+            text-align: left;
+
+        }
+
+        #footerleft {
+            text-align: center;
+        }
+
+        #footerright {
+            text-align: right;
+        }
+
+
+
+
+        .settingsitem {
+            display: flex;
+            padding: 5px;
+        }
+
+
+
+
+
+        #rootydiv {
+            height: 100%;
+            width: max-content;
+
+        }
+
+        #maintablediv {
+
+            position: relative;
+
+            float: top;
+
+            border: 3px solid #585858;
+
+            margin: 5px;
+            /*padding: 2px;*/
+            width: 283px;
+            height: 500px;
+        }
+
+        #liqdiv {
+
+            /*overflow-y: scroll;*/
+            /*resize: both;*/
+
+            position: relative;
+
+            float: bottom;
+
+            border: 3px solid #585858;
+
+            margin: 5px;
+            /*padding: 2px;*/
+            width: 283px;
+            height: 150px;
+        }
+
+        #settingsFooterRightLink {
+            font-weight: bold;
+            color: rgba(50, 181, 65, 0.71);
+        }
+
+        #settingsFooterRightLink:hover {
+            color: rgba(50, 205, 50, 0.86);
+        }
+
+        #ghostpane {
+            background: #999;
+            opacity: 0.2;
+
+            width: 45%;
+            height: 45%;
+            top: 20%;
+            left: 20%;
+
+            position: absolute;
+            margin: 0;
+            padding: 0;
+            z-index: 98;
+
+            -webkit-transition: all 0.25s ease-in-out;
+            -moz-transition: all 0.25s ease-in-out;
+            -ms-transition: all 0.25s ease-in-out;
+            -o-transition: all 0.25s ease-in-out;
+            transition: all 0.25s ease-in-out;
+        }
+
+
+        .minAmount {
+
+            margin-left: auto;
+
+            height: 22px;
+            width: 100px;
+            background-color: #404040;
+            color: white;
+            font-size: 20px;
+
+        }
+
+
+        .checkboxx {
+            width: 22px;
+            height: 22px;
+
+
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+        .minAmount:disabled {
+            background-color: #151515;
+            color: #5b5b5b;
+        }
+
+
+        #maintablediv {
+            overflow-y: hidden;
+            overflow-x: hidden;
+
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+
+            height: 600px;
+
+        }
+
+        #maintablediv:hover {
+
+            overflow-y: scroll;
+
+            resize: both;
+
+
+
+        }
+
+        #hiddendiv {
+            display: none;
+            /*float: left;*/
+        }
+
+        #hiddendivLiq {
+            display: none;
+            /*float: left;*/
+        }
+
+        #tableandbottom {
+            display: flex;
+            position: relative;
+            /*z-index: 99;*/
+        }
+
+        #liqMainDiv {
+            display: flex;
+            position: relative;
+            resize: none;
+            overflow: hidden;
+
+            top: -5px;
+
+            width: max-content;
+
+
+        }
+
+        #liqdiv {
+            overflow: hidden;
+            height: 140px;
+        }
+
+        #liqdiv:hover {
+            overflow-y: scroll;
+            resize: both;
+        }
+
+        #hiddendiv img {
+            padding: 5px 10px 5px 5px;
+            /*float: left;*/
+        }
+
+        #hiddendivLiq img {
+            padding: 5px 10px 5px 5px;
+        }
+
+        #tableandbottom {
+
+            width: max-content;
+
+        }
+
+        #tableandbottom:hover > #hiddendiv {
+
+            /*display: inline-block;*/
+
+            /*!*float: left;*!*/
+
+            /*!*width: fit-content;*!*/
+            /*!*height: fit-content;*!*/
+
+            /*width: 80px;*/
+            /*height: 238px;*/
+
+            /*padding-top: 10px;*/
+            /*padding-bottom: 10px;*/
+
+
+            /*background-color: rgba(1, 1, 1, 0.85);*/
+
+            /*position: relative;*/
+            /*top: 10px;*/
+            /*left: 2px;*/
+
+            /*text-align: center;*/
+
+            /*color: white;*/
+        }
+
+        #liqMainDiv:hover > #hiddendivLiq {
+            /*display: inline-block;*/
+
+            /*!*float: left;*!*/
+
+            /*!*width: fit-content;*!*/
+            /*!*height: fit-content;*!*/
+
+            /*width: 80px;*/
+            /*height: 238px;*/
+
+            /*padding-top: 10px;*/
+            /*padding-bottom: 10px;*/
+
+
+            /*background-color: rgba(1, 1, 1, 0.85);*/
+
+            /*position: relative;*/
+            /*top: 10px;*/
+            /*left: 2px;*/
+
+            /*text-align: center;*/
+
+            /*color: white;*/
+        }
+
+        .tradingview-widget-copyright {
+            display: none;
+        }
+
+        #settingsButtonText {
+
+
+            padding-right: 5px;
+
+            font-family: 'Raleway', sans-serif;
+
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+
+            color: rgba(164, 255, 60, 0.8);
+            /*padding: 5px;*/
+            /* Internet Explorer 10 */
+            display:-ms-flexbox;
+            -ms-flex-pack:center;
+            -ms-flex-align:center;
+
+            /* Firefox */
+            display:-moz-box;
+            -moz-box-pack:center;
+            -moz-box-align:center;
+
+            /* Safari, Opera, and Chrome */
+            display:-webkit-box;
+            -webkit-box-pack:center;
+            -webkit-box-align:center;
+        }
+
+
+        .singleSettingsDiv {
+            vertical-align: middle;
+        }
+
+        #arthuricon {
+
+        }
+
+        #arthuriconspin {
+            animation: rotation 1s infinite linear;
+        }
+
+
+        @keyframes rotation {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(359deg);
+            }
+        }
+
+
+        #settingslink:hover > #settingsButtonText {
+            color: red;
+        }
+
+
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            background-color: rgba(21, 21, 20, 0.49);
+        }
+
+        ::-webkit-scrollbar {
+            /*width: 10px;*/
+            /*height: 10px;*/
+            background-color: rgba(0, 0, 0, 0);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(82, 82, 82, 0.6);
+            border: 2px solid rgba(100, 100, 100, 0.7);
+        }
+
+        .table1 {
+            /*border: 5px red;*/
+            background-color: rgba(0, 0, 0, 0);
+            /*border-collapse: */
+            border-spacing: 0;
+            font-size: 14px;
+
+            width: 100%;
+
+        }
+
+        .table1 .traderow td {
+            /*width: 100%;*/
+
+            margin: 0px;
+            padding: 0px;
+            white-space: nowrap;
+            /*border-left: 1px solid black;*/
+            text-align: left;
+            /*font-size: 14px;*/
+            font-family: 'Rubik', sans-serif;
+
+            /*border: 0;*/
+
+        }
+
+        .table2 {
+            width: 100%;
+            /*border-collapse: collapse;*/
+            border-spacing: 0;
+        }
+
+        .table2 .traderow td {
+
+            margin: 0px;
+            padding: 0px;
+            white-space: nowrap;
+            /*border-left: 1px solid black;*/
+            text-align: left;
+            /*font-size: 14px;*/
+            font-family: 'Rubik', sans-serif;
+
+        }
+
+        #pad1 {
+        }
+
+        .traderow {
+            /*border-top: 1px solid black;*/
+            vertical-align: middle;
+
+        }
+
+        #marketSettings {
+            padding: 15px;
+            margin: 5px;
+            border: 2px solid black;
+
+
+
+        }
+
+
+
+
+
+        #liqSettings {
+            padding: 15px;
+            margin: 5px;
+            border: 2px solid black;
+        }
+
+        #otherSettings {
+            padding: 15px;
+            margin: 5px;
+            border: 2px solid black;
+        }
+
+        .traderow img {
+            vertical-align: middle;
+        }
+
+        .bitmex.size1 {
+            color: #5d5d5d;
+            font-style: italic;
+            font-size: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+        }
+
+        .bitmex.size2 {
+            color: #414141;
+            font-size: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+
+
+        }
+
+        .bitmex.size3 {
+            color: black;
+            font-size: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+        }
+
+        .bitmex.size4 {
+            color: black;
+            font-size: 20px;
+            font-weight: bold;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+        }
+
+        .bitmex.size5 {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+        }
+
+        .bitmex.size6 {
+            color: yellow;
+            border: 3px solid yellow;
+            font-weight: bold;
+            font-size: 24px;
+
+        }
+
+        .bitfinex.size1 {
+            color: #5d5d5d;
+            font-style: italic;
+            font-size: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+
+        }
+
+        .bitfinex.size2 {
+            color: #414141;
+            font-size: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+        }
+
+        .bitfinex.size3 {
+            color: black;
+
+            font-size: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+        }
+
+        .bitfinex.size4 {
+            color: black;
+            font-weight: bold;
+            font-size: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+        }
+
+        .bitfinex.size5 {
+            color: #fcfffa;
+
+            font-weight: bold;
+
+            font-size: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.27);
+
+        }
+
+        .bitfinex.size6 {
+            font-size: 24px;
+            font-weight: bold;
+            color: yellow;
+            border: yellow 3px;
+
+        }
+
+        .message {
+            background-color: rgba(0, 0, 0, 0.89);
+            color: rgba(16, 255, 0, 0.98);
+            font-size: 15px;
+            border: 2px solid rgb(24, 255, 0);
+        }
+
+        .hide {
+            display: none;
+        }
+
+        #btcAmt {
+            /*color: rgba(43, 43, 43, 0.83);*/
+            font-size: 13px;
+            padding-right: 3px;
+            text-align: right;
+
+        }
+
+        #tradeSize {
+            padding-left: 5px;
+        }
+
+        #tradeIcon {
+            padding: 0px;
+            padding-left: 4px;
+        }
+
+        #elapsedTime {
+            font-size: 11px;
+            font-style: italic;
+            font-weight: normal;
+            color: rgba(66, 66, 66, 0.78);
+            padding-right: 5px;
+        }
+
+        #liqTimeElapsed {
+            font-size: 11px;
+            font-style: italic;
+            font-weight: normal;
+            color: rgba(66, 66, 66, 0.78);
+            padding-right: 5px;
+        }
+
+        #liqStartSize {
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.78);
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+
+        #tradePrice {
+            font-size: 14px;
+            padding-left: 3px;
+            padding-right: 5px;
+            font-weight: normal;
+            font-style: normal;
+            /*color: #5a5a5a;*/
+
+        }
+
+        #slip {
+            vertical-align: middle;
+            /*color: #59cfd9;*/
+            font-size: 12px;
+            font-weight: normal;
+
+            padding-right: 9px;
+            padding-left: 9px;
+            line-height: 1px;
+
+        }
+
+        .slipIcon {
+            padding-right: 4px;
+
+
+        }
+
+        .slipIcon img {
+            height: 10px;
+            width: 10px;
+        }
+
+
+        #slipdiv {
+
+        }
+
+
+
+        #atSign {
+            font-size: 11px;
+            font-style: italic;
+            color: rgba(40, 40, 40, 0.76);
+            /*padding-right: 2px;*/
+        }
+
+        #betaText {
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+        }
+
+        #betaText:hover {
+            color: greenyellow;
+        }
+
+        #cornlolText {
+            color: rgba(158, 158, 158, 0.71);
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+        }
+
+        #cornlolText:hover {
+            color: greenyellow;
+        }
+
+        .footerRightText {
+            padding: 5px;
+            color: rgba(122, 191, 51, 0.71);
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+        }
+
+        .footerRightText:hover {
+            color: greenyellow;
+        }
+
+        .footerRightSplit {
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+            color: rgba(26, 244, 45, 0.56);
+            /*font-weight: bold;*/
+            font-size: 14px;
+        }
+
+        .footerRightSplit:hover {
+            color: rgba(31, 255, 48, 0.51);
+            font-size: 14px;
+        }
+
+
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+            -webkit-animation-name: fadeIn; /* Fade in the background */
+            -webkit-animation-duration: 0.4s;
+            animation-name: fadeIn;
+            animation-duration: 0.4s
+        }
+
+        /* Modal Content */
+        .modal-content {
+            position: fixed;
             bottom: 0;
-            opacity: 1
+            background-color: #fefefe;
+            width: fit-content;
+            -webkit-animation-name: slideIn;
+            -webkit-animation-duration: 0.4s;
+            animation-name: slideIn;
+            animation-duration: 0.4s
         }
-    }
 
-    @-webkit-keyframes fadeIn {
-        from {
-            opacity: 0
+        /* The Close Button */
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
         }
-        to {
-            opacity: 1
-        }
-    }
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
         }
-        to {
-            opacity: 1
+
+        .modal-header {
+            padding: 2px 16px;
+            background-color: #5cb85c;
+            color: white;
         }
-    }
-</style>
+
+        .modal-body {
+            padding: 10px;
+            background-color: #4e4e4e;
+        }
+
+        .mainSettingsDiv {
+            margin: 2px;
+        }
+
+        .mainSettingsDiv b {
+            padding-left: 5px;
+            padding-right: 5px;
+            font-size: 18px;
+            color: #b2b2b2;
+        }
+
+        .mainSettingsDiv h2 {
+            padding-left: 5px;
+            font-size: 28px;
+            color: #cacaca;
+        }
+
+        .settingsitem.header {
+            /*background-color: #3d3d3c;*/
+            padding: 5px;
+        }
+
+        .mainSettingsDiv input {
+            padding: 5px;
+        }
 
 
-<!-- Default Statcounter code for corn.lol http://corn.lol-->
-<script type="text/javascript">
-    var sc_project=11947229;
-    var sc_invisible=1;
-    var sc_security="d2cbfc7b";
-    var sc_https=1;
-    var sc_remove_link=1;
-</script>
-<script type="text/javascript"
-        src="https://www.statcounter.com/counter/counter.js"
-        async></script>
-<noscript><div className="statcounter"><img className="statcounter"
-                                        src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
-                                        alt="Web Analytics"></div></noscript>
-<!-- End of Statcounter Code -->
+
+        .modal-footer {
+            padding: 10px;
+            background-color: #418a41;
+            color: white;
+        }
+
+        hr {
+
+            margin: 10px;
+
+            /*padding: 10px;*/
+
+            height: 2px;
+            color: rgba(97, 255, 73, 0.1);
+            background-color: rgba(97, 255, 73, 0.1);
+            border: 1px solid rgba(97, 255, 73, 0.1);
+        }
+
+        /* Add Animation */
+        @-webkit-keyframes slideIn {
+            from {
+                bottom: -300px;
+                opacity: 0
+            }
+            to {
+                bottom: 0;
+                opacity: 1
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                bottom: -300px;
+                opacity: 0
+            }
+            to {
+                bottom: 0;
+                opacity: 1
+            }
+        }
+
+        @-webkit-keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+            to {
+                opacity: 1
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+            to {
+                opacity: 1
+            }
+        }
+    </style>
+
+
+    <!-- Default Statcounter code for corn.lol http://corn.lol-->
+    <script type="text/javascript">
+        var sc_project=11947229;
+        var sc_invisible=1;
+        var sc_security="d2cbfc7b";
+        var sc_https=1;
+        var sc_remove_link=1;
+    </script>
+    <script type="text/javascript"
+            src="https://www.statcounter.com/counter/counter.js"
+            async></script>
+    <noscript><div className="statcounter"><img className="statcounter"
+                                                src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
+                                                alt="Web Analytics"></div></noscript>
+    <!-- End of Statcounter Code -->
 
 </body></html>
