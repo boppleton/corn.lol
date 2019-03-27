@@ -22,7 +22,7 @@
     <div id="footer"></div><script type="text/babel">
     /////////
     //
-    // corn.lol beta v1.44
+    // corn.lol beta v1.51
     //
     // © 2019 boppleton industries
     //
@@ -1154,8 +1154,9 @@
             const row = data.map((data, i) =>
                 <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount>0?data.highestAmount:data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
-                    <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px" height="15px"/></span></td>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
+                    <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px" height="15px"/></span></td>
+
                     <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
                     <td width="100%" id="spacer">{""}</td>
                     <td id="tradePrice">{this.getTradePriceLiq(data)}</td>
@@ -1200,8 +1201,9 @@
             const row = data.map((data, i) =>
                 <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
-                    <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px" height="15px"/></span></td>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
+                    <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px" height="15px"/></span></td>
+
                     <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
                     <td width="100%" id="spacer">{""}</td>
                     <td id="slip">{Row.getSlipIcon(data)}{Row.getSlip(data)}</td>
@@ -2512,5 +2514,5 @@
                                                 src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
                                                 alt="Web Analytics"></div></noscript>
     <!-- End of Statcounter Code -->
-
+</div>
 </body></html>
