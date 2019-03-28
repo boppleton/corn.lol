@@ -1244,7 +1244,7 @@
         static getSlip(data) {
             if (data.exchangeName !== "binance") {
                 var slip = data.lastPrice - data.firstPrice
-                if (Math.abs(slip) >= 0.5) {
+                if (Math.abs(slip) >= 0.1) {
                     return ( Math.abs(slip).toFixed(1) )
                 } else {return null}
             }
@@ -1253,7 +1253,7 @@
         static getSlipIcon(data) {
             if (data.exchangeName !== "binance") {
                 var slip = data.lastPrice - data.firstPrice
-                if (Math.abs(slip) >= 0.5) {
+                if (Math.abs(slip) >= 0.1) {
                     if (slip > 0) {
                         return "↗ "
                         // return <span className="slipIcon"><img src="img/down2.png" alt="up"/></span>
