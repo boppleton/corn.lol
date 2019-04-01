@@ -255,7 +255,7 @@
             var socket
             const socketMessageListener = (event) => {
 
-                // console.log("mex msg: " + JSON.stringify(event.data) )
+                console.log("mex msg: " + JSON.stringify(event.data) )
 
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
@@ -1240,7 +1240,7 @@
         static getBtcShow(data) {
             if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
                 var abs = Math.abs(data.btcAmt)
-                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1) + " btc")
+                return " " + abs > 9 ? (abs.toFixed(0) + " bch") : (abs.toFixed(1) + " bch")
             } else {return null}
         }
 
