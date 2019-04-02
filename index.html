@@ -1240,7 +1240,7 @@
         static getBtcShow(data) {
             if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
                 var abs = Math.abs(data.btcAmt)
-                return " " + abs > 9 ? (abs.toFixed(0) + " bch") : (abs.toFixed(1) + " bch")
+                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1) + " btc")
             } else {return null}
         }
 
