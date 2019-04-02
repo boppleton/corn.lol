@@ -675,6 +675,11 @@
                             <div>
                                 <Table data={this.state.marketdata}/>
                             </div>
+
+                            <div id="initialTextDiv">
+                                <h3>welcome to corn.lol/eth</h3>
+                                <span>ethereum market orders are shown with their total USD trade value.  use the settings (in bottom toolbar) to adjust mimimum amounts for each exchange</span>
+                            </div>
                         </div>
                         <div id="hiddendiv">
                             <div className="singleSettingsDiv">
@@ -2497,6 +2502,20 @@
                 opacity: 1
             }
         }
+
+        #initialTextDiv {
+            display: flex;
+            flex-direction: column;
+            color: coral;
+
+            padding: 10px;
+
+            font-family: 'Rubik', sans-serif;
+
+            background-color: #363636;
+
+        }
+
     </style>
 
 

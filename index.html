@@ -130,7 +130,7 @@
 
             // console.log("start constructor")
 
-            Start.textMessage("trades")
+            Start.textMessage("connected")
             Start.liquidationTextMessage("liquidations")
 
             setInterval(this.clearBigTradesLoop, 1000)
@@ -670,6 +670,11 @@
                         <div id="maintablediv">
                             <div>
                                 <Table data={this.state.marketdata}/>
+                            </div>
+
+                            <div id="initialTextDiv">
+                                <h2>welcome to corn.lol</h2>
+                                <span>bitcoin market orders are shown with their total USD trade value.  use the settings (in bottom toolbar) to adjust mimimum amounts for each exchange.  have fun! </span>
                             </div>
                         </div>
                         <div id="hiddendiv">
@@ -2493,6 +2498,28 @@
             opacity: 1
         }
     }
+
+
+
+
+
+
+
+    #initialTextDiv {
+        display: flex;
+        flex-direction: column;
+        color: coral;
+
+        padding: 10px;
+
+        font-family: 'Rubik', sans-serif;
+
+        background-color: #363636;
+
+    }
+
+
+
 </style>
 
 
