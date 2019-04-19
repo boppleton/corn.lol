@@ -17,6 +17,8 @@
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
 
     <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.10/pako_inflate.js"></script>
+
 
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
@@ -130,6 +132,16 @@
 
             // console.log("start constructor")
 
+            console.log("return: " + getCookie('return'))
+
+            if (getCookie('return')) {
+                this.state.return = true
+            } else {
+                this.state.return = false
+                setCookie('return', true, 300)
+            }
+
+
             Start.textMessage("connected")
             Start.liquidationTextMessage("liquidations")
 
@@ -139,6 +151,8 @@
             this.bitfinexWebSocketClient(c)
             this.setupCoinbaseWebsocketClient(c)
             this.binanceWebSocketClient(c)
+            // this.okexWebSocketClient(c)
+
             this.setupSettings()
             this.scrollUpLoop()
 
@@ -255,7 +269,7 @@
             var socket
             const socketMessageListener = (event) => {
 
-                console.log("mex msg: " + JSON.stringify(event.data) )
+                // console.log("mex msg: " + JSON.stringify(event.data) )
 
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
@@ -534,6 +548,82 @@
             return trade
         }
 
+
+
+
+
+        okexWebSocketClient(c) {
+
+            console.log("okex start")
+
+            var socket
+
+
+
+            const socketMessageListener = (event) => {
+                if (true) {//todo: okexenabled
+                    // let trade = JSON.parse(event)
+
+                    var msg = pako.inflate(event)
+
+                    console.log("msg: " + msg)
+
+                    // console.log("okex trade " + JSON.stringify(event.event))
+
+
+                    // if (trade == null || trade[1] !== "te") {return}
+                    // let trade2 = Start.bitfinexTrade(trade)
+                    // if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
+                    //     trades[0].btcAmt += trade2[0].btcAmt
+                    //     trades[0].size += trade2[0].size
+                    //     trades[0].lastPrice = trade2[0].price
+                    // } else if (trade2[0].size >= bitfinexMinMarket){
+                    //     if (trades == null) {
+                    //         trades = trade2
+                    //     } else {
+                    //         trades = trade2.concat(trades)}
+                    // }
+                    // c.setStreamData({data: trades})
+                }
+            }
+
+            const socketOpenListener = (event) => {
+                console.log('okex open')
+                socket.send("{\"op\": \"subscribe\", \"args\": [\"swap/trade:BTC-USD-SWAP\"]}")
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {console.error('okex close')}
+                socket = new WebSocket('wss://real.okex.com:10442/ws/v3')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+            socketCloseListener()
+        }
+
+        static okexTrade(tradeRaw) {
+            // let trade = []
+            // trade.push({
+            //     symbol: "BTCUSD",
+            //     price: tradeRaw[4],
+            //     size: Math.abs(parseInt(tradeRaw[5] * tradeRaw[4])),
+            //     timestamp: tradeRaw[3],
+            //     side: tradeRaw[5] > 0,
+            //     exchangeName: "bitfinex",
+            //     startTime: Date.now(),
+            //     btcAmt: tradeRaw[5],
+            //     firstPrice: tradeRaw[4],
+            //     lastPrice: tradeRaw[4]
+            // })
+            // return trade
+        }
+
+
+
+
+
+
         setupCoinbaseWebsocketClient(c) {
             var socket
             const socketMessageListener = (event) => {
@@ -545,7 +635,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
+                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket && !(parseFloat(trade[0].size)>300000 && parseFloat(trade[0].btcAmt)<20)) {
                         if (trades == null) {
                             trades = trade
                         } else {trades = trade.concat(trades)}
@@ -664,6 +754,14 @@
 
 
         render() {
+
+            let hello = (
+                <div id="initialTextDiv">
+                    <h2>welcome to corn.lol</h2>
+                    <span>bitcoin market orders are shown with their total USD trade value.  use the settings (in bottom toolbar) to adjust mimimum amounts for each exchange.  have fun! </span>
+                </div>
+            )
+
             return (
                 <div id="rootydiv" className="rootydiv">
                     <div id="tableandbottom" className="drag">
@@ -672,10 +770,8 @@
                                 <Table data={this.state.marketdata}/>
                             </div>
 
-                            <div id="initialTextDiv">
-                                <h2>welcome to corn.lol</h2>
-                                <span>bitcoin market orders are shown with their total USD trade value.  use the settings (in bottom toolbar) to adjust mimimum amounts for each exchange.  have fun! </span>
-                            </div>
+                            {this.state.return?'':hello}
+
                         </div>
                         <div id="hiddendiv">
                             <div className="singleSettingsDiv">
@@ -762,8 +858,6 @@
                 //         "container_id": "tradingview_1a86e"
                 //     }
                 // );
-
-
 
 
 
@@ -2522,21 +2616,5 @@
 
 </style>
 
-
-<!-- Default Statcounter code for corn.lol http://corn.lol-->
-<script type="text/javascript">
-    var sc_project=11947229;
-    var sc_invisible=1;
-    var sc_security="d2cbfc7b";
-    var sc_https=1;
-    var sc_remove_link=1;
-</script>
-<script type="text/javascript"
-        src="https://www.statcounter.com/counter/counter.js"
-        async></script>
-<noscript><div className="statcounter"><img className="statcounter"
-                                        src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
-                                        alt="Web Analytics"></div></noscript>
-<!-- End of Statcounter Code -->
 
 </body></html>
