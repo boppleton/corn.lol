@@ -9,4 +9,3 @@ exchange | market orders | liquidations | book
 **binance** | :heavy_check_mark: | :x: |  :construction:
 **okex** | :construction: | :x: |  :construction:
 **deribit** | :construction: | :x: |  :construction:
-**okex** | :construction: | :construction: |  :construction:
