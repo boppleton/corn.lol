@@ -1,47 +1,35 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html><html>
+<head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
-    <script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script><script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'UA-115388644-2');
-    </script>
-
+        function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
+        gtag('config', 'UA-115388644-2');</script>
     <meta charset="UTF-8"/>
-    <title>corn.lol - crypto trades aggregator</title>
+    <title>corn.lol - bitcoin trades and liquidations ticker</title>
     <meta name="description" content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-
     <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.10/pako_inflate.js"></script>
-
-
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.10/pako_inflate.js"></script>-->
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
-
     <!--<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>-->
-
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
-</head><body>
+</head>
+
+<body>
 <div id="root">
     <div id="bbb">
         <div id="rootydiv"></div>
         <div id="rightside"></div>
     </div>
-    <div id="footer"></div><script type="text/babel">
-    /////////
-    //
-    // corn.lol beta v1.44
-    //
-    // © 2019 boppleton industries
-    //
-    // https://github.com/boppleton/corn.lol
-    //
-    /////////
+    <div id="footer"></div>
+</div>
+
+<script type="text/babel">
+
 
     let minTradeSize = 100
 
@@ -632,13 +620,28 @@
                     if (tradeRaw == null || tradeRaw.type !== "match") {return}
                     let trade = Start.coinbaseTrade(tradeRaw)
                     if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
+
+                        if (trades[0].size > 300000 && trades[0].btcAmt < 20) {
+
+                            console.log("coinbase bug tracker, printing ")
+
+                            console.log("trade: " + JSON.stringify(trade))
+
+                            console.log(JSON.stringify("trades[0]: " + JSON.stringify(trades[0])))
+
+                            trades[0].hide = true
+
+                        }
+
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
                     } else if (parseFloat(trade[0].size) >= coinbaseMinMarket && !(parseFloat(trade[0].size)>300000 && parseFloat(trade[0].btcAmt)<20)) {
                         if (trades == null) {
                             trades = trade
-                        } else {trades = trade.concat(trades)}
+                        } else {
+                            trades = trade.concat(trades)
+                        }
                     }
                     // c.setStreamData({data: trades})
                 }
@@ -1303,7 +1306,7 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : data.hide?"hide":"")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
                     <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
