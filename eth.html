@@ -1,13 +1,10 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html><html>
+<head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'UA-115388644-2');
-    </script>
+    <script>window.dataLayer = window.dataLayer || []
+        function gtag() {dataLayer.push(arguments)}gtag('js', new Date())
+        gtag('config', 'UA-115388644-2')</script>
 
     <meta charset="UTF-8"/>
     <title>corn.lol - crypto trades aggregator</title>
@@ -15,1536 +12,1607 @@
     <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-
     <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
-
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
-
     <!--<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>-->
-
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
-</head><body>
+</head>
+<body>
+
+
+
 <div id="root">
     <div id="bbb">
         <div id="rootydiv"></div>
         <div id="rightside"></div>
     </div>
-    <div id="footer"></div><script type="text/babel">
-    /////////
-    //
-    // corn.lol beta v1.51
-    //
-    // © 2019 boppleton industries
-    //
-    // https://github.com/boppleton/corn.lol
-    //
-    /////////
+    <div id="footer"></div>
+    <script type="text/babel">
 
-    let minTradeSize = 100
+        /////////
+        //
+        // corn.lol beta v1.72
+        //
+        // © 2019 boppleton industries
+        //
+        // https://github.com/boppleton/corn.lol
+        //
+        /////////
 
-    // qty of trades to keep in memory
-    let under5mem = 50
-    let over5under50mem = 50
-    let over50under250mem = 50
-    let over250mem = 50
+        let minTradeSize = 100
 
-    // default startup settings
-    var bitmexMinMarket = 20000
-    var bitfinexMinMarket = 5000
-    var coinbaseMinMarket = 5000
-    var binanceMinMarket = 15000
-    var bitmexMinLiq = 1
-    var bitmexLiqEnabled = true
-    var bitmexEnabled = true
-    var bitfinexEnabled = true
-    var coinbaseEnabled = true
-    var binanceEnabled = true
+        // qty of trades to keep in memory
+        let under5mem = 50
+        let over5under50mem = 50
+        let over50under250mem = 50
+        let over250mem = 50
 
-    // for font/colors change
-    var bitmexSize1 = 1
-    var bitmexSize2 = 2000
-    var bitmexSize3 = 10000
-    var bitmexSize4 = 100000
-    var bitmexSize5 = 500000
-    var bitmexSize6 = 1000000
-    var bitfinexSize1 = 1
-    var bitfinexSize2 = 1000
-    var bitfinexSize3 = 10000
-    var bitfinexSize4 = 50000
-    var bitfinexSize5 = 300000
-    var bitfinexSize6 = 500000
+        // default startup settings
+        var bitmexMinMarket = 20000
+        var bitfinexMinMarket = 5000
+        var coinbaseMinMarket = 5000
+        var binanceMinMarket = 15000
+        var bitmexMinLiq = 1
+        var bitmexLiqEnabled = true
+        var bitmexEnabled = true
+        var bitfinexEnabled = true
+        var coinbaseEnabled = true
+        var binanceEnabled = true
 
-    var trades = null
-    var liquidations = null
+        // for font/colors change
+        var bitmexSize1 = 1
+        var bitmexSize2 = 2000
+        var bitmexSize3 = 10000
+        var bitmexSize4 = 100000
+        var bitmexSize5 = 500000
+        var bitmexSize6 = 1000000
+        var bitfinexSize1 = 1
+        var bitfinexSize2 = 1000
+        var bitfinexSize3 = 10000
+        var bitfinexSize4 = 50000
+        var bitfinexSize5 = 300000
+        var bitfinexSize6 = 500000
 
-    var hoverable = true;
+        var trades = null
+        var liquidations = null
 
-    var currentPrice = 0
+        var hoverable = true
 
-    const setCookie = (cookieKey, cookieValue, expirationDays) => {
-        let expiryDate = '';
+        var currentPrice = 0
 
-        if (expirationDays) {
-            const date = new Date();
+        const setCookie = (cookieKey, cookieValue, expirationDays) => {
+            let expiryDate = ''
 
-            date.setUTCFullYear(2052)
+            if (expirationDays) {
+                const date = new Date()
 
-            expiryDate = `; expiryDate=" ${date.toUTCString()}`;
-        }
+                date.setUTCFullYear(2052)
 
-        document.cookie = ("ETH" + cookieKey) + "=" + cookieValue + "; expires=Thu, 25 Dec 2052 12:00:00 UTC; path=/"
-
-        // document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
-
-
-
-    }
-
-    const getCookie = (cookieKey) => {
-        let cookieName = `${"ETH" + cookieKey}=`;
-
-        let cookieArray = document.cookie.split(';');
-
-        for (let cookie of cookieArray) {
-
-            while (cookie.charAt(0) == ' ') {
-                cookie = cookie.substring(1, cookie.length);
+                expiryDate = `; expiryDate=" ${date.toUTCString()}`
             }
 
-            if (cookie.indexOf(cookieName) == 0) {
-                return cookie.substring(cookieName.length, cookie.length);
-            }
-        }
-    }
+            document.cookie = ("ETH" + cookieKey) + "=" + cookieValue + "; expires=Thu, 25 Dec 2052 12:00:00 UTC; path=/"
 
-
-    class Start extends React.Component {
-        constructor(props) {
-
-            super(props)
-            this.state = {marketdata: [], liqdata: []}
-            this.instance = this
-
-            let c = this.instance
-
-            // console.log("start constructor")
-
-            Start.textMessage("trades")
-            Start.liquidationTextMessage("liquidations")
-
-            setInterval(this.clearBigTradesLoop, 1000)
-            setInterval(this.setTitleLoop, 2000)
-            this.bitmexWebSocketClient(c)
-            this.bitfinexWebSocketClient(c)
-            this.setupCoinbaseWebsocketClient(c)
-            this.binanceWebSocketClient(c)
-            this.setupSettings()
-            this.scrollUpLoop()
-
-
-            setInterval(this.setStreamDataLoop, 500, c)
-        }
-
-
-
-        setStreamData(data) {this.setState(data)}
-
-        setStreamDataLoop(c) {
-
-            c.setStreamData({marketdata: trades, liqdata: liquidations})
+            // document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
 
 
         }
 
-        // removes trades over max for each size grouping
-        clearBigTradesLoop() {
-            let under5count = 0
-            let over5under50count = 0
-            let over50under250count = 0
-            let over250count = 0
+        const getCookie = (cookieKey) => {
+            let cookieName = `${"ETH" + cookieKey}=`
 
-            for (let i = trades.length - 1; i > 1; i--) {
+            let cookieArray = document.cookie.split(';')
 
-                let tradeSize = Math.abs(trades[i].size)
+            for (let cookie of cookieArray) {
 
-                if (tradeSize < 5000) {
-                    under5count++
-                } else if (tradeSize < 50000) {
-                    over5under50count++
-                } else if (tradeSize < 250000) {
-                    over50under250count++
-                } else if (tradeSize > 250000) {
-                    over250count++
+                while (cookie.charAt(0) == ' ') {
+                    cookie = cookie.substring(1, cookie.length)
+                }
+
+                if (cookie.indexOf(cookieName) == 0) {
+                    return cookie.substring(cookieName.length, cookie.length)
                 }
             }
+        }
 
-            // console.log("trade count; under 5k: " + under5count + " over 5 under 50: " + over5under50count + " over50 under 250: " + over50under250count + " over 250: " + over250count)
 
-            function deleteTrades(count, keep, lessThan, greaterThan) {
-                let deleteQty = count-keep
+        class Start extends React.Component {
+            constructor(props) {
+
+                super(props)
+                this.state = {marketdata: [], liqdata: []}
+                this.instance = this
+
+                let c = this.instance
+
+                // console.log("start constructor")
+
+                Start.textMessage("trades")
+                Start.liquidationTextMessage("liquidations")
+
+                setInterval(this.clearBigTradesLoop, 1000)
+                setInterval(this.setTitleLoop, 2000)
+                this.bitmexWebSocketClient(c)
+                this.bitfinexWebSocketClient(c)
+                this.setupCoinbaseWebsocketClient(c)
+                this.binanceWebSocketClient(c)
+                this.setupSettings()
+                this.scrollUpLoop()
+
+
+                setInterval(this.setStreamDataLoop, 500, c)
+            }
+
+
+            setStreamData(data) {
+                this.setState(data)
+            }
+
+            setStreamDataLoop(c) {
+
+                c.setStreamData({marketdata: trades, liqdata: liquidations})
+
+
+            }
+
+            // removes trades over max for each size grouping
+            clearBigTradesLoop() {
+                let under5count = 0
+                let over5under50count = 0
+                let over50under250count = 0
+                let over250count = 0
+
                 for (let i = trades.length - 1; i > 1; i--) {
-                    if (trades !== null) {
-                        if (trades[i] !== null && Math.abs(trades[i].size) <= lessThan && Math.abs(trades[i].size) >= greaterThan) {
-                            if (i > keep) {
-                                trades.splice(i, 1)
-                                deleteQty--
-                            }
 
-                        }
-                        if (deleteQty <= 0) {return}
+                    let tradeSize = Math.abs(trades[i].size)
+
+                    if (tradeSize < 5000) {
+                        under5count++
+                    } else if (tradeSize < 50000) {
+                        over5under50count++
+                    } else if (tradeSize < 250000) {
+                        over50under250count++
+                    } else if (tradeSize > 250000) {
+                        over250count++
                     }
                 }
-            }
 
-            if (under5count > under5mem) {
-                deleteTrades(under5count, under5mem, 5000, 0)
-            }
-            if (over5under50count > over5under50mem) {
-                deleteTrades(over5under50count, over5under50mem, 50000, 5000)
-            }
-            if (over50under250count > over50under250mem) {
-                deleteTrades(over50under250count, over50under250mem, 250000, 50000)
-            }
-            if (over250count > over250mem) {
-                deleteTrades(over250count, over250mem, 100000000, 250000)
-            }
+                // console.log("trade count; under 5k: " + under5count + " over 5 under 50: " + over5under50count + " over50 under 250: " + over50under250count + " over 250: " + over250count)
 
-            function deleteLiqs(count, keep, lessThan, greaterThan) {
-                let deleteQty = count-keep
+                function deleteTrades(count, keep, lessThan, greaterThan) {
+                    let deleteQty = count - keep
+                    for (let i = trades.length - 1; i > 1; i--) {
+                        if (trades !== null) {
+                            if (trades[i] !== null && Math.abs(trades[i].size) <= lessThan && Math.abs(trades[i].size) >= greaterThan) {
+                                if (i > keep) {
+                                    trades.splice(i, 1)
+                                    deleteQty--
+                                }
+
+                            }
+                            if (deleteQty <= 0) {
+                                return
+                            }
+                        }
+                    }
+                }
+
+                if (under5count > under5mem) {
+                    deleteTrades(under5count, under5mem, 5000, 0)
+                }
+                if (over5under50count > over5under50mem) {
+                    deleteTrades(over5under50count, over5under50mem, 50000, 5000)
+                }
+                if (over50under250count > over50under250mem) {
+                    deleteTrades(over50under250count, over50under250mem, 250000, 50000)
+                }
+                if (over250count > over250mem) {
+                    deleteTrades(over250count, over250mem, 100000000, 250000)
+                }
+
+                function deleteLiqs(count, keep, lessThan, greaterThan) {
+                    let deleteQty = count - keep
+                    for (let i = liquidations.length - 1; i > 1; i--) {
+                        if (liquidations !== null) {
+                            if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) <= lessThan && Math.abs(liquidations[i].highestAmount) >= greaterThan) {
+                                if (i > keep) {
+                                    liquidations.splice(i, 1)
+                                    deleteQty--
+                                }
+
+                            }
+                            if (deleteQty <= 0) {
+                                return
+                            }
+                        }
+                    }
+                }
+
+                let under100kcount = 0
+                let over100kcount = 0
+
                 for (let i = liquidations.length - 1; i > 1; i--) {
-                    if (liquidations !== null) {
-                        if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) <= lessThan && Math.abs(liquidations[i].highestAmount) >= greaterThan) {
-                            if (i > keep) {
-                                liquidations.splice(i, 1)
-                                deleteQty--
+
+                    let tradeSize = Math.abs(liquidations[i].highestAmount)
+
+                    if (tradeSize < 100000) {
+                        under100kcount++
+                    } else {
+                        over100kcount++
+                    }
+                }
+
+                // console.log("liqs under100k: " + under100kcount + " over: " + over100kcount)
+
+                if (under100kcount >= 100) {
+                    deleteLiqs(under100kcount, 50, 100000, 0)
+                }
+                if (over100kcount >= 100) {
+                    deleteLiqs(over100kcount, 50, 100000000, 100000)
+                }
+            }
+
+            bitmexWebSocketClient(c) {
+                // console.log("bitmexwsfunction()")
+                var socket
+                const socketMessageListener = (event) => {
+
+                    // console.log("mex msg: " + JSON.stringify(event.data) )
+
+                    if (bitmexEnabled) {
+                        let tradeRaw = JSON.parse(event.data)
+                        if (tradeRaw.data == null) {
+                            return
+                        }
+
+
+                        if (tradeRaw.table === "trade") {
+                            let trade = Start.bitmexTrade(tradeRaw.data)
+                            if (trade[0].size >= bitmexMinMarket) {
+                                if (trades == null) {
+                                    trades = trade
+                                } else {
+                                    trades = trade.concat(trades)
+                                }
+                                // c.setStreamData({data: trades})
+                            }
+                        } else if (tradeRaw.table === "liquidation") {
+                            for (let i = 0; i < tradeRaw.data.length; i++) {
+
+                                // console.log("\n\nliq message " + tradeRaw.action + JSON.stringify(tradeRaw.data[i]))
+
+                                let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
+
+                                // console.log("size: " + liq.size + " highestsize: " + liq.highestAmount)
+
+                                if (liq.action === "insert") {
+                                    if (liquidations == null) {
+                                        liquidations = liq
+                                    } else {
+                                        liquidations = liq.concat(liquidations)
+                                    }
+                                } else if (liq.action === "update") {
+                                    for (let i = 0; i < liquidations.length; i++) {
+                                        if (liquidations[i].id === liq.id) {
+                                            if (liq.size !== 0 && !isNaN(liq.size)) {
+                                                liquidations[i].size = liq.size
+                                            }
+                                            if (!isNaN(liq.size) && liq.size > liquidations[i].highestAmount) {
+                                                liquidations[i].highestAmount = liq.size
+                                            }
+                                            if (liq.price > 0 && !isNaN(liq.price)) {
+                                                liquidations[i].price = liq.price
+                                            }
+
+                                            console.log(liquidations[i].id + " updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
+
+                                            // if (liquidations[i].highestAmount > 1000000) {
+                                            //
+                                            //     let liqToTop = [liquidations[i]]
+                                            //     console.log("moving liq to top: " + JSON.stringify(liqToTop))
+                                            //     liquidations = liquidations.splice(i, 1)
+                                            //     liquidations = liqToTop.concat(liquidations)
+                                            //
+                                            //     console.log("new liquidations: " + JSON.stringify(liquidations))
+                                            // }
+                                        }
+                                    }
+                                } else if (liq.action === "delete") {
+                                    for (let i = 0; i < liquidations.length; i++) {
+                                        if (liquidations[i].id === liq.id) {
+                                            liquidations[i].deleted = true
+                                            liquidations[i].size = 0
+                                            liquidations[i].endTime = Date.now()
+                                        }
+                                    }
+                                }
+
                             }
 
                         }
-                        if (deleteQty <= 0) {return}
                     }
                 }
+
+
+                const socketOpenListener = (event) => {
+                    console.log('mex open')
+                    socket.send("{\"op\": \"" + "subscribe\", \"args\": [\"" + "liquidation" + ":" + "ETHUSD" + "\"]}")
+                }
+                const socketCloseListener = (event) => {
+                    if (socket) {
+                        console.error('mex close')
+                    }
+                    socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:ETHUSD')
+                    socket.addEventListener('open', socketOpenListener)
+                    socket.addEventListener('message', socketMessageListener)
+                    socket.addEventListener('close', socketCloseListener)
+                }
+
+                setTimeout(function () {
+                    socketCloseListener()
+                }, 3000)
+
             }
 
-            let under100kcount = 0
-            let over100kcount = 0
+            static bitmexLiq(liqraw, action) {
+                let liq = []
 
-            for (let i = liquidations.length - 1; i > 1; i--) {
+                liq.push({
+                    exchangeName: "bitmex",
+                    id: liqraw.orderID,
+                    action: action,
+                    side: liqraw.side === "Buy",
+                    price: liqraw.price,
+                    firstPrice: liqraw.price,
+                    size: parseFloat(liqraw.leavesQty).toFixed(0),
+                    update: "",
+                    liq: true,
+                    startSize: parseFloat(liqraw.leavesQty).toFixed(0),
+                    highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
+                    deleted: false,
+                    startTime: Date.now()
+                })
 
-                let tradeSize = Math.abs(liquidations[i].highestAmount)
+                liq.exchangeName = "bitmex"
+                liq.id = liqraw.orderID
+                liq.action = action
+                liq.side = liqraw.side === "Buy"
+                liq.price = liqraw.price
+                liq.firstPrice = liqraw.price
+                liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
+                liq.update = ""
+                liq.liq = true
+                liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
+                liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
+                liq.deleted = false
+                liq.startTime = Date.now()
 
-                if (tradeSize < 100000) {
-                    under100kcount++
-                } else  {
-                    over100kcount++
+
+                return liq
+
+            }
+
+            static bitmexTrade(tradeRaw) {
+                let trade = []
+                let totalSize = 0
+                for (let i = 0; i < tradeRaw.length; i++) {
+                    totalSize += tradeRaw[i].size
+                }
+
+                let firstPrice = tradeRaw[0].price
+                let lastPrice = tradeRaw[tradeRaw.length - 1].price
+
+                if (tradeRaw[tradeRaw.length - 1].price !== currentPrice) {
+                    currentPrice = tradeRaw[tradeRaw.length - 1].price
+                }
+
+
+                trade.push({
+                    symbol: "ETHUSD",
+                    price: lastPrice,
+                    timestamp: tradeRaw[0].timestamp,
+                    side: tradeRaw[0].side === "Buy",
+                    exchangeName: "bitmex",
+                    startTime: Date.now(),
+                    firstPrice: firstPrice,
+                    lastPrice: lastPrice,
+                    size: totalSize
+                })
+                return trade
+            }
+
+            static textMessage(s) {
+                let trade = []
+                trade.push({
+                    symbol: "message",
+                    price: 5000,
+                    size: 1,
+                    timestamp: Date.now,
+                    side: true,
+                    exchangeName: "message",
+                    startTime: Date.now,
+                    btcAmt: 0,
+                    firstPrice: 5000,
+                    lastPrice: 5000,
+                    message: s
+                })
+                trade.price = 5000
+                trade.size = 1
+                trade.timestamp = Date.now
+                trade.side = true
+                trade.exchangeName = "message"
+                trade.startTime = Date.now
+                trade.btcAmt = 0
+                trade.firstPrice = 5000
+                trade.lastPrice = 5000
+                this.message = s
+
+
+                if (trades == null) {
+                    trades = trade
+                } else {
+                    trades = trade.concat(trades)
+                }
+
+            }
+
+            static liquidationTextMessage(s) {
+                let message = []
+                message.push({
+                    symbol: "message",
+                    price: 5000,
+                    size: 1,
+                    timestamp: Date.now,
+                    side: true,
+                    exchangeName: "message",
+                    startTime: Date.now,
+                    btcAmt: 0,
+                    firstPrice: 5000,
+                    lastPrice: 5000,
+                    message: s,
+                    type: "liquidation"
+                })
+                message.price = 5000
+                message.size = 1
+                message.timestamp = Date.now
+                message.side = true
+                message.exchangeName = "message"
+                message.startTime = Date.now
+                message.btcAmt = 0
+                message.firstPrice = 5000
+                message.lastPrice = 5000
+                this.message = s
+
+
+                if (liquidations == null) {
+                    liquidations = message
+                } else {
+                    liquidations = message.concat(liquidations)
                 }
             }
 
-            // console.log("liqs under100k: " + under100kcount + " over: " + over100kcount)
+            bitfinexWebSocketClient(c) {
+                var socket
+                const socketMessageListener = (event) => {
+                    // console.log("event: " + JSON.stringify(event.data))
+                    if (bitfinexEnabled) {
+                        let trade = JSON.parse(event.data)
+                        if (trade == null || trade[1] !== "te") {
+                            return
+                        }
+                        let trade2 = Start.bitfinexTrade(trade)
+                        if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
+                            trades[0].btcAmt += trade2[0].btcAmt
+                            trades[0].size += trade2[0].size
+                            trades[0].lastPrice = trade2[0].price
+                        } else if (trade2[0].size >= bitfinexMinMarket) {
+                            if (trades == null) {
+                                trades = trade2
+                            } else {
+                                trades = trade2.concat(trades)
+                            }
+                        }
+                        // c.setStreamData({data: trades})
+                    }
+                }
 
-            if (under100kcount >= 100) {
-                deleteLiqs(under100kcount, 50, 100000, 0)
+                const socketOpenListener = (event) => {
+                    console.log('finex open')
+                    socket.send("{\n" +
+                        "  \"event\": \"subscribe\",\n" +
+                        "  \"channel\": \"trades\",\n" +
+                        "  \"pair\": \"ETHUSD\"\n" +
+                        "}")
+                }
+
+                const socketCloseListener = (event) => {
+                    if (socket) {
+                        console.error('finex close')
+                    }
+                    socket = new WebSocket('wss://api.bitfinex.com/ws')
+                    socket.addEventListener('open', socketOpenListener)
+                    socket.addEventListener('message', socketMessageListener)
+                    socket.addEventListener('close', socketCloseListener)
+                }
+                socketCloseListener()
             }
-            if (over100kcount >= 100) {
-                deleteLiqs(over100kcount, 50, 100000000, 100000 )
+
+            static bitfinexTrade(tradeRaw) {
+                let trade = []
+                trade.push({
+                    symbol: "ETHUSD",
+                    price: tradeRaw[4],
+                    size: Math.abs(parseInt(tradeRaw[5] * tradeRaw[4])),
+                    timestamp: tradeRaw[3],
+                    side: tradeRaw[5] > 0,
+                    exchangeName: "bitfinex",
+                    startTime: Date.now(),
+                    btcAmt: tradeRaw[5],
+                    firstPrice: tradeRaw[4],
+                    lastPrice: tradeRaw[4]
+                })
+
+                console.log("finex trade: " + JSON.stringify(trade))
+                return trade
             }
-        }
 
-        bitmexWebSocketClient(c) {
-            // console.log("bitmexwsfunction()")
-            var socket
-            const socketMessageListener = (event) => {
-
-                // console.log("mex msg: " + JSON.stringify(event.data) )
-
-                if (bitmexEnabled) {
-                    let tradeRaw = JSON.parse(event.data)
-                    if (tradeRaw.data == null) {return}
-
-
-                    if (tradeRaw.table ==="trade") {
-                        let trade = Start.bitmexTrade(tradeRaw.data)
-                        if (trade[0].size >= bitmexMinMarket) {
+            setupCoinbaseWebsocketClient(c) {
+                var socket
+                const socketMessageListener = (event) => {
+                    // console.log("coinbase event " + JSON.stringify(event.data))
+                    if (coinbaseEnabled) {
+                        let tradeRaw = JSON.parse(event.data)
+                        if (tradeRaw == null || tradeRaw.type !== "match") {
+                            return
+                        }
+                        let trade = Start.coinbaseTrade(tradeRaw)
+                        if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
+                            trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
+                            trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
+                            trades[0].lastPrice = parseFloat(trade.price)
+                        } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
                             if (trades == null) {
                                 trades = trade
                             } else {
                                 trades = trade.concat(trades)
                             }
-                            // c.setStreamData({data: trades})
                         }
-                    } else if (tradeRaw.table==="liquidation") {
-                        for (let i = 0; i < tradeRaw.data.length; i++ ) {
+                        // c.setStreamData({data: trades})
+                    }
+                }
 
-                            // console.log("\n\nliq message " + tradeRaw.action + JSON.stringify(tradeRaw.data[i]))
+                const socketOpenListener = (event) => {
+                    console.log('cb open')
+                    socket.send("{\"type\": \"subscribe\", \"product_ids\": [\"ETH-USD\"],\"channels\": [\"matches\"]}")
+                }
 
-                            let liq = Start.bitmexLiq(tradeRaw.data[i], tradeRaw.action)
+                const socketCloseListener = (event) => {
+                    if (socket) {
+                        console.error('cb close')
+                    }
+                    socket = new WebSocket('wss://ws-feed.pro.coinbase.com')
+                    socket.addEventListener('open', socketOpenListener)
+                    socket.addEventListener('message', socketMessageListener)
+                    socket.addEventListener('close', socketCloseListener)
+                }
+                socketCloseListener()
+            }
 
-                            // console.log("size: " + liq.size + " highestsize: " + liq.highestAmount)
+            static coinbaseTrade(tradeRaw) {
+                let size = parseFloat(tradeRaw.size) * parseFloat(tradeRaw.price)
+                let time = Date.parse(tradeRaw.time)
+                let trade = []
+                trade.push({
+                    symbol: "ETHUSD",
+                    price: parseFloat(tradeRaw.price).toFixed(1),
+                    size: Math.abs(size).toFixed(0),
+                    side: tradeRaw.side === "sell",
+                    timestamp: time,
+                    exchangeName: "coinbase",
+                    startTime: Date.now(),
+                    btcAmt: tradeRaw.size,
+                    firstPrice: parseFloat(tradeRaw.price).toFixed(1),
+                    lastPrice: parseFloat(tradeRaw.price).toFixed(1)
+                })
 
-                            if (liq.action==="insert") {
-                                if (liquidations==null) {
-                                    liquidations = liq
-                                } else {
-                                    liquidations = liq.concat(liquidations)
-                                }
-                            } else if (liq.action==="update") {
-                                for (let i = 0; i < liquidations.length; i++) {
-                                    if (liquidations[i].id===liq.id) {
-                                        if (liq.size !==0 && !isNaN(liq.size)) {
-                                            liquidations[i].size = liq.size
-                                        }
-                                        if (!isNaN(liq.size) && liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
-                                        if (liq.price > 0 && !isNaN(liq.price)) {liquidations[i].price = liq.price}
+                trade.btcAmt = parseFloat(tradeRaw.size).toFixed(1)
+                trade.timestamp = time
+                trade.size = Math.abs(size).toFixed(0)
+                trade.side = tradeRaw.side === "sell"
+                trade.price = parseFloat(tradeRaw.price)
+                trade.firstPrice = parseFloat(tradeRaw.price).toFixed(1)
+                trade.lastPrice = parseFloat(tradeRaw.price).toFixed(1)
+                return trade
+            }
 
-                                        console.log(liquidations[i].id + " updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
-
-                                        // if (liquidations[i].highestAmount > 1000000) {
-                                        //
-                                        //     let liqToTop = [liquidations[i]]
-                                        //     console.log("moving liq to top: " + JSON.stringify(liqToTop))
-                                        //     liquidations = liquidations.splice(i, 1)
-                                        //     liquidations = liqToTop.concat(liquidations)
-                                        //
-                                        //     console.log("new liquidations: " + JSON.stringify(liquidations))
-                                        // }
-                                    }
-                                }
-                            } else if (liq.action==="delete") {
-                                for (let i = 0; i < liquidations.length; i++) {
-                                    if (liquidations[i].id===liq.id) {
-                                        liquidations[i].deleted = true
-                                        liquidations[i].size = 0
-                                        liquidations[i].endTime = Date.now()
-                                    }
-                                }
+            binanceWebSocketClient(c) {
+                var socket
+                const socketMessageListener = (event) => {
+                    if (binanceEnabled) {
+                        let trade = JSON.parse(event.data)
+                        if (trade == null || trade.e !== "aggTrade") {
+                            return
+                        }
+                        let trade2 = Start.binanceTrade(trade)
+                        if (trades[0] != null && trades[0].timestamp === trade2.timestamp && trades[0].side === trade2.side) {
+                            trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
+                            trades[0].size = trades[0].size + trade2.size
+                            trades[0].lastPrice = trade2.price
+                        } else if (trade2[0].size >= binanceMinMarket) {
+                            if (trades == null) {
+                                trades = trade
+                            } else {
+                                trades = trade2.concat(trades)
                             }
-
                         }
 
+                        // c.setStreamData({data: trades})
                     }
                 }
-            }
 
-
-            const socketOpenListener = (event) => {
-                console.log('mex open')
-                socket.send("{\"op\": \"" + "subscribe\", \"args\": [\"" + "liquidation" + ":" + "ETHUSD" + "\"]}");
-            }
-            const socketCloseListener = (event) => {
-                if (socket) {console.error('mex close')}
-                socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:ETHUSD')
-                socket.addEventListener('open', socketOpenListener)
-                socket.addEventListener('message', socketMessageListener)
-                socket.addEventListener('close', socketCloseListener)
-            }
-
-            setTimeout(function(){ socketCloseListener() }, 3000);
-
-        }
-
-        static bitmexLiq(liqraw, action) {
-            let liq = []
-
-            liq.push({
-                exchangeName: "bitmex",
-                id: liqraw.orderID,
-                action: action,
-                side: liqraw.side==="Buy",
-                price: liqraw.price,
-                firstPrice: liqraw.price,
-                size: parseFloat(liqraw.leavesQty).toFixed(0),
-                update: "",
-                liq: true,
-                startSize: parseFloat(liqraw.leavesQty).toFixed(0),
-                highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
-                deleted: false,
-                startTime: Date.now()
-            })
-
-            liq.exchangeName = "bitmex"
-            liq.id = liqraw.orderID
-            liq.action = action
-            liq.side = liqraw.side==="Buy"
-            liq.price = liqraw.price
-            liq.firstPrice = liqraw.price
-            liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
-            liq.update = ""
-            liq.liq = true
-            liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
-            liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
-            liq.deleted = false
-            liq.startTime = Date.now()
-
-
-            return liq
-
-        }
-
-        static bitmexTrade(tradeRaw) {
-            let trade = []
-            let totalSize = 0
-            for (let i = 0; i < tradeRaw.length; i++) {totalSize += tradeRaw[i].size}
-
-            let firstPrice = tradeRaw[0].price
-            let lastPrice = tradeRaw[tradeRaw.length - 1].price
-
-            if (tradeRaw[tradeRaw.length - 1].price !== currentPrice) {
-                currentPrice = tradeRaw[tradeRaw.length - 1].price
-            }
-
-
-            trade.push({
-                symbol: "ETHUSD",
-                price: lastPrice,
-                timestamp: tradeRaw[0].timestamp,
-                side: tradeRaw[0].side === "Buy",
-                exchangeName: "bitmex",
-                startTime: Date.now(),
-                firstPrice: firstPrice,
-                lastPrice: lastPrice,
-                size: totalSize
-            })
-            return trade
-        }
-
-        static textMessage(s) {
-            let trade = []
-            trade.push({
-                symbol: "message",
-                price: 5000,
-                size: 1,
-                timestamp: Date.now,
-                side: true,
-                exchangeName: "message",
-                startTime: Date.now,
-                btcAmt: 0,
-                firstPrice: 5000,
-                lastPrice: 5000,
-                message: s
-            })
-            trade.price = 5000
-            trade.size = 1
-            trade.timestamp = Date.now
-            trade.side = true
-            trade.exchangeName = "message"
-            trade.startTime = Date.now
-            trade.btcAmt = 0
-            trade.firstPrice = 5000
-            trade.lastPrice = 5000
-            this.message = s
-
-
-            if (trades==null) {
-                trades = trade
-            } else {
-                trades = trade.concat(trades)
-            }
-
-        }
-
-        static liquidationTextMessage(s) {
-            let message = []
-            message.push({
-                symbol: "message",
-                price: 5000,
-                size: 1,
-                timestamp: Date.now,
-                side: true,
-                exchangeName: "message",
-                startTime: Date.now,
-                btcAmt: 0,
-                firstPrice: 5000,
-                lastPrice: 5000,
-                message: s,
-                type: "liquidation"
-            })
-            message.price = 5000
-            message.size = 1
-            message.timestamp = Date.now
-            message.side = true
-            message.exchangeName = "message"
-            message.startTime = Date.now
-            message.btcAmt = 0
-            message.firstPrice = 5000
-            message.lastPrice = 5000
-            this.message = s
-
-
-            if (liquidations==null) {
-                liquidations = message
-            } else {
-                liquidations = message.concat(liquidations)
-            }
-        }
-
-        bitfinexWebSocketClient(c) {
-            var socket
-            const socketMessageListener = (event) => {
-                // console.log("event: " + JSON.stringify(event.data))
-                if (bitfinexEnabled) {
-                    let trade = JSON.parse(event.data)
-                    if (trade == null || trade[1] !== "te") {return}
-                    let trade2 = Start.bitfinexTrade(trade)
-                    if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
-                        trades[0].btcAmt += trade2[0].btcAmt
-                        trades[0].size += trade2[0].size
-                        trades[0].lastPrice = trade2[0].price
-                    } else if (trade2[0].size >= bitfinexMinMarket){
-                        if (trades == null) {
-                            trades = trade2
-                        } else {
-                            trades = trade2.concat(trades)}
-                    }
-                    // c.setStreamData({data: trades})
+                const socketOpenListener = (event) => {
+                    console.log('binance open')
                 }
-            }
 
-            const socketOpenListener = (event) => {
-                console.log('finex open')
-                socket.send("{\n" +
-                    "  \"event\": \"subscribe\",\n" +
-                    "  \"channel\": \"trades\",\n" +
-                    "  \"pair\": \"ETHUSD\"\n" +
-                    "}")
-            }
-
-            const socketCloseListener = (event) => {
-                if (socket) {console.error('finex close')}
-                socket = new WebSocket('wss://api.bitfinex.com/ws')
-                socket.addEventListener('open', socketOpenListener)
-                socket.addEventListener('message', socketMessageListener)
-                socket.addEventListener('close', socketCloseListener)
-            }
-            socketCloseListener()
-        }
-
-        static bitfinexTrade(tradeRaw) {
-            let trade = []
-            trade.push({
-                symbol: "ETHUSD",
-                price: tradeRaw[4],
-                size: Math.abs(parseInt(tradeRaw[5] * tradeRaw[4])),
-                timestamp: tradeRaw[3],
-                side: tradeRaw[5] > 0,
-                exchangeName: "bitfinex",
-                startTime: Date.now(),
-                btcAmt: tradeRaw[5],
-                firstPrice: tradeRaw[4],
-                lastPrice: tradeRaw[4]
-            })
-
-            console.log("finex trade: " + JSON.stringify(trade))
-            return trade
-        }
-
-        setupCoinbaseWebsocketClient(c) {
-            var socket
-            const socketMessageListener = (event) => {
-                // console.log("coinbase event " + JSON.stringify(event.data))
-                if (coinbaseEnabled) {
-                    let tradeRaw = JSON.parse(event.data)
-                    if (tradeRaw == null || tradeRaw.type !== "match") {return}
-                    let trade = Start.coinbaseTrade(tradeRaw)
-                    if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
-                        trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
-                        trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
-                        trades[0].lastPrice = parseFloat(trade.price)
-                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
-                        if (trades == null) {
-                            trades = trade
-                        } else {trades = trade.concat(trades)}
+                const socketCloseListener = (event) => {
+                    if (socket) {
+                        console.error('binance close')
                     }
-                    // c.setStreamData({data: trades})
+                    socket = new WebSocket('wss://stream.binance.com:9443/ws/ethusdt@aggTrade')
+                    socket.addEventListener('open', socketOpenListener)
+                    socket.addEventListener('message', socketMessageListener)
+                    socket.addEventListener('close', socketCloseListener)
                 }
+
+                socketCloseListener()
             }
 
-            const socketOpenListener = (event) => {
-                console.log('cb open')
-                socket.send("{\"type\": \"subscribe\", \"product_ids\": [\"ETH-USD\"],\"channels\": [\"matches\"]}")
+            static binanceTrade(tradeRaw) {
+                let pr = parseFloat(tradeRaw.p)
+                let btcSize = parseFloat(tradeRaw.q)
+                let totalSize = btcSize * pr
+
+                let trade = []
+                trade.push({
+                    symbol: "ETHUSDT",
+                    price: pr,
+                    size: Math.abs(totalSize),
+                    timestamp: tradeRaw.T,
+                    side: !tradeRaw.m,
+                    exchangeName: "binance",
+                    startTime: Date.now(),
+                    btcAmt: btcSize.toFixed(1),
+                    firstPrice: pr,
+                    lastPrice: pr
+                })
+                trade.price = pr
+                trade.size = Math.abs(totalSize)
+                trade.timestamp = tradeRaw.T
+                trade.side = !tradeRaw.m
+                trade.exchangeName = "binance"
+                trade.startTime = Date.now()
+                trade.btcAmt = btcSize.toFixed(1)
+                trade.firstPrice = pr
+                trade.lastPrice = pr
+
+                return trade
             }
 
-            const socketCloseListener = (event) => {
-                if (socket) {console.error('cb close')}
-                socket = new WebSocket('wss://ws-feed.pro.coinbase.com')
-                socket.addEventListener('open', socketOpenListener)
-                socket.addEventListener('message', socketMessageListener)
-                socket.addEventListener('close', socketCloseListener)
-            }
-            socketCloseListener()
-        }
 
-        static coinbaseTrade(tradeRaw) {
-            let size = parseFloat(tradeRaw.size) * parseFloat(tradeRaw.price)
-            let time = Date.parse(tradeRaw.time)
-            let trade = []
-            trade.push({
-                symbol: "ETHUSD",
-                price: parseFloat(tradeRaw.price).toFixed(1),
-                size: Math.abs(size).toFixed(0),
-                side: tradeRaw.side === "sell",
-                timestamp: time,
-                exchangeName: "coinbase",
-                startTime: Date.now(),
-                btcAmt: tradeRaw.size,
-                firstPrice: parseFloat(tradeRaw.price).toFixed(1),
-                lastPrice: parseFloat(tradeRaw.price).toFixed(1)
-            })
+            render() {
+                return (
+                    <div id="rootydiv" className="rootydiv">
+                        <div id="tableandbottom" className="drag">
+                            <div id="maintablediv">
+                                <div>
+                                    <Table data={this.state.marketdata}/>
+                                </div>
 
-            trade.btcAmt = parseFloat(tradeRaw.size).toFixed(1)
-            trade.timestamp = time
-            trade.size = Math.abs(size).toFixed(0)
-            trade.side = tradeRaw.side === "sell"
-            trade.price = parseFloat(tradeRaw.price)
-            trade.firstPrice = parseFloat(tradeRaw.price).toFixed(1)
-            trade.lastPrice = parseFloat(tradeRaw.price).toFixed(1)
-            return trade
-        }
-
-        binanceWebSocketClient(c) {
-            var socket
-            const socketMessageListener = (event) => {
-                if (binanceEnabled) {
-                    let trade = JSON.parse(event.data)
-                    if (trade == null || trade.e !== "aggTrade") {return}
-                    let trade2 = Start.binanceTrade(trade)
-                    if (trades[0] != null && trades[0].timestamp === trade2.timestamp && trades[0].side === trade2.side) {
-                        trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
-                        trades[0].size = trades[0].size + trade2.size
-                        trades[0].lastPrice = trade2.price
-                    } else if (trade2[0].size >= binanceMinMarket) {
-                        if (trades == null) {trades = trade
-                        } else {trades = trade2.concat(trades)}
-                    }
-
-                    // c.setStreamData({data: trades})
-                }
-            }
-
-            const socketOpenListener = (event) => {
-                console.log('binance open')
-            }
-
-            const socketCloseListener = (event) => {
-                if (socket) {console.error('binance close')}
-                socket = new WebSocket('wss://stream.binance.com:9443/ws/ethusdt@aggTrade')
-                socket.addEventListener('open', socketOpenListener)
-                socket.addEventListener('message', socketMessageListener)
-                socket.addEventListener('close', socketCloseListener)
-            }
-
-            socketCloseListener()
-        }
-
-        static binanceTrade(tradeRaw) {
-            let pr = parseFloat(tradeRaw.p)
-            let btcSize = parseFloat(tradeRaw.q)
-            let totalSize = btcSize * pr
-
-            let trade = []
-            trade.push({
-                symbol: "ETHUSDT",
-                price: pr,
-                size: Math.abs(totalSize),
-                timestamp: tradeRaw.T,
-                side: !tradeRaw.m,
-                exchangeName: "binance",
-                startTime: Date.now(),
-                btcAmt: btcSize.toFixed(1),
-                firstPrice: pr,
-                lastPrice: pr
-            })
-            trade.price = pr
-            trade.size = Math.abs(totalSize)
-            trade.timestamp = tradeRaw.T
-            trade.side = !tradeRaw.m
-            trade.exchangeName = "binance"
-            trade.startTime = Date.now()
-            trade.btcAmt = btcSize.toFixed(1)
-            trade.firstPrice = pr
-            trade.lastPrice = pr
-
-            return trade
-        }
-
-
-        render() {
-            return (
-                <div id="rootydiv" className="rootydiv">
-                    <div id="tableandbottom" className="drag">
-                        <div id="maintablediv">
-                            <div>
-                                <Table data={this.state.marketdata}/>
+                                <div id="initialTextDiv">
+                                    <h3>welcome to corn.lol/eth</h3>
+                                    <span>ethereum market orders are shown with their total USD trade value.  use the settings (in bottom toolbar) to adjust mimimum amounts for each exchange</span>
+                                </div>
                             </div>
+                            <div id="hiddendiv">
+                                <div className="singleSettingsDiv">
+                                    <a id="settingslink" href="javascript:void(0)"><img
+                                        src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                        width="30"/></a>
+                                    <span id="settingsButtonText">settings</span>
+                                </div>
 
-                            <div id="initialTextDiv">
-                                <h3>welcome to corn.lol/eth</h3>
-                                <span>ethereum market orders are shown with their total USD trade value.  use the settings (in bottom toolbar) to adjust mimimum amounts for each exchange</span>
+                                <span id="pad1"> <hr/> </span>
+
+                                <div className="singleSettingsDiv">
+
+                                    <a id="clearlink" href="javascript:void(0)"><img
+                                        src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                        width="30"/></a>
+                                    <span id="settingsButtonText">clear</span>
+                                </div>
+
+                                <span id="pad1"> <hr/> </span>
+
+                                <div className="singleSettingsDiv">
+
+                                    <a id="markethidelink" href="javascript:void(0)"><img src="img/closearrow.png"
+                                                                                          height="30"
+                                                                                          width="30"/></a>
+                                    <span id="settingsButtonText">close</span>
+                                </div>
                             </div>
                         </div>
-                        <div id="hiddendiv">
-                            <div className="singleSettingsDiv">
-                                <a id="settingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                                                    width="30"/></a>
-                                <span id="settingsButtonText">settings</span>
+                        <div id="liqMainDiv">
+                            <div id="liqdiv">
+                                <LiqTable data={this.state.liqdata}/>
                             </div>
 
-                            <span id="pad1"> <hr/> </span>
+                            <div id="hiddendivLiq">
+                                <div className="singleSettingsDiv">
+                                    <a id="liqsettingslink" href="javascript:void(0)"><img
+                                        src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                        width="30"/></a>
+                                    <span id="settingsButtonText">settings</span>
+                                </div>
 
-                            <div className="singleSettingsDiv">
+                                <span id="pad1"> <hr/> </span>
 
-                                <a id="clearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                                                 width="30"/></a>
-                                <span id="settingsButtonText">clear</span>
-                            </div>
+                                <div className="singleSettingsDiv">
 
-                            <span id="pad1"> <hr/> </span>
+                                    <a id="liqclearlink" href="javascript:void(0)"><img
+                                        src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                        width="30"/></a>
+                                    <span id="settingsButtonText">clear</span>
+                                </div>
 
-                            <div className="singleSettingsDiv">
+                                <span id="pad1"> <hr/> </span>
 
-                                <a id="markethidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
-                                                                                      width="30"/></a>
-                                <span id="settingsButtonText">close</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="liqMainDiv">
-                        <div id="liqdiv">
-                            <LiqTable data={this.state.liqdata}/>
-                        </div>
+                                <div className="singleSettingsDiv">
 
-                        <div id="hiddendivLiq">
-                            <div className="singleSettingsDiv">
-                                <a id="liqsettingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                    <a id="liqhidelink" href="javascript:void(0)"><img src="img/closearrow.png"
+                                                                                       height="30"
                                                                                        width="30"/></a>
-                                <span id="settingsButtonText">settings</span>
+                                    <span id="settingsButtonText">close</span>
+                                </div>
                             </div>
 
-                            <span id="pad1"> <hr/> </span>
-
-                            <div className="singleSettingsDiv">
-
-                                <a id="liqclearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                                                    width="30"/></a>
-                                <span id="settingsButtonText">clear</span>
-                            </div>
-
-                            <span id="pad1"> <hr/> </span>
-
-                            <div className="singleSettingsDiv">
-
-                                <a id="liqhidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
-                                                                                   width="30"/></a>
-                                <span id="settingsButtonText">close</span>
-                            </div>
                         </div>
-
                     </div>
-                </div>
 
-            )
-        }
+                )
+            }
 
-        setupSettings() {
-            window.onload = function () {
-
-
-                // new TradingView.widget(
-                //     {
-                //         "autosize": true,
-                //         "symbol": "BITMEX:XBTUSD",
-                //         "interval": "15",
-                //         "timezone": "Etc/UTC",
-                //         "theme": "Dark",
-                //         "style": "1",
-                //         "locale": "en",
-                //         "toolbar_bg": "#f1f3f6",
-                //         "enable_publishing": false,
-                //         "hide_legend": true,
-                //         "hide_side_toolbar": false,
-                //         "allow_symbol_change": true,
-                //         "referral_id": "a",
-                //         "container_id": "tradingview_1a86e"
-                //     }
-                // );
+            setupSettings() {
+                window.onload = function () {
 
 
+                    // new TradingView.widget(
+                    //     {
+                    //         "autosize": true,
+                    //         "symbol": "BITMEX:XBTUSD",
+                    //         "interval": "15",
+                    //         "timezone": "Etc/UTC",
+                    //         "theme": "Dark",
+                    //         "style": "1",
+                    //         "locale": "en",
+                    //         "toolbar_bg": "#f1f3f6",
+                    //         "enable_publishing": false,
+                    //         "hide_legend": true,
+                    //         "hide_side_toolbar": false,
+                    //         "allow_symbol_change": true,
+                    //         "referral_id": "a",
+                    //         "container_id": "tradingview_1a86e"
+                    //     }
+                    // );
 
 
+                    let donateText = document.getElementById("donateText")
 
+                    donateText.onclick = function () {
 
-                let donateText = document.getElementById("donateText")
+                        var win = window.open("https://corn.lol/", '_blank')
+                        win.focus()
 
-                donateText.onclick = function () {
-
-                    var win = window.open("https://corn.lol/", '_blank');
-                    win.focus();
-
-                }
-
-                let donate2Text = document.getElementById("donateText2")
-
-                donate2Text.onclick = function () {
-
-                    window.alert("BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU")
-
-                }
-
-                let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
-                bitmexLiqMinAmountField.value = bitmexMinLiq
-
-                bitmexLiqMinAmountField.onchange = function () {
-                    bitmexMinLiq = bitmexLiqMinAmountField.value
-                    setCookie("bitmexLiqMin", bitmexMinLiq, 300)
-                }
-
-                let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled")===undefined?true:getCookie("bitmexLiqEnabled")
-
-                bitmexLiqEnabledButton.onclick = function () {
-                    bitmexLiqEnabled = !bitmexLiqEnabled
-                    document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
-
-                    setCookie("bitmexLiqEnabled", bitmexLiqEnabledButton.checked, 300)
-                }
-
-
-
-
-                // document.getElementById("bitmexLiqMinField").disabled = true
-
-
-                let liqEnabledButton = document.getElementById("liqEnabledButton")
-                liqEnabledButton.checked = true
-
-                liqEnabledButton.onclick = function () {
-                    let liqMainDiv = document.getElementById("liqMainDiv")
-                    liqMainDiv.style.display =  liqMainDiv.style.display !== "none"?"none":"flex"
-                    // document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
-                    bitmexLiqEnabledButton.disabled = !bitmexLiqEnabledButton.disabled
-
-                    if (liqEnabledButton.disabled && bitmexLiqEnabledButton.disabled) {
-                        document.getElementById("bitmexLiqMinField").disabled = true
-                    } else if (!liqEnabledButton.disabled && bitmexLiqEnabledButton.disabled) {
-                        document.getElementById("bitmexLiqMinField").disabled = true
-                    } else if (!liqEnabledButton.disabled && bitmexLiqEnabledButton.checked) {
-                        document.getElementById("bitmexLiqMinField").disabled = false
                     }
 
-                }
+                    let donate2Text = document.getElementById("donateText2")
 
-                let marketsEnabledButton = document.getElementById("marketsEnabledButton")
-                marketsEnabledButton.checked = true
+                    donate2Text.onclick = function () {
 
-                marketsEnabledButton.onclick = function () {
-                    let tableandbottom = document.getElementById("tableandbottom")
-                    tableandbottom.style.display = tableandbottom.style.display === "none"?"flex":"none"
-                }
+                        window.alert("BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU")
 
-
-
-                let hoverEnabledbutton = document.getElementById("hoverEnabledButton")
-
-                hoverEnabledbutton.checked = true
-
-                hoverEnabledbutton.onclick = function () {
-                    hoverable = !hoverable
-                    document.getElementById("tableandbottom").style.pointerEvents = hoverable?"all":"none"
-                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable?"all":"none"
-                }
-
-                let pepeIcon = document.getElementById("pepeIcon")
-
-                let rotation = 20
-
-                pepeIcon.onclick = function () {
-                    pepeIcon.style.transform = "rotate(" + rotation + "deg)";
-                    rotation += 20
-
-                    if (rotation > 360) {
-                        rotation = 0
                     }
-                }
 
-                let cornloltext = document.getElementById("cornlolText")
+                    let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
+                    bitmexLiqMinAmountField.value = bitmexMinLiq
 
-                cornloltext.onclick = function () {
-                    pepeIcon.style.transform = "rotate(" + rotation + "deg)";
-                    rotation += 20
-
-                    if (rotation > 360) {
-                        rotation = 0
+                    bitmexLiqMinAmountField.onchange = function () {
+                        bitmexMinLiq = bitmexLiqMinAmountField.value
+                        setCookie("bitmexLiqMin", bitmexMinLiq, 300)
                     }
-                }
 
-                let bitmexMinField = document.getElementById("bitmexMinField")
-                bitmexMinField.onchange = function () {
-                    if (bitmexMinField.value < minTradeSize) {
-                        bitmexMinField.value = minTradeSize
+                    let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
+                    bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled") === undefined ? true : getCookie("bitmexLiqEnabled")
+
+                    bitmexLiqEnabledButton.onclick = function () {
+                        bitmexLiqEnabled = !bitmexLiqEnabled
+                        document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
+
+                        setCookie("bitmexLiqEnabled", bitmexLiqEnabledButton.checked, 300)
                     }
-                    bitmexMinMarket = bitmexMinField.value
-
-                    setCookie("bitmexMin", bitmexMinMarket, 300)
-
-                }
 
 
-                document.getElementById("bitmexEnabledButton").onchange = function () {
-                    bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
-                    document.getElementById("bitmexMinField").disabled = !document.getElementById("bitmexMinField").disabled
-                    setCookie("bitmexEnabled", bitmexEnabled, 300)
-                }
+                    // document.getElementById("bitmexLiqMinField").disabled = true
 
-                let bitfinexMinField = document.getElementById("bitfinexMinField")
-                bitfinexMinField.onchange = function () {
-                    if (bitfinexMinField.value < minTradeSize) {
-                        bitfinexMinField.value = minTradeSize
+
+                    let liqEnabledButton = document.getElementById("liqEnabledButton")
+                    liqEnabledButton.checked = true
+
+                    liqEnabledButton.onclick = function () {
+                        let liqMainDiv = document.getElementById("liqMainDiv")
+                        liqMainDiv.style.display = liqMainDiv.style.display !== "none" ? "none" : "flex"
+                        // document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
+                        bitmexLiqEnabledButton.disabled = !bitmexLiqEnabledButton.disabled
+
+                        if (liqEnabledButton.disabled && bitmexLiqEnabledButton.disabled) {
+                            document.getElementById("bitmexLiqMinField").disabled = true
+                        } else if (!liqEnabledButton.disabled && bitmexLiqEnabledButton.disabled) {
+                            document.getElementById("bitmexLiqMinField").disabled = true
+                        } else if (!liqEnabledButton.disabled && bitmexLiqEnabledButton.checked) {
+                            document.getElementById("bitmexLiqMinField").disabled = false
+                        }
+
                     }
-                    bitfinexMinMarket = bitfinexMinField.value
 
-                    setCookie("bitfinexMin", bitfinexMinMarket, 300)
-                }
+                    let marketsEnabledButton = document.getElementById("marketsEnabledButton")
+                    marketsEnabledButton.checked = true
 
-                document.getElementById("bitfinexEnabledButton").onchange = function () {
-                    bitfinexEnabled = document.getElementById("bitfinexEnabledButton").checked
-                    document.getElementById("bitfinexMinField").disabled = !document.getElementById("bitfinexMinField").disabled
-                    setCookie("bitfinexEnabled", bitfinexEnabled, 300)
-                }
-
-                let coinbaseMinField = document.getElementById("coinbaseMinField")
-                coinbaseMinField.onchange = function () {
-                    if (coinbaseMinField.value < minTradeSize) {
-                        coinbaseMinField.value = minTradeSize
+                    marketsEnabledButton.onclick = function () {
+                        let tableandbottom = document.getElementById("tableandbottom")
+                        tableandbottom.style.display = tableandbottom.style.display === "none" ? "flex" : "none"
                     }
-                    coinbaseMinMarket = coinbaseMinField.value
 
-                    setCookie("coinbaseMin", coinbaseMinMarket, 300)
 
-                }
-                document.getElementById("coinbaseEnabledButton").onchange = function () {
-                    coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
-                    document.getElementById("coinbaseMinField").disabled = !document.getElementById("coinbaseMinField").disabled
-                    setCookie("coinbaseEnabled", coinbaseEnabled, 300)
-                }
+                    let hoverEnabledbutton = document.getElementById("hoverEnabledButton")
 
-                let binanceMinField = document.getElementById("binanceMinField")
-                binanceMinField.onchange = function () {
-                    if (binanceMinField.value < minTradeSize) {
-                        binanceMinField.value = minTradeSize
+                    hoverEnabledbutton.checked = true
+
+                    hoverEnabledbutton.onclick = function () {
+                        hoverable = !hoverable
+                        document.getElementById("tableandbottom").style.pointerEvents = hoverable ? "all" : "none"
+                        document.getElementById("liqMainDiv").style.pointerEvents = hoverable ? "all" : "none"
                     }
-                    binanceMinMarket = binanceMinField.value
 
-                    setCookie("binanceMin", binanceMinMarket, 300)
-                }
-                document.getElementById("binanceEnabledButton").onchange = function () {
-                    console.log("binanceEnabledButton onchange- ")
-                    binanceEnabled = document.getElementById("binanceEnabledButton").checked
-                    document.getElementById("binanceMinField").disabled = !document.getElementById("binanceMinField").disabled
-                    setCookie("binanceEnabled", binanceEnabled, 300)
+                    let pepeIcon = document.getElementById("pepeIcon")
 
-                    console.log("set binanceEnabled: " + binanceEnabled)
-                }
+                    let rotation = 20
 
-                let settingslink = document.getElementById("settingslink")
-                settingslink.onclick = function () {
-                    let modal = document.getElementById('myModal')
-                    let span = document.getElementsByClassName("close")[0]
-                    modal.style.display = "block"
-                    span.onclick = function () {
-                        modal.style.display = "none"
-                    }
-                    window.onclick = function (event) {
-                        if (event.target === modal) {
-                            modal.style.display = "none"
+                    pepeIcon.onclick = function () {
+                        pepeIcon.style.transform = "rotate(" + rotation + "deg)"
+                        rotation += 20
+
+                        if (rotation > 360) {
+                            rotation = 0
                         }
                     }
-                }
 
-                let clearlink = document.getElementById("clearlink")
-                clearlink.onclick = function () {
-                    trades = []
-                }
+                    let cornloltext = document.getElementById("cornlolText")
 
-                let liqclearlink = document.getElementById("liqclearlink")
-                liqclearlink.onclick = function () {
-                    liquidations = []
-                }
+                    cornloltext.onclick = function () {
+                        pepeIcon.style.transform = "rotate(" + rotation + "deg)"
+                        rotation += 20
 
-                let liqhidelink = document.getElementById("liqhidelink")
-                liqhidelink.onclick = function () {
-                    document.getElementById("liqMainDiv").style.display = "none"
-                    document.getElementById("liqEnabledButton").checked = false
-                }
-
-                let markethidelink = document.getElementById("markethidelink")
-                markethidelink.onclick = function () {
-                    document.getElementById("tableandbottom").style.display = "none"
-                    document.getElementById("marketsEnabledButton").checked = false
-                }
-
-                let settingsFooterRightlink = document.getElementById("settingsFooterRightLink")
-                settingsFooterRightlink.onclick = function () {
-                    let modal = document.getElementById('myModal')
-                    let span = document.getElementsByClassName("close")[0]
-                    modal.style.display = "block"
-                    span.onclick = function () {
-                        modal.style.display = "none"
-                    }
-                    window.onclick = function (event) {
-                        if (event.target === modal) {
-                            modal.style.display = "none"
+                        if (rotation > 360) {
+                            rotation = 0
                         }
                     }
-                }
 
+                    let bitmexMinField = document.getElementById("bitmexMinField")
+                    bitmexMinField.onchange = function () {
+                        if (bitmexMinField.value < minTradeSize) {
+                            bitmexMinField.value = minTradeSize
+                        }
+                        bitmexMinMarket = bitmexMinField.value
+
+                        setCookie("bitmexMin", bitmexMinMarket, 300)
+
+                    }
+
+
+                    document.getElementById("bitmexEnabledButton").onchange = function () {
+                        bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
+                        document.getElementById("bitmexMinField").disabled = !document.getElementById("bitmexMinField").disabled
+                        setCookie("bitmexEnabled", bitmexEnabled, 300)
+                    }
+
+                    let bitfinexMinField = document.getElementById("bitfinexMinField")
+                    bitfinexMinField.onchange = function () {
+                        if (bitfinexMinField.value < minTradeSize) {
+                            bitfinexMinField.value = minTradeSize
+                        }
+                        bitfinexMinMarket = bitfinexMinField.value
+
+                        setCookie("bitfinexMin", bitfinexMinMarket, 300)
+                    }
+
+                    document.getElementById("bitfinexEnabledButton").onchange = function () {
+                        bitfinexEnabled = document.getElementById("bitfinexEnabledButton").checked
+                        document.getElementById("bitfinexMinField").disabled = !document.getElementById("bitfinexMinField").disabled
+                        setCookie("bitfinexEnabled", bitfinexEnabled, 300)
+                    }
+
+                    let coinbaseMinField = document.getElementById("coinbaseMinField")
+                    coinbaseMinField.onchange = function () {
+                        if (coinbaseMinField.value < minTradeSize) {
+                            coinbaseMinField.value = minTradeSize
+                        }
+                        coinbaseMinMarket = coinbaseMinField.value
+
+                        setCookie("coinbaseMin", coinbaseMinMarket, 300)
+
+                    }
+                    document.getElementById("coinbaseEnabledButton").onchange = function () {
+                        coinbaseEnabled = document.getElementById("coinbaseEnabledButton").checked
+                        document.getElementById("coinbaseMinField").disabled = !document.getElementById("coinbaseMinField").disabled
+                        setCookie("coinbaseEnabled", coinbaseEnabled, 300)
+                    }
+
+                    let binanceMinField = document.getElementById("binanceMinField")
+                    binanceMinField.onchange = function () {
+                        if (binanceMinField.value < minTradeSize) {
+                            binanceMinField.value = minTradeSize
+                        }
+                        binanceMinMarket = binanceMinField.value
+
+                        setCookie("binanceMin", binanceMinMarket, 300)
+                    }
+                    document.getElementById("binanceEnabledButton").onchange = function () {
+                        console.log("binanceEnabledButton onchange- ")
+                        binanceEnabled = document.getElementById("binanceEnabledButton").checked
+                        document.getElementById("binanceMinField").disabled = !document.getElementById("binanceMinField").disabled
+                        setCookie("binanceEnabled", binanceEnabled, 300)
+
+                        console.log("set binanceEnabled: " + binanceEnabled)
+                    }
+
+                    let settingslink = document.getElementById("settingslink")
+                    settingslink.onclick = function () {
+                        let modal = document.getElementById('myModal')
+                        let span = document.getElementsByClassName("close")[0]
+                        modal.style.display = "block"
+                        span.onclick = function () {
+                            modal.style.display = "none"
+                        }
+                        window.onclick = function (event) {
+                            if (event.target === modal) {
+                                modal.style.display = "none"
+                            }
+                        }
+                    }
+
+                    let clearlink = document.getElementById("clearlink")
+                    clearlink.onclick = function () {
+                        trades = []
+                    }
+
+                    let liqclearlink = document.getElementById("liqclearlink")
+                    liqclearlink.onclick = function () {
+                        liquidations = []
+                    }
+
+                    let liqhidelink = document.getElementById("liqhidelink")
+                    liqhidelink.onclick = function () {
+                        document.getElementById("liqMainDiv").style.display = "none"
+                        document.getElementById("liqEnabledButton").checked = false
+                    }
+
+                    let markethidelink = document.getElementById("markethidelink")
+                    markethidelink.onclick = function () {
+                        document.getElementById("tableandbottom").style.display = "none"
+                        document.getElementById("marketsEnabledButton").checked = false
+                    }
 
+                    let settingsFooterRightlink = document.getElementById("settingsFooterRightLink")
+                    settingsFooterRightlink.onclick = function () {
+                        let modal = document.getElementById('myModal')
+                        let span = document.getElementsByClassName("close")[0]
+                        modal.style.display = "block"
+                        span.onclick = function () {
+                            modal.style.display = "none"
+                        }
+                        window.onclick = function (event) {
+                            if (event.target === modal) {
+                                modal.style.display = "none"
+                            }
+                        }
+                    }
 
 
-                let savesettingsbutton = document.getElementById("savesettingsbutton")
+                    let savesettingsbutton = document.getElementById("savesettingsbutton")
 
-                savesettingsbutton.onclick = function () {
+                    savesettingsbutton.onclick = function () {
 
-                    // setCookie("bitmexMin", document.getElementById('bitmexMinField').value, 300)
-                    // setCookie("bitfinexMin", document.getElementById('bitfinexMinField').value, 300)
-                    // setCookie("coinbaseMin", document.getElementById('coinbaseMinField').value, 300)
-                    // setCookie("binanceMin", document.getElementById('binanceMinField').value, 300)
-                    //
-                    // setCookie("bitmexEnabled", document.getElementById('bitmexEnabledButton').checked, 300)
-                    // setCookie("bitfinexEnabled", document.getElementById('bitfinexEnabledButton').checked, 300)
-                    // setCookie("coinbaseEnabled", document.getElementById('coinbaseEnabledButton').checked, 300)
-                    // setCookie("binanceEnabled", document.getElementById('binanceEnabledButton').checked, 300)
-                    //
-                    // setCookie("liqEnabled", document.getElementById('liqEnabledButton').checked, 300)
-                    // setCookie("bitmexLiqEnabled", document.getElementById('bitmexLiqEnabledButton').checked, 300)
-                    //
-                    // setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
+                        // setCookie("bitmexMin", document.getElementById('bitmexMinField').value, 300)
+                        // setCookie("bitfinexMin", document.getElementById('bitfinexMinField').value, 300)
+                        // setCookie("coinbaseMin", document.getElementById('coinbaseMinField').value, 300)
+                        // setCookie("binanceMin", document.getElementById('binanceMinField').value, 300)
+                        //
+                        // setCookie("bitmexEnabled", document.getElementById('bitmexEnabledButton').checked, 300)
+                        // setCookie("bitfinexEnabled", document.getElementById('bitfinexEnabledButton').checked, 300)
+                        // setCookie("coinbaseEnabled", document.getElementById('coinbaseEnabledButton').checked, 300)
+                        // setCookie("binanceEnabled", document.getElementById('binanceEnabledButton').checked, 300)
+                        //
+                        // setCookie("liqEnabled", document.getElementById('liqEnabledButton').checked, 300)
+                        // setCookie("bitmexLiqEnabled", document.getElementById('bitmexLiqEnabledButton').checked, 300)
+                        //
+                        // setCookie("bitmexLiqMin", document.getElementById('bitmexLiqMinField').value, 300)
 
-                    setCookie("marketH", $("#maintablediv").height(), 300)
-                    setCookie("marketW", $("#maintablediv").width(), 300)
+                        setCookie("marketH", $("#maintablediv").height(), 300)
+                        setCookie("marketW", $("#maintablediv").width(), 300)
 
-                    setCookie("liqH", $("#liqdiv").height(), 300)
-                    setCookie("liqW", $("#liqdiv").width(), 300)
+                        setCookie("liqH", $("#liqdiv").height(), 300)
+                        setCookie("liqW", $("#liqdiv").width(), 300)
 
 
-                    window.alert("saved dimensions: \n market orders: height." + $("#maintablediv").height().toFixed(0) + " width." + $("#maintablediv").width().toFixed(0)
-                        + "\n liquidations: height." + $("#liqdiv").height().toFixed(0) + " width." + $("#liqdiv").width().toFixed(0) )
+                        window.alert("saved dimensions: \n market orders: height." + $("#maintablediv").height().toFixed(0) + " width." + $("#maintablediv").width().toFixed(0)
+                            + "\n liquidations: height." + $("#liqdiv").height().toFixed(0) + " width." + $("#liqdiv").width().toFixed(0))
 
 
-                }
+                    }
 
 
-                if (getCookie("bitmexMin")===undefined) {
-                    setCookie("bitmexLiqEnabled", bitmexLiqEnabled, 300)
+                    if (getCookie("bitmexMin") === undefined) {
+                        setCookie("bitmexLiqEnabled", bitmexLiqEnabled, 300)
 
-                    setCookie("bitmexLiqMin", bitmexMinLiq, 300)
+                        setCookie("bitmexLiqMin", bitmexMinLiq, 300)
 
-                    setCookie("bitmexMin", bitmexMinMarket, 300)
-                    setCookie("bitfinexMin", bitfinexMinMarket, 300)
-                    setCookie("coinbaseMin", coinbaseMinMarket, 300)
-                    setCookie("binanceMin", binanceMinMarket, 300)
+                        setCookie("bitmexMin", bitmexMinMarket, 300)
+                        setCookie("bitfinexMin", bitfinexMinMarket, 300)
+                        setCookie("coinbaseMin", coinbaseMinMarket, 300)
+                        setCookie("binanceMin", binanceMinMarket, 300)
 
-                    setCookie("bitmexEnabled", bitmexEnabled, 300)
-                    setCookie("bitfinexEnabled", bitfinexEnabled, 300)
-                    setCookie("coinbaseEnabled", coinbaseEnabled, 300)
-                    setCookie("binanceEnabled", binanceEnabled, 300)
+                        setCookie("bitmexEnabled", bitmexEnabled, 300)
+                        setCookie("bitfinexEnabled", bitfinexEnabled, 300)
+                        setCookie("coinbaseEnabled", coinbaseEnabled, 300)
+                        setCookie("binanceEnabled", binanceEnabled, 300)
 
 
-                    setCookie("marketH", 600, 300)
-                    setCookie("marketW", 300, 300)
-                    setCookie("liqH", 150, 300)
-                    setCookie("liqW", 300, 300)
-                }
+                        setCookie("marketH", 600, 300)
+                        setCookie("marketW", 300, 300)
+                        setCookie("liqH", 150, 300)
+                        setCookie("liqW", 300, 300)
+                    }
 
 
+                    if (getCookie("bitmexMin") !== undefined) {
 
+                        document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
+                        document.getElementById('bitfinexMinField').value = getCookie("bitfinexMin")
+                        document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
+                        document.getElementById('binanceMinField').value = getCookie("binanceMin")
 
-                if (getCookie("bitmexMin")!==undefined) {
+                        $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled") === "false")
+                        $('#bitfinexMinField').prop("disabled", getCookie("bitfinexEnabled") === "false")
+                        $('#coinbaseMinField').prop("disabled", getCookie("coinbaseEnabled") === "false")
+                        $('#binanceMinField').prop("disabled", getCookie("binanceEnabled") === "false")
 
-                    document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
-                    document.getElementById('bitfinexMinField').value = getCookie("bitfinexMin")
-                    document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
-                    document.getElementById('binanceMinField').value = getCookie("binanceMin")
 
-                    $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled")==="false")
-                    $('#bitfinexMinField').prop("disabled", getCookie("bitfinexEnabled")==="false")
-                    $('#coinbaseMinField').prop("disabled", getCookie("coinbaseEnabled")==="false")
-                    $('#binanceMinField').prop("disabled", getCookie("binanceEnabled")==="false")
+                        $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled") === "true")
+                        $('#bitfinexEnabledButton').prop("checked", getCookie("bitfinexEnabled") === "true")
+                        $('#coinbaseEnabledButton').prop("checked", getCookie("coinbaseEnabled") === "true")
+                        $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled") === "true")
 
 
-                    $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled")==="true")
-                    $('#bitfinexEnabledButton').prop("checked", getCookie("bitfinexEnabled")==="true")
-                    $('#coinbaseEnabledButton').prop("checked", getCookie("coinbaseEnabled")==="true")
-                    $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled")==="true")
+                        document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
+                        $("#bitmexLiqMinField").prop("disabled", getCookie("bitmexLiqEnabled") === "false")
 
+                        // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
+                        $("#bitmexLiqEnabledButton").prop("checked", getCookie("bitmexLiqEnabled") === "true")
 
+                        // console.log("bitmexliiqenabled: " + getCookie("bitmexLiqEnabled"))
 
-                    document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
-                    $("#bitmexLiqMinField").prop("disabled", getCookie("bitmexLiqEnabled")==="false")
 
-                    // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
-                    $("#bitmexLiqEnabledButton").prop("checked", getCookie("bitmexLiqEnabled")==="true")
+                        bitmexMinMarket = getCookie("bitmexMin")
+                        bitfinexMinMarket = getCookie("bitfinexMin")
+                        coinbaseMinMarket = getCookie("coinbaseMin")
+                        binanceMinMarket = getCookie("binanceMin")
 
-                    // console.log("bitmexliiqenabled: " + getCookie("bitmexLiqEnabled"))
+                        bitmexMinLiq = getCookie("bitmexLiqMin")
 
 
-                    bitmexMinMarket = getCookie("bitmexMin")
-                    bitfinexMinMarket = getCookie("bitfinexMin")
-                    coinbaseMinMarket = getCookie("coinbaseMin")
-                    binanceMinMarket = getCookie("binanceMin")
+                        bitmexEnabled = getCookie("bitmexEnabled")
+                        bitfinexEnabled = getCookie("bitfinexEnabled")
+                        coinbaseEnabled = getCookie("coinbaseEnabled")
 
-                    bitmexMinLiq = getCookie("bitmexLiqMin")
+                        binanceEnabled = getCookie("binanceEnabled")
+                        console.log("binanceenabled: " + binanceEnabled)
+                        bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
 
+                        $("#maintablediv").height(getCookie("marketH"))
+                        $("#maintablediv").width(getCookie("marketW"))
 
-                    bitmexEnabled = getCookie("bitmexEnabled")
-                    bitfinexEnabled = getCookie("bitfinexEnabled")
-                    coinbaseEnabled = getCookie("coinbaseEnabled")
-
-                    binanceEnabled = getCookie("binanceEnabled")
-                    console.log("binanceenabled: " + binanceEnabled)
-                    bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
-
-                    $("#maintablediv").height(getCookie("marketH"))
-                    $("#maintablediv").width(getCookie("marketW"))
-
-                    $("#liqdiv").height(getCookie("liqH"))
-                    $("#liqdiv").width(getCookie("liqW"))
-
-
-
-                } else {
-                    document.getElementById('bitmexMinField').value = bitmexMinMarket
-                    document.getElementById('bitfinexMinField').value = bitfinexMinMarket
-                    document.getElementById('coinbaseMinField').value = coinbaseMinMarket
-                    document.getElementById('binanceMinField').value = binanceMinMarket
-
-                    document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
-                    document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
-                    document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
-                    document.getElementById('binanceEnabledButton').checked = binanceEnabled
-                }
-
-
-            }
-        }
-
-        scrollUpLoop() {
-            setInterval(function () {
-                document.getElementById("maintablediv").scrollTo({
-                    'behavior': 'smooth',
-                    'left': 0,
-                    'top': 0
-                })}, 10000)
-        }
-
-
-        setTitleLoop() {
-            document.title = "ETH: " + currentPrice
-        }
-    }
-
-    function getKformat(size, iteration) {
-        if (size >= 1) {
-            if (size < 1000) {return lowFormat(size)}
-            let c = ["k", "m"]
-            let d = (size / 100) / 10.0
-            let isRound = (d * 10) % 10 === 0
-
-
-            let s = (d < 1000 ?
-                ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
-                        d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
-                ) + "" + c[iteration]) : getKformat(d, iteration + 1))
-            s = s.replace(".0m", "m")
-            s = s.replace("000k", "m")
-            s = s.replace(".0k", "k")
-            return s
-        } else {return 0}
-    }
-
-    function lowFormat(size) {return Math.abs(Math.round(size)).toFixed(0)}
-
-    class LiquidationRow extends React.Component {
-        render() {
-
-            const {data} = this.props
-
-            const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount>0?data.highestAmount:data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
-                    key={i} bgcolor={Row.getBgColor(data)}>
-                    <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px" height="15px"/></span></td>
-
-                    <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
-                    <td width="100%" id="spacer">{""}</td>
-                    <td id="tradePrice">{this.getTradePriceLiq(data)}</td>
-                    <td id="liqTimeElapsed">{Row.getTimeElapsed(data)}</td>
-                </tr>
-            )
-
-            return (<tbody id="tbodyy">{row}</tbody>)
-        }
-
-        getTradePriceLiq(data) {
-            if (data.symbol!=="message") {
-                let slip = data.price-data.firstPrice
-                return ("@ " + data.price)
-            } else {
-                return ""
-            }
-        }
-
-        getTradeSizeLiq(data) {
-            if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 60)?"(filled!)":"")):("("+getKformat(data.size, 0) + " active)"))
-            } else {
-                return data.message
-            }
-        }
-
-        getLiqStartSize(data) {
-            if (data.startSize !== data.highestAmount) {
-                return "starting size: " + data.startSize
-            } else {
-                return ""
-            }
-        }
-    }
-
-    class Row extends React.Component {
-
-        render() {
-            const {data} = this.props
-
-            const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : "")}
-                    key={i} bgcolor={Row.getBgColor(data)}>
-                    <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px" height="15px"/></span></td>
-
-                    <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
-                    <td width="100%" id="spacer">{""}</td>
-                    <td id="slip">{Row.getSlipIcon(data)}{Row.getSlip(data)}</td>
-                    <td id="btcAmt">{Row.getBtcShow(data)}</td>
-                    <td id="atSign">{(Row.getBtcShow(data)===null?"":"@ ")}</td>
-                    <td id="tradePrice">{ data.exchangeName==="message"?"":parseFloat(data.lastPrice).toFixed(1) }</td>
-                    <td id="elapsedTime" width="100%">{Row.getTimeElapsed(data)}</td>
-                </tr>
-            )
-            return (<tbody id="tbodyy">{row}</tbody>)
-        }
-
-
-
-        static getTimeElapsed(data) {
-            if (data.exchangeName!=="message") {
-                var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
-                if (timeElapsed < 10) {
-                    return "now"
-                } else if (timeElapsed < 60) {
-                    return "<1m"
-                } else {
-                    return parseInt(timeElapsed / 60) + "m"
-                }
-            } else {
-                return ""
-            }
-
-        }
-
-        static getBtcShow(data) {
-            if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
-                var abs = Math.abs(data.btcAmt)
-                return " " + abs > 9 ? (abs.toFixed(0) + " eth") : (abs.toFixed(0) + " eth")
-            } else {return null}
-        }
-
-        static getSlip(data) {
-            if (data.exchangeName !== "binance") {
-                var slip = data.lastPrice - data.firstPrice
-                if (Math.abs(slip) >= 0.1) {
-                    return ( Math.abs(slip).toFixed(1) )
-                } else {return null}
-            }
-        }
-
-        static getSlipIcon(data) {
-            if (data.exchangeName !== "binance") {
-                var slip = data.lastPrice - data.firstPrice
-                if (Math.abs(slip) >= 0.1) {
-                    if (slip > 0) {
-                        return "↗ "
-                        // return <span className="slipIcon"><img src="img/down2.png" alt="up"/></span>
+                        $("#liqdiv").height(getCookie("liqH"))
+                        $("#liqdiv").width(getCookie("liqW"))
+
+
                     } else {
-                        return "↘ "
-                        // return <span className="slipIcon"><img src="img/down2.png" alt="down"/></span>
+                        document.getElementById('bitmexMinField').value = bitmexMinMarket
+                        document.getElementById('bitfinexMinField').value = bitfinexMinMarket
+                        document.getElementById('coinbaseMinField').value = coinbaseMinMarket
+                        document.getElementById('binanceMinField').value = binanceMinMarket
+
+                        document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
+                        document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
+                        document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
+                        document.getElementById('binanceEnabledButton').checked = binanceEnabled
                     }
-                } else {return null}
+
+
+                }
+            }
+
+            scrollUpLoop() {
+                setInterval(function () {
+                    document.getElementById("maintablediv").scrollTo({
+                        'behavior': 'smooth',
+                        'left': 0,
+                        'top': 0
+                    })
+                }, 10000)
+            }
+
+
+            setTitleLoop() {
+                document.title = "ETH: " + currentPrice
             }
         }
 
-        static getMinMarketForExchange(data) {
-            if (data.exchangeName === "bitmex") {
-                return bitmexMinMarket
-            } else if (data.exchangeName === "bitfinex") {
-                return bitfinexMinMarket
-            } else if (data.exchangeName === "coinbase") {
-                return coinbaseMinMarket
-            } else if (data.exchangeName === "binance") {
-                return binanceMinMarket
-            } else {return 0}
-        }
-
-        static getMinLiqForExchange(data) {
-            if (data.exchangeName === "bitmex") {
-                return bitmexMinLiq
-            } else {return 0}
-        }
-
-        static getSizeGroup(exchangeName, size) {
-            if (exchangeName === "bitmex") {
-                if (size >= bitmexSize6) {
-                    return "size6"
-                } else if (size >= bitmexSize5) {
-                    return "size5"
-                } else if (size >= bitmexSize4) {
-                    return "size4"
-                } else if (size >= bitmexSize3) {
-                    return "size3"
-                } else if (size >= bitmexSize2) {
-                    return "size2"
-                } else {
-                    return "size1"
+        function getKformat(size, iteration) {
+            if (size >= 1) {
+                if (size < 1000) {
+                    return lowFormat(size)
                 }
-            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance") {
-                if (Math.abs(size) >= bitfinexSize6) {
-                    return "size6"
-                } else if (Math.abs(size) >= bitfinexSize5) {
-                    return "size5"
-                } else if (Math.abs(size) >= bitfinexSize4) {
-                    return "size4"
-                } else if (Math.abs(size) >= bitfinexSize3) {
-                    return "size3"
-                } else if (Math.abs(size) >= bitfinexSize2) {
-                    return "size2"
-                } else {
-                    return "size1"
-                }
-            } else if (exchangeName === "message") {
-                return "sizeMsg"
-            }
-        }
+                let c = ["k", "m"]
+                let d = (size / 100) / 10.0
+                let isRound = (d * 10) % 10 === 0
 
-        static getIcon(data) {
 
-            if (data.exchangeName === "bitmex" && !data.liq) {
-                return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
-            } else if (data.exchangeName === "bitfinex") {
-                return <span><img src="img/bitfinex22.png" alt="finex"/></span>
-            } else if (data.exchangeName === "coinbase") {
-                return <span><img src="img/gdax25.png" alt="gdax"/></span>
-            } else if (data.exchangeName === "binance") {
-                return <span><img src="img/binancenew.png" alt="safu"/></span>
-            } else if (data.exchangeName === "message") {
-                if (data.type==="liquidation") {
-                    return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
-                    // return <span><img src="img/arthursmall.png" height="20px" width="20px" alt="text"/></span>
-                } else {
-                    return <span><img src="img/cornicon.png" alt="corn" id="corn" height="15px" width="15px"/></span>
-                    // return <span className="rowIcon"><img src="img/pepp2good.png" height="20px" width="20px" alt="text"/></span>
-                }
-            } else if (data.liq) {
-                if (!data.deleted ) {
-                    return <span><img src="img/arthursmall.png" alt="safu" id="arthuriconspin" height="20px" width="20px"/></span>
-                } else if (data.deleted && (parseInt((Date.now() - data.endTime) / 1000) < 10)) {
-                    return <span><img src="img/arthursmall.png" alt="safu" id="arthuricon" height="20px" width="20px"/></span>
-                } else {
-                    return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
-                }
-            }
-        }
-
-        static getBgColor(data) {
-            var side = data.side
-            var size = Math.abs(data.highestAmount>0?data.highestAmount:data.size)
-
-            var intensity = Math.abs(size) / 4200
-
-            if (intensity > 165) {
-                intensity = 165
-            } else if (intensity < 1) {
-                intensity = 1
-            }
-
-            if (side) {
-                return rgb2hex(170 - intensity, 255 - intensity / 2, 170 - intensity)
+                let s = (d < 1000 ?
+                    ((d > 99.9 || isRound || (!isRound && d > 9.99) ?
+                            d.toFixed(0) * 10 / 10 : d.toFixed(1) + ""
+                    ) + "" + c[iteration]) : getKformat(d, iteration + 1))
+                s = s.replace(".0m", "m")
+                s = s.replace("000k", "m")
+                s = s.replace(".0k", "k")
+                return s
             } else {
-                return rgb2hex(255 - intensity / 2, 170 - intensity, 170 - intensity)
-            }
-
-            function rgb2hex(red, green, blue) {
-                var rgb = blue | (green << 8) | (red << 16)
-                return '#' + (0x1000000 + rgb).toString(16).slice(1)
+                return 0
             }
         }
-    }
 
-    class Table extends React.Component {
-        constructor(props) {super(props)}
-        render() {return (<table className="table1"><Row data={this.props.data}/></table>)}
-    }
+        function lowFormat(size) {
+            return Math.abs(Math.round(size)).toFixed(0)
+        }
 
-    class LiqTable extends React.Component {
-        constructor(props) {super(props)}
-        render() {return (<table className="table2"><LiquidationRow data={this.props.data}/></table>)}
-    }
+        class LiquidationRow extends React.Component {
+            render() {
 
-    class Footer extends React.Component {
-        constructor(props) {super(props)}
+                const {data} = this.props
 
-        render() {
-            return (
-                <div>
-                    <div id="footerdiv">
-                        <div id="footerleft">
-                            <img src="img/cornicon.png" height="16px" width="16px" alt=" " id="pepeIcon"/>
-                            <b><span id="cornlolText"> corn.lol </span></b>
-                            <span id="settingsFooterRightLink" className="footerRightText">settings</span>
+                const row = data.map((data, i) =>
+                    <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount > 0 ? data.highestAmount : data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
+                        key={i} bgcolor={Row.getBgColor(data)}>
+                        <td id="tradeIcon">{Row.getIcon(data)}</td>
+                        <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px"
+                                                          height="15px"/></span></td>
+
+                        <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
+                        <td width="100%" id="spacer">{""}</td>
+                        <td id="tradePrice">{this.getTradePriceLiq(data)}</td>
+                        <td id="liqTimeElapsed">{Row.getTimeElapsed(data)}</td>
+                    </tr>
+                )
+
+                return (<tbody id="tbodyy">{row}</tbody>)
+            }
+
+            getTradePriceLiq(data) {
+                if (data.symbol !== "message") {
+                    let slip = data.price - data.firstPrice
+                    return ("@ " + data.price)
+                } else {
+                    return ""
+                }
+            }
+
+            getTradeSizeLiq(data) {
+                if (data.symbol !== "message") {
+                    return getKformat(data.highestAmount, 0) + (" liq ") + ((data.size === 0) ? (((parseInt((Date.now() - data.startTime) / 1000) < 60) ? "(filled!)" : "")) : ("(" + getKformat(data.size, 0) + " active)"))
+                } else {
+                    return data.message
+                }
+            }
+
+            getLiqStartSize(data) {
+                if (data.startSize !== data.highestAmount) {
+                    return "starting size: " + data.startSize
+                } else {
+                    return ""
+                }
+            }
+        }
+
+        class Row extends React.Component {
+
+            render() {
+                const {data} = this.props
+
+                const row = data.map((data, i) =>
+                    <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : "")}
+                        key={i} bgcolor={Row.getBgColor(data)}>
+                        <td id="tradeIcon">{Row.getIcon(data)}</td>
+                        <td id="tradeCoinIcon"><span><img src="img/eth.png" alt="bitmex" width="15px"
+                                                          height="15px"/></span></td>
+
+                        <td id="tradeSize">{(data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
+                        <td width="100%" id="spacer">{""}</td>
+                        <td id="slip">{Row.getSlipIcon(data)}{Row.getSlip(data)}</td>
+                        <td id="btcAmt">{Row.getBtcShow(data)}</td>
+                        <td id="atSign">{(Row.getBtcShow(data) === null ? "" : "@ ")}</td>
+                        <td id="tradePrice">{data.exchangeName === "message" ? "" : parseFloat(data.lastPrice).toFixed(1)}</td>
+                        <td id="elapsedTime" width="100%">{Row.getTimeElapsed(data)}</td>
+                    </tr>
+                )
+                return (<tbody id="tbodyy">{row}</tbody>)
+            }
+
+
+            static getTimeElapsed(data) {
+                if (data.exchangeName !== "message") {
+                    var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
+                    if (timeElapsed < 10) {
+                        return "now"
+                    } else if (timeElapsed < 60) {
+                        return "<1m"
+                    } else {
+                        return parseInt(timeElapsed / 60) + "m"
+                    }
+                } else {
+                    return ""
+                }
+
+            }
+
+            static getBtcShow(data) {
+                if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
+                    var abs = Math.abs(data.btcAmt)
+                    return " " + abs > 9 ? (abs.toFixed(0) + " eth") : (abs.toFixed(0) + " eth")
+                } else {
+                    return null
+                }
+            }
+
+            static getSlip(data) {
+                if (data.exchangeName !== "binance") {
+                    var slip = data.lastPrice - data.firstPrice
+                    if (Math.abs(slip) >= 0.1) {
+                        return (Math.abs(slip).toFixed(1))
+                    } else {
+                        return null
+                    }
+                }
+            }
+
+            static getSlipIcon(data) {
+                if (data.exchangeName !== "binance") {
+                    var slip = data.lastPrice - data.firstPrice
+                    if (Math.abs(slip) >= 0.1) {
+                        if (slip > 0) {
+                            return "↗ "
+                            // return <span className="slipIcon"><img src="img/down2.png" alt="up"/></span>
+                        } else {
+                            return "↘ "
+                            // return <span className="slipIcon"><img src="img/down2.png" alt="down"/></span>
+                        }
+                    } else {
+                        return null
+                    }
+                }
+            }
+
+            static getMinMarketForExchange(data) {
+                if (data.exchangeName === "bitmex") {
+                    return bitmexMinMarket
+                } else if (data.exchangeName === "bitfinex") {
+                    return bitfinexMinMarket
+                } else if (data.exchangeName === "coinbase") {
+                    return coinbaseMinMarket
+                } else if (data.exchangeName === "binance") {
+                    return binanceMinMarket
+                } else {
+                    return 0
+                }
+            }
+
+            static getMinLiqForExchange(data) {
+                if (data.exchangeName === "bitmex") {
+                    return bitmexMinLiq
+                } else {
+                    return 0
+                }
+            }
+
+            static getSizeGroup(exchangeName, size) {
+                if (exchangeName === "bitmex") {
+                    if (size >= bitmexSize6) {
+                        return "size6"
+                    } else if (size >= bitmexSize5) {
+                        return "size5"
+                    } else if (size >= bitmexSize4) {
+                        return "size4"
+                    } else if (size >= bitmexSize3) {
+                        return "size3"
+                    } else if (size >= bitmexSize2) {
+                        return "size2"
+                    } else {
+                        return "size1"
+                    }
+                } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance") {
+                    if (Math.abs(size) >= bitfinexSize6) {
+                        return "size6"
+                    } else if (Math.abs(size) >= bitfinexSize5) {
+                        return "size5"
+                    } else if (Math.abs(size) >= bitfinexSize4) {
+                        return "size4"
+                    } else if (Math.abs(size) >= bitfinexSize3) {
+                        return "size3"
+                    } else if (Math.abs(size) >= bitfinexSize2) {
+                        return "size2"
+                    } else {
+                        return "size1"
+                    }
+                } else if (exchangeName === "message") {
+                    return "sizeMsg"
+                }
+            }
+
+            static getIcon(data) {
+
+                if (data.exchangeName === "bitmex" && !data.liq) {
+                    return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
+                } else if (data.exchangeName === "bitfinex") {
+                    return <span><img src="img/bitfinex22.png" alt="finex"/></span>
+                } else if (data.exchangeName === "coinbase") {
+                    return <span><img src="img/gdax25.png" alt="gdax"/></span>
+                } else if (data.exchangeName === "binance") {
+                    return <span><img src="img/binancenew.png" alt="safu"/></span>
+                } else if (data.exchangeName === "message") {
+                    if (data.type === "liquidation") {
+                        return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
+                        // return <span><img src="img/arthursmall.png" height="20px" width="20px" alt="text"/></span>
+                    } else {
+                        return <span><img src="img/cornicon.png" alt="corn" id="corn" height="15px"
+                                          width="15px"/></span>
+                        // return <span className="rowIcon"><img src="img/pepp2good.png" height="20px" width="20px" alt="text"/></span>
+                    }
+                } else if (data.liq) {
+                    if (!data.deleted) {
+                        return <span><img src="img/arthursmall.png" alt="safu" id="arthuriconspin" height="20px"
+                                          width="20px"/></span>
+                    } else if (data.deleted && (parseInt((Date.now() - data.endTime) / 1000) < 10)) {
+                        return <span><img src="img/arthursmall.png" alt="safu" id="arthuricon" height="20px"
+                                          width="20px"/></span>
+                    } else {
+                        return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
+                    }
+                }
+            }
+
+            static getBgColor(data) {
+                var side = data.side
+                var size = Math.abs(data.highestAmount > 0 ? data.highestAmount : data.size)
+
+                var intensity = Math.abs(size) / 4200
+
+                if (intensity > 165) {
+                    intensity = 165
+                } else if (intensity < 1) {
+                    intensity = 1
+                }
+
+                if (side) {
+                    return rgb2hex(170 - intensity, 255 - intensity / 2, 170 - intensity)
+                } else {
+                    return rgb2hex(255 - intensity / 2, 170 - intensity, 170 - intensity)
+                }
+
+                function rgb2hex(red, green, blue) {
+                    var rgb = blue | (green << 8) | (red << 16)
+                    return '#' + (0x1000000 + rgb).toString(16).slice(1)
+                }
+            }
+        }
+
+        class Table extends React.Component {
+            constructor(props) {
+                super(props)
+            }
+
+            render() {
+                return (<table className="table1"><Row data={this.props.data}/></table>)
+            }
+        }
+
+        class LiqTable extends React.Component {
+            constructor(props) {
+                super(props)
+            }
+
+            render() {
+                return (<table className="table2"><LiquidationRow data={this.props.data}/></table>)
+            }
+        }
+
+        class Footer extends React.Component {
+            constructor(props) {
+                super(props)
+            }
+
+            render() {
+                return (
+                    <div>
+                        <div id="footerdiv">
+                            <div id="footerleft">
+                                <img src="img/cornicon.png" height="16px" width="16px" alt=" " id="pepeIcon"/>
+                                <b><span id="cornlolText"> corn.lol </span></b>
+                                <span id="settingsFooterRightLink" className="footerRightText">settings</span>
+                            </div>
+                            <div id="footerright">
+                                <a href="https://github.com/boppleton/corn.lol" target="_blank"><span
+                                    className="footerRightText">github</span></a>
+                            </div>
                         </div>
-                        <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
+
+                        <div id="myModal" className="modal">
+
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <span className="close">&times;</span>
+                                    <div display="flex">
+                                        <h2>settings</h2>
+                                    </div>
+
+                                </div>
+
+                                <div className="modal-body">
+
+                                    <div className="mainSettingsDiv">
+
+                                        <div id="marketSettings">
+
+
+                                            <div className="settingsitem header">
+                                                <input id="marketsEnabledButton" type="checkbox"
+                                                       name="marketsEnabledButton" className="checkboxx"/>
+                                                <h2>market orders</h2>
+                                            </div>
+
+                                            <div className="settingsitem">
+
+                                                <input id="bitmexEnabledButton" type="checkbox"
+                                                       name="bitmexEnabledButton" className="checkboxx"/>
+                                                <b>bitmex</b>
+                                                <input id="bitmexMinField" type="number" name="bitmexMinField"
+                                                       className="minAmount" min="0" max="10000000" step="1000"/>
+                                            </div>
+
+                                            <div className="settingsitem">
+                                                <input id="bitfinexEnabledButton" type="checkbox"
+                                                       name="bitfinexEnabledButton" className="checkboxx"/>
+                                                <b>bitfinex</b>
+                                                <input id="bitfinexMinField" type="number" name="bitfinexMinField"
+                                                       className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                            </div>
+
+                                            <div className="settingsitem">
+                                                <input id="coinbaseEnabledButton" type="checkbox"
+                                                       name="coinbaseEnabledButton" className="checkboxx"/>
+                                                <b>coinbase</b>
+                                                <input id="coinbaseMinField" type="number" name="coinbaseMinField"
+                                                       className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                            </div>
+
+                                            <div className="settingsitem">
+                                                <input id="binanceEnabledButton" type="checkbox"
+                                                       name="binanceEnabledButton" className="checkboxx"/>
+                                                <b>binance</b>
+                                                <input id="binanceMinField" type="number" name="binanceMinField"
+                                                       className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                            </div>
+                                        </div>
+
+                                        <div id="liqSettings">
+                                            <div className="settingsitem header">
+                                                <input id="liqEnabledButton" type="checkbox"
+                                                       name="liqEnabledButton" className="checkboxx"/>
+                                                <h2>liquidations</h2>
+                                            </div>
+
+                                            <div className="settingsitem">
+
+                                                <input id="bitmexLiqEnabledButton" type="checkbox"
+                                                       name="bitmexLiqEnabledButton" className="checkboxx"/>
+                                                <b>bitmex</b>
+                                                <input id="bitmexLiqMinField" type="number" name="bitmexLiqMinField"
+                                                       className="minAmount" min="0" max="10000000" step="1000"/>
+                                            </div>
+                                        </div>
+
+                                        <div id="otherSettings">
+                                            <div className="settingsitem">
+                                                <input id="hoverEnabledButton" type="checkbox"
+                                                       name="hoverEnabledButton" className="checkboxx"/>
+                                                <b>show scroll/resize</b>
+                                            </div>
+                                        </div>
+
+                                        <div id="savesettings">
+                                            <span id="savesettingsbutton">save window sizes</span>
+                                        </div>
+
+                                        <div id="donate">
+                                            <span id="donateText">corn.lol (btc)</span>
+                                        </div>
+
+                                        <div id="donate2">
+                                            <span id="donateText2">donate btc</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div className="modal-footer">
+                                    <hr/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        }
+
+        class Chart extends React.Component {
+            constructor(props) {
+                super(props)
+            }
+
+            render() {
+                return (
+
+                    <div className="tradingview-widget-container">
+                        <div id="tradingview_1a86e"></div>
+                        <div className="tradingview-widget-copyright"><a
+                            href="https://www.tradingview.com/symbols/BITMEX-XBTUSD/" rel="noopener"
+                            target="_blank"><span className="blue-text">XBTUSD chart</span></a> by TradingView
                         </div>
                     </div>
 
-                    <div id="myModal" className="modal">
 
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <span className="close">&times;</span>
-                                <div display="flex">
-                                    <h2>settings</h2>
-                                </div>
-
-                            </div>
-
-                            <div className="modal-body">
-
-                                <div className="mainSettingsDiv">
-
-                                    <div id="marketSettings">
-
-
-                                        <div className="settingsitem header">
-                                            <input id="marketsEnabledButton" type="checkbox"
-                                                   name="marketsEnabledButton" className="checkboxx"/>
-                                            <h2>market orders</h2>
-                                        </div>
-
-                                        <div className="settingsitem">
-
-                                            <input id="bitmexEnabledButton" type="checkbox"
-                                                   name="bitmexEnabledButton" className="checkboxx"/>
-                                            <b>bitmex</b>
-                                            <input id="bitmexMinField" type="number" name="bitmexMinField"
-                                                   className="minAmount" min="0" max="10000000" step="1000"/>
-                                        </div>
-
-                                        <div className="settingsitem">
-                                            <input id="bitfinexEnabledButton" type="checkbox"
-                                                   name="bitfinexEnabledButton" className="checkboxx"/>
-                                            <b>bitfinex</b>
-                                            <input id="bitfinexMinField" type="number" name="bitfinexMinField"
-                                                   className="minAmount" min="0" max="10000000" step="1000"/>
-
-                                        </div>
-
-                                        <div className="settingsitem">
-                                            <input id="coinbaseEnabledButton" type="checkbox"
-                                                   name="coinbaseEnabledButton" className="checkboxx"/>
-                                            <b>coinbase</b>
-                                            <input id="coinbaseMinField" type="number" name="coinbaseMinField"
-                                                   className="minAmount" min="0" max="10000000" step="1000"/>
-
-                                        </div>
-
-                                        <div className="settingsitem">
-                                            <input id="binanceEnabledButton" type="checkbox"
-                                                   name="binanceEnabledButton" className="checkboxx"/>
-                                            <b>binance</b>
-                                            <input id="binanceMinField" type="number" name="binanceMinField"
-                                                   className="minAmount" min="0" max="10000000" step="1000"/>
-
-                                        </div>
-                                    </div>
-
-                                    <div id="liqSettings">
-                                        <div className="settingsitem header">
-                                            <input id="liqEnabledButton" type="checkbox"
-                                                   name="liqEnabledButton" className="checkboxx"/>
-                                            <h2>liquidations</h2>
-                                        </div>
-
-                                        <div className="settingsitem">
-
-                                            <input id="bitmexLiqEnabledButton" type="checkbox"
-                                                   name="bitmexLiqEnabledButton" className="checkboxx"/>
-                                            <b>bitmex</b>
-                                            <input id="bitmexLiqMinField" type="number" name="bitmexLiqMinField"
-                                                   className="minAmount" min="0" max="10000000" step="1000"/>
-                                        </div>
-                                    </div>
-
-                                    <div id="otherSettings">
-                                        <div className="settingsitem">
-                                            <input id="hoverEnabledButton" type="checkbox"
-                                                   name="hoverEnabledButton" className="checkboxx"/>
-                                            <b>show scroll/resize</b>
-                                        </div>
-                                    </div>
-
-                                    <div id="savesettings">
-                                        <span id="savesettingsbutton">save window sizes</span>
-                                    </div>
-
-                                    <div id="donate">
-                                        <span id="donateText">corn.lol (btc)</span>
-                                    </div>
-
-                                    <div id="donate2">
-                                        <span id="donateText2">donate btc</span>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div className="modal-footer">
-                                <hr/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
+                )
+            }
         }
-    }
 
-    class Chart extends React.Component {
-        constructor(props) {super(props)}
-        render() {return (
+        ReactDOM.render(<Start/>, document.getElementById('rootydiv'))
 
-            <div className="tradingview-widget-container">
-                <div id="tradingview_1a86e"></div>
-                <div className="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/BITMEX-XBTUSD/" rel="noopener" target="_blank"><span className="blue-text">XBTUSD chart</span></a> by TradingView</div>
-            </div>
+        ReactDOM.render(<Chart/>, document.getElementById('rightside'))
 
+        ReactDOM.render(<Footer/>, document.getElementById('footer'))
 
-        )}
-    }
-
-    ReactDOM.render(<Start/>, document.getElementById('rootydiv'))
-
-    ReactDOM.render(<Chart/>, document.getElementById('rightside'))
-
-    ReactDOM.render(<Footer/>, document.getElementById('footer'))
-
-</script>
+    </script>
 
     <style>
 
@@ -1597,7 +1665,7 @@
             width: 100%;
         }
 
-        #donate  {
+        #donate {
             padding: 10px;
             color: #ff93a0;
             text-align: center;
@@ -1614,11 +1682,11 @@
             user-select: none;
         }
 
-        #donate:hover  {
+        #donate:hover {
             color: deepskyblue;
         }
 
-        #donate2  {
+        #donate2 {
             padding: 10px;
             color: #5cb85c;
             text-align: center;
@@ -1635,7 +1703,7 @@
             user-select: none;
         }
 
-        #donate2:hover  {
+        #donate2:hover {
             color: deepskyblue;
         }
 
@@ -1716,15 +1784,10 @@
         }
 
 
-
-
         .settingsitem {
             display: flex;
             padding: 5px;
         }
-
-
-
 
 
         #rootydiv {
@@ -1842,7 +1905,6 @@
             overflow-y: scroll;
 
             resize: both;
-
 
 
         }
@@ -1973,19 +2035,19 @@
             color: rgba(164, 255, 60, 0.8);
             /*padding: 5px;*/
             /* Internet Explorer 10 */
-            display:-ms-flexbox;
-            -ms-flex-pack:center;
-            -ms-flex-align:center;
+            display: -ms-flexbox;
+            -ms-flex-pack: center;
+            -ms-flex-align: center;
 
             /* Firefox */
-            display:-moz-box;
-            -moz-box-pack:center;
-            -moz-box-align:center;
+            display: -moz-box;
+            -moz-box-pack: center;
+            -moz-box-align: center;
 
             /* Safari, Opera, and Chrome */
-            display:-webkit-box;
-            -webkit-box-pack:center;
-            -webkit-box-align:center;
+            display: -webkit-box;
+            -webkit-box-pack: center;
+            -webkit-box-align: center;
         }
 
 
@@ -2092,11 +2154,7 @@
             border: 2px solid black;
 
 
-
         }
-
-
-
 
 
         #liqSettings {
@@ -2124,7 +2182,6 @@
         .bitmex.size2 {
             color: #414141;
             font-size: 18px;
-
 
 
         }
@@ -2297,7 +2354,6 @@
         }
 
 
-
         #atSign {
             font-size: 11px;
             font-style: italic;
@@ -2442,7 +2498,6 @@
         }
 
 
-
         .modal-footer {
             padding: 10px;
             background-color: #418a41;
@@ -2521,18 +2576,21 @@
 
     <!-- Default Statcounter code for corn.lol http://corn.lol-->
     <script type="text/javascript">
-        var sc_project=11947229;
-        var sc_invisible=1;
-        var sc_security="d2cbfc7b";
-        var sc_https=1;
-        var sc_remove_link=1;
+        var sc_project = 11947229
+        var sc_invisible = 1
+        var sc_security = "d2cbfc7b"
+        var sc_https = 1
+        var sc_remove_link = 1
     </script>
     <script type="text/javascript"
             src="https://www.statcounter.com/counter/counter.js"
             async></script>
-    <noscript><div className="statcounter"><img className="statcounter"
-                                                src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
-                                                alt="Web Analytics"></div></noscript>
+    <noscript>
+        <div className="statcounter"><img className="statcounter"
+                                          src="https://c.statcounter.com/11947229/0/d2cbfc7b/1/"
+                                          alt="Web Analytics"></div>
+    </noscript>
     <!-- End of Statcounter Code -->
 </div>
-</body></html>
+</body>
+</html>
