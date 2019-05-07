@@ -631,22 +631,11 @@
                     let trade = Start.coinbaseTrade(tradeRaw)
                     if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
 
-                        if (trades[0].size > 300000 && trades[0].btcAmt < 20) {
-
-                            console.log("coinbase bug tracker, printing ")
-
-                            console.log("trade: " + JSON.stringify(trade))
-
-                            console.log(JSON.stringify("trades[0]: " + JSON.stringify(trades[0])))
-
-                            trades[0].hide = true
-
-                        }
-
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket && !(parseFloat(trade[0].size)>300000 && parseFloat(trade[0].btcAmt)<20)) {
+
+                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket && (parseFloat(trade[0].size)<900000)) {
                         if (trades == null) {
                             trades = trade
                         } else {
