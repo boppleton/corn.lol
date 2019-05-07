@@ -635,8 +635,10 @@
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
 
-                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket && (parseFloat(trade[0].size)<900000)) {
-                        if (trades == null) {
+                    } else if (parseFloat(trade[0].size) >= coinbaseMinMarket &&) {
+
+                        if ((parseFloat(trade[0].size)>500000 && Math.abs(parseFloat(trade.btcAmt))<30)) {
+                        } else if (trades == null) {
                             trades = trade
                         } else {
                             trades = trade.concat(trades)
