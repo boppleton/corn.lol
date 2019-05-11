@@ -32,11 +32,7 @@
     //
     // corn.lol beta v1.72
     //
-    // © 2019 boppleton industries
-    //
-    // https://github.com/boppleton/corn.lol
-    //
-    // for questions, contact me on discord Boppleton#0273
+    // © 2019 boppleton industries   All rights reserved.
     //
     /////////
 
@@ -1075,8 +1071,9 @@
                     document.getElementById("marketsEnabledButton").checked = false
                 }
 
-                let settingsFooterRightlink = document.getElementById("settingsFooterRightLink")
-                settingsFooterRightlink.onclick = function () {
+                let footer = document.getElementById("footer")
+
+                footer.onclick = function () {
                     let modal = document.getElementById('myModal')
                     let span = document.getElementsByClassName("close")[0]
                     modal.style.display = "block"
@@ -1495,12 +1492,12 @@
                 <div>
                     <div id="footerdiv">
                         <div id="footerleft">
-                            <img src="img/cornicon.png" height="16px" width="16px" alt=" " id="pepeIcon"/>
-                            <b><span id="cornlolText"> corn.lol </span></b>
+                            <img src="img/cornicon.png" height="22px" width="22px" alt=" " id="pepeIcon"/>
+                            <b><span id="cornlolText"></span></b>
                             <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                         </div>
                         <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText">github</span></a>
+                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText"></span></a>
                         </div>
                     </div>
 
@@ -1762,8 +1759,8 @@
     }
 
     #pepeIcon:hover {
-        height: 20px;
-        width: 20px;
+        /*height: 20px;*/
+        /*width: 20px;*/
     }
 
     #footer {
@@ -1785,9 +1782,9 @@
     }
 
     #footerdiv b {
-        font-size: 18px;
-        padding-right: 5px;
-        color: #9c9c9c;
+        /*font-size: 18px;*/
+        /*padding-right: 5px;*/
+        /*color: #9c9c9c;*/
         /*-webkit-text-stroke: 1px black;*/
     }
 
@@ -1856,11 +1853,19 @@
 
     #settingsFooterRightLink {
         font-weight: bold;
-        color: rgba(50, 181, 65, 0.71);
+        font-size: 20px;
+        color: rgba(50, 205, 50, 0.86);
+
+        vertical-align: top;
+
+        padding: 0;
+
+
     }
 
     #settingsFooterRightLink:hover {
-        color: rgba(50, 205, 50, 0.86);
+        color: rgba(50, 181, 65, 0.71);
+
     }
 
     #ghostpane {
