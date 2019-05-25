@@ -626,17 +626,13 @@
                     if (tradeRaw == null || tradeRaw.type !== "match") {return}
 
 
-                console.log('coinbase msg: ' + JSON.stringify(tradeRaw))
+                // console.log('coinbase msg: ' + JSON.stringify(tradeRaw))
 
                     let trade = Start.coinbaseTrade(tradeRaw)
 
-                    console.log("trade: " + JSON.stringify(trade))
+                    // console.log("trade: " + JSON.stringify(trade))
 
-                    console.log("trade size: " + trade.size)
-
-                    if (trade.size > 1000000) {
-                        console.log('gdax error ' + JSON.stringify(tradeRaw))
-                    }
+                    // console.log("trade size: " + trade.size)
 
                     if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
 
@@ -674,6 +670,13 @@
 
         static coinbaseTrade(tradeRaw) {
             let size = parseFloat(tradeRaw.size) * parseFloat(tradeRaw.price)
+
+            var hide = false
+            if (size > 1000000) {
+                console.log("binance over 1mil, printing " + JSON.stringify(traderaw) )
+                hide = true
+            }
+
             let time = Date.parse(tradeRaw.time)
             let trade = []
             trade.push({
@@ -681,6 +684,7 @@
                 price: parseFloat(tradeRaw.price).toFixed(1),
                 size: Math.abs(size).toFixed(0),
                 side: tradeRaw.side === "sell",
+                hide: hide,
                 timestamp: time,
                 exchangeName: "coinbase",
                 startTime: Date.now(),
@@ -690,6 +694,7 @@
             })
 
             trade.btcAmt = parseFloat(tradeRaw.size).toFixed(1)
+            trade.hide = hide
             trade.timestamp = time
             trade.size = Math.abs(size).toFixed(0)
             trade.side = tradeRaw.side === "sell"
