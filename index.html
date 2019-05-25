@@ -624,12 +624,20 @@
                 if (coinbaseEnabled) {
                     let tradeRaw = JSON.parse(event.data)
                     if (tradeRaw == null || tradeRaw.type !== "match") {return}
+
+
+                console.log('coinbase msg: ' + JSON.stringify(tradeRaw))
+
                     let trade = Start.coinbaseTrade(tradeRaw)
+
+                    console.log("trade: " + JSON.stringify(trade))
+
+                    console.log("trade size: " + trade.size)
 
                     if (trade.size > 1000000) {
                         console.log('gdax error ' + JSON.stringify(tradeRaw))
                     }
-                    
+
                     if (trades[0] != null && trades[0].timestamp === trade.timestamp && trades[0].side === (trade.side === "sell")) {
 
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
