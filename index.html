@@ -1,17 +1,29 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 <head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script><script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}gtag('js', new Date());
-        gtag('config', 'UA-115388644-2');</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || []
+
+        function gtag() {
+            dataLayer.push(arguments)
+        }
+
+        gtag('js', new Date())
+        gtag('config', 'UA-115388644-2')</script>
     <meta charset="UTF-8"/>
     <title>corn.lol - bitcoin trades and liquidations ticker</title>
+    <meta name="description"
+          content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <meta name="description" content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
     <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
@@ -46,16 +58,20 @@
     let over250mem = 50
 
     // default startup settings
-    var bitmexMinMarket = 20000
+    var bitmexMinMarket = 50000
     var bitfinexMinMarket = 5000
     var coinbaseMinMarket = 5000
-    var binanceMinMarket = 15000
+    var binanceMinMarket = 20000
+    var bitstampMinMarket = 5000
+
     var bitmexMinLiq = 1
     var bitmexLiqEnabled = true
     var bitmexEnabled = true
     var bitfinexEnabled = true
     var coinbaseEnabled = true
     var binanceEnabled = true
+
+    var bitstampEnabled = true
 
     // for font/colors change
     var bitmexSize1 = 1
@@ -74,19 +90,19 @@
     var trades = null
     var liquidations = null
 
-    var hoverable = true;
+    var hoverable = true
 
     var currentPrice = 0
 
     const setCookie = (cookieKey, cookieValue, expirationDays) => {
-        let expiryDate = '';
+        let expiryDate = ''
 
         if (expirationDays) {
-            const date = new Date();
+            const date = new Date()
 
             date.setUTCFullYear(2052)
 
-            expiryDate = `; expiryDate=" ${date.toUTCString()}`;
+            expiryDate = `; expiryDate=" ${date.toUTCString()}`
         }
 
         document.cookie = cookieKey + "=" + cookieValue + "; expires=Thu, 25 Dec 2052 12:00:00 UTC; path=/"
@@ -94,22 +110,21 @@
         // document.cookie = `${cookieKey}=${cookieValue || ''}${expiryDate}; path=/`;
 
 
-
     }
 
     const getCookie = (cookieKey) => {
-        let cookieName = `${cookieKey}=`;
+        let cookieName = `${cookieKey}=`
 
-        let cookieArray = document.cookie.split(';');
+        let cookieArray = document.cookie.split(';')
 
         for (let cookie of cookieArray) {
 
             while (cookie.charAt(0) == ' ') {
-                cookie = cookie.substring(1, cookie.length);
+                cookie = cookie.substring(1, cookie.length)
             }
 
             if (cookie.indexOf(cookieName) == 0) {
-                return cookie.substring(cookieName.length, cookie.length);
+                return cookie.substring(cookieName.length, cookie.length)
             }
         }
     }
@@ -136,7 +151,7 @@
             }
 
 
-            Start.textMessage("connected")
+            Start.textMessage("trades")
             Start.liquidationTextMessage("liquidations")
 
             setInterval(this.clearBigTradesLoop, 1000)
@@ -147,6 +162,8 @@
             this.binanceWebSocketClient(c)
             // this.okexWebSocketClient(c)
 
+            this.bitstampWebsocketClient(c)
+
             this.setupSettings()
             this.scrollUpLoop()
 
@@ -155,8 +172,9 @@
         }
 
 
-
-        setStreamData(data) {this.setState(data)}
+        setStreamData(data) {
+            this.setState(data)
+        }
 
         setStreamDataLoop(c) {
 
@@ -190,7 +208,7 @@
             // console.log("trade count; under 5k: " + under5count + " over 5 under 50: " + over5under50count + " over50 under 250: " + over50under250count + " over 250: " + over250count)
 
             function deleteTrades(count, keep, lessThan, greaterThan) {
-                let deleteQty = count-keep
+                let deleteQty = count - keep
                 for (let i = trades.length - 1; i > 1; i--) {
                     if (trades !== null) {
                         if (trades[i] !== null && Math.abs(trades[i].size) <= lessThan && Math.abs(trades[i].size) >= greaterThan) {
@@ -200,7 +218,9 @@
                             }
 
                         }
-                        if (deleteQty <= 0) {return}
+                        if (deleteQty <= 0) {
+                            return
+                        }
                     }
                 }
             }
@@ -219,7 +239,7 @@
             }
 
             function deleteLiqs(count, keep, lessThan, greaterThan) {
-                let deleteQty = count-keep
+                let deleteQty = count - keep
                 for (let i = liquidations.length - 1; i > 1; i--) {
                     if (liquidations !== null) {
                         if (liquidations[i] !== null && Math.abs(liquidations[i].highestAmount) <= lessThan && Math.abs(liquidations[i].highestAmount) >= greaterThan) {
@@ -229,7 +249,9 @@
                             }
 
                         }
-                        if (deleteQty <= 0) {return}
+                        if (deleteQty <= 0) {
+                            return
+                        }
                     }
                 }
             }
@@ -243,7 +265,7 @@
 
                 if (tradeSize < 100000) {
                     under100kcount++
-                } else  {
+                } else {
                     over100kcount++
                 }
             }
@@ -254,7 +276,7 @@
                 deleteLiqs(under100kcount, 50, 100000, 0)
             }
             if (over100kcount >= 100) {
-                deleteLiqs(over100kcount, 50, 100000000, 100000 )
+                deleteLiqs(over100kcount, 50, 100000000, 100000)
             }
         }
 
@@ -267,10 +289,12 @@
 
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
-                    if (tradeRaw.data == null) {return}
+                    if (tradeRaw.data == null) {
+                        return
+                    }
 
 
-                    if (tradeRaw.table ==="trade") {
+                    if (tradeRaw.table === "trade") {
                         let trade = Start.bitmexTrade(tradeRaw.data)
                         if (trade[0].size >= bitmexMinMarket) {
                             if (trades == null) {
@@ -280,8 +304,8 @@
                             }
                             // c.setStreamData({data: trades})
                         }
-                    } else if (tradeRaw.table==="liquidation") {
-                        for (let i = 0; i < tradeRaw.data.length; i++ ) {
+                    } else if (tradeRaw.table === "liquidation") {
+                        for (let i = 0; i < tradeRaw.data.length; i++) {
 
                             // console.log("\n\nliq message " + tradeRaw.action + JSON.stringify(tradeRaw.data[i]))
 
@@ -289,20 +313,24 @@
 
                             // console.log("size: " + liq.size + " highestsize: " + liq.highestAmount)
 
-                            if (liq.action==="insert") {
-                                if (liquidations==null) {
+                            if (liq.action === "insert") {
+                                if (liquidations == null) {
                                     liquidations = liq
                                 } else {
                                     liquidations = liq.concat(liquidations)
                                 }
-                            } else if (liq.action==="update") {
+                            } else if (liq.action === "update") {
                                 for (let i = 0; i < liquidations.length; i++) {
-                                    if (liquidations[i].id===liq.id) {
-                                        if (liq.size !==0 && !isNaN(liq.size)) {
+                                    if (liquidations[i].id === liq.id) {
+                                        if (liq.size !== 0 && !isNaN(liq.size)) {
                                             liquidations[i].size = liq.size
                                         }
-                                        if (!isNaN(liq.size) && liq.size > liquidations[i].highestAmount) {liquidations[i].highestAmount = liq.size}
-                                        if (liq.price > 0 && !isNaN(liq.price)) {liquidations[i].price = liq.price}
+                                        if (!isNaN(liq.size) && liq.size > liquidations[i].highestAmount) {
+                                            liquidations[i].highestAmount = liq.size
+                                        }
+                                        if (liq.price > 0 && !isNaN(liq.price)) {
+                                            liquidations[i].price = liq.price
+                                        }
 
                                         console.log(liquidations[i].id + " updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
 
@@ -317,9 +345,9 @@
                                         // }
                                     }
                                 }
-                            } else if (liq.action==="delete") {
+                            } else if (liq.action === "delete") {
                                 for (let i = 0; i < liquidations.length; i++) {
-                                    if (liquidations[i].id===liq.id) {
+                                    if (liquidations[i].id === liq.id) {
                                         liquidations[i].deleted = true
                                         liquidations[i].size = 0
                                         liquidations[i].endTime = Date.now()
@@ -336,52 +364,56 @@
 
             const socketOpenListener = (event) => {
                 console.log('mex open')
-                socket.send("{\"op\": \"" + "subscribe\", \"args\": [\"" + "liquidation" + ":" + "XBTUSD" + "\"]}");
+                socket.send("{\"op\": \"" + "subscribe\", \"args\": [\"" + "liquidation" + ":" + "XBTUSD" + "\"]}")
             }
             const socketCloseListener = (event) => {
-                if (socket) {console.error('mex close')}
+                if (socket) {
+                    console.error('mex close')
+                }
                 socket = new WebSocket('wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
                 socket.addEventListener('close', socketCloseListener)
             }
 
-            setTimeout(function(){ socketCloseListener() }, 3000);
+            setTimeout(function () {
+                socketCloseListener()
+            }, 3000)
 
         }
 
         static bitmexLiq(liqraw, action) {
             let liq = []
 
-                liq.push({
-                    exchangeName: "bitmex",
-                    id: liqraw.orderID,
-                    action: action,
-                    side: liqraw.side==="Buy",
-                    price: liqraw.price,
-                    firstPrice: liqraw.price,
-                    size: parseFloat(liqraw.leavesQty).toFixed(0),
-                    update: "",
-                    liq: true,
-                    startSize: parseFloat(liqraw.leavesQty).toFixed(0),
-                    highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
-                    deleted: false,
-                    startTime: Date.now()
-                })
+            liq.push({
+                exchangeName: "bitmex",
+                id: liqraw.orderID,
+                action: action,
+                side: liqraw.side === "Buy",
+                price: liqraw.price,
+                firstPrice: liqraw.price,
+                size: parseFloat(liqraw.leavesQty).toFixed(0),
+                update: "",
+                liq: true,
+                startSize: parseFloat(liqraw.leavesQty).toFixed(0),
+                highestAmount: parseFloat(liqraw.leavesQty).toFixed(0),
+                deleted: false,
+                startTime: Date.now()
+            })
 
-                liq.exchangeName = "bitmex"
-                    liq.id = liqraw.orderID
-                    liq.action = action
-                    liq.side = liqraw.side==="Buy"
-                    liq.price = liqraw.price
-                    liq.firstPrice = liqraw.price
-                    liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
-                    liq.update = ""
-                    liq.liq = true
-                    liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
-                    liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
-                    liq.deleted = false
-                    liq.startTime = Date.now()
+            liq.exchangeName = "bitmex"
+            liq.id = liqraw.orderID
+            liq.action = action
+            liq.side = liqraw.side === "Buy"
+            liq.price = liqraw.price
+            liq.firstPrice = liqraw.price
+            liq.size = parseFloat(liqraw.leavesQty).toFixed(0)
+            liq.update = ""
+            liq.liq = true
+            liq.startSize = parseFloat(liqraw.leavesQty).toFixed(0)
+            liq.highestAmount = parseFloat(liqraw.leavesQty).toFixed(0)
+            liq.deleted = false
+            liq.startTime = Date.now()
 
 
             return liq
@@ -391,7 +423,9 @@
         static bitmexTrade(tradeRaw) {
             let trade = []
             let totalSize = 0
-            for (let i = 0; i < tradeRaw.length; i++) {totalSize += tradeRaw[i].size}
+            for (let i = 0; i < tradeRaw.length; i++) {
+                totalSize += tradeRaw[i].size
+            }
 
             let firstPrice = tradeRaw[0].price
             let lastPrice = tradeRaw[tradeRaw.length - 1].price
@@ -405,7 +439,7 @@
                 symbol: "XBTUSD",
                 price: lastPrice,
                 timestamp: tradeRaw[0].timestamp,
-                side: tradeRaw[0].side === "Buy",
+                side: tradeRaw[0].side === "Buy", //bitmex
                 exchangeName: "bitmex",
                 startTime: Date.now(),
                 firstPrice: firstPrice,
@@ -442,7 +476,7 @@
             this.message = s
 
 
-            if (trades==null) {
+            if (trades == null) {
                 trades = trade
             } else {
                 trades = trade.concat(trades)
@@ -478,7 +512,7 @@
             this.message = s
 
 
-            if (liquidations==null) {
+            if (liquidations == null) {
                 liquidations = message
             } else {
                 liquidations = message.concat(liquidations)
@@ -490,17 +524,20 @@
             const socketMessageListener = (event) => {
                 if (bitfinexEnabled) {
                     let trade = JSON.parse(event.data)
-                    if (trade == null || trade[1] !== "te") {return}
+                    if (trade == null || trade[1] !== "te") {
+                        return
+                    }
                     let trade2 = Start.bitfinexTrade(trade)
                     if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
-                    } else if (trade2[0].size >= bitfinexMinMarket){
+                    } else if (trade2[0].size >= bitfinexMinMarket) {
                         if (trades == null) {
                             trades = trade2
                         } else {
-                            trades = trade2.concat(trades)}
+                            trades = trade2.concat(trades)
+                        }
                     }
                     // c.setStreamData({data: trades})
                 }
@@ -516,7 +553,9 @@
             }
 
             const socketCloseListener = (event) => {
-                if (socket) {console.error('finex close')}
+                if (socket) {
+                    console.error('finex close')
+                }
                 socket = new WebSocket('wss://api.bitfinex.com/ws')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
@@ -543,7 +582,86 @@
         }
 
 
+        bitstampWebsocketClient(c) {
 
+            var socket
+            const socketMessageListener = (event) => {
+
+
+                // if (bitfinexEnabled) {
+                let trade = JSON.parse(event.data)
+
+                //
+                if (trade == null || trade.event !== "trade") {
+                    return
+                }
+
+
+                let trade2 = Start.bitstampTrade(trade.data)
+
+                if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
+
+
+
+                    trades[0].btcAmt += trade2[0].btcAmt
+                    trades[0].size += trade2[0].size
+                    trades[0].lastPrice = trade2[0].price
+
+                } else if (trade2[0].size >= bitstampMinMarket) {
+                    if (trades == null) {
+                        trades = trade2
+
+                    } else {
+                        trades = trade2.concat(trades)
+                        // console.log("adding trade " + JSON.stringify(trade2))
+                    }
+                }
+                // c.setStreamData({data: trades})
+            }
+
+
+            const socketOpenListener = (event) => {
+                console.log('stamp open')
+                socket.send("{\n" +
+                    "    \"event\": \"bts:subscribe\",\n" +
+                    "    \"data\": {\n" +
+                    "        \"channel\": \"live_trades_btcusd\"\n" +
+                    "    }\n" +
+                    "}")
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('stamp close')
+                }
+                socket = new WebSocket('wss://ws.bitstamp.net')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+            socketCloseListener()
+
+        }
+
+        static bitstampTrade(tradeRaw) {
+
+            // console.log(tradeRaw)
+
+            let trade = []
+            trade.push({
+                symbol: "BTCUSD",
+                price: tradeRaw.price,
+                size: Math.abs(tradeRaw.amount * tradeRaw.price),
+                timestamp: tradeRaw.timestamp,
+                side: tradeRaw.type === 0,
+                exchangeName: "bitstamp",
+                startTime: Date.now(),
+                btcAmt: tradeRaw.amount,
+                firstPrice: tradeRaw.price,
+                lastPrice: tradeRaw.price
+            })
+            return trade
+        }
 
 
         okexWebSocketClient(c) {
@@ -551,7 +669,6 @@
             console.log("okex start")
 
             var socket
-
 
 
             const socketMessageListener = (event) => {
@@ -587,7 +704,9 @@
             }
 
             const socketCloseListener = (event) => {
-                if (socket) {console.error('okex close')}
+                if (socket) {
+                    console.error('okex close')
+                }
                 socket = new WebSocket('wss://real.okex.com:10442/ws/v3')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
@@ -614,19 +733,17 @@
         }
 
 
-
-
-
-
         setupCoinbaseWebsocketClient(c) {
             var socket
             const socketMessageListener = (event) => {
                 if (coinbaseEnabled) {
                     let tradeRaw = JSON.parse(event.data)
-                    if (tradeRaw == null || tradeRaw.type !== "match") {return}
+                    if (tradeRaw == null || tradeRaw.type !== "match") {
+                        return
+                    }
 
 
-                // console.log('coinbase msg: ' + JSON.stringify(tradeRaw))
+                    // console.log('coinbase msg: ' + JSON.stringify(tradeRaw))
 
                     let trade = Start.coinbaseTrade(tradeRaw)
 
@@ -642,7 +759,7 @@
 
                     } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
 
-                        if ((parseFloat(trade[0].size)>500000 && Math.abs(parseFloat(trade.btcAmt))<30)) {
+                        if ((parseFloat(trade[0].size) > 500000 && Math.abs(parseFloat(trade.btcAmt)) < 30)) {
                         } else if (trades == null) {
                             trades = trade
                         } else {
@@ -659,7 +776,9 @@
             }
 
             const socketCloseListener = (event) => {
-                if (socket) {console.error('cb close')}
+                if (socket) {
+                    console.error('cb close')
+                }
                 socket = new WebSocket('wss://ws-feed.pro.coinbase.com')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
@@ -673,7 +792,7 @@
 
             var hide = false
             if (size > 1000000) {
-                console.log("binance over 1mil, printing " + JSON.stringify(traderaw) )
+                console.log("binance over 1mil, printing " + JSON.stringify(traderaw))
                 hide = true
             }
 
@@ -709,15 +828,20 @@
             const socketMessageListener = (event) => {
                 if (binanceEnabled) {
                     let trade = JSON.parse(event.data)
-                    if (trade == null || trade.e !== "aggTrade") {return}
+                    if (trade == null || trade.e !== "aggTrade") {
+                        return
+                    }
                     let trade2 = Start.binanceTrade(trade)
                     if (trades[0] != null && trades[0].timestamp === trade2.timestamp && trades[0].side === trade2.side) {
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
                     } else if (trade2[0].size >= binanceMinMarket) {
-                        if (trades == null) {trades = trade
-                        } else {trades = trade2.concat(trades)}
+                        if (trades == null) {
+                            trades = trade
+                        } else {
+                            trades = trade2.concat(trades)
+                        }
                     }
 
                     // c.setStreamData({data: trades})
@@ -729,7 +853,9 @@
             }
 
             const socketCloseListener = (event) => {
-                if (socket) {console.error('binance close')}
+                if (socket) {
+                    console.error('binance close')
+                }
                 socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade')
                 socket.addEventListener('open', socketOpenListener)
                 socket.addEventListener('message', socketMessageListener)
@@ -788,13 +914,14 @@
                                 <Table data={this.state.marketdata}/>
                             </div>
 
-                            {this.state.return?'':hello}
+                            {this.state.return ? '' : hello}
 
                         </div>
                         <div id="hiddendiv">
                             <div className="singleSettingsDiv">
-                                <a id="settingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                                   width="30"/></a>
+                                <a id="settingslink" href="javascript:void(0)"><img
+                                    src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                    width="30"/></a>
                                 <span id="settingsButtonText">settings</span>
                             </div>
 
@@ -802,8 +929,9 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="clearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                                width="30"/></a>
+                                <a id="clearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png"
+                                                                                 height="30"
+                                                                                 width="30"/></a>
                                 <span id="settingsButtonText">clear</span>
                             </div>
 
@@ -811,8 +939,9 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="markethidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
-                                                                  width="30"/></a>
+                                <a id="markethidelink" href="javascript:void(0)"><img src="img/closearrow.png"
+                                                                                      height="30"
+                                                                                      width="30"/></a>
                                 <span id="settingsButtonText">close</span>
                             </div>
                         </div>
@@ -824,8 +953,9 @@
 
                         <div id="hiddendivLiq">
                             <div className="singleSettingsDiv">
-                                <a id="liqsettingslink" href="javascript:void(0)"><img src="https://i.imgur.com/6AoPcNm.png" height="30"
-                                                                   width="30"/></a>
+                                <a id="liqsettingslink" href="javascript:void(0)"><img
+                                    src="https://i.imgur.com/6AoPcNm.png" height="30"
+                                    width="30"/></a>
                                 <span id="settingsButtonText">settings</span>
                             </div>
 
@@ -833,8 +963,9 @@
 
                             <div className="singleSettingsDiv">
 
-                                <a id="liqclearlink" href="javascript:void(0)"><img src="https://i.imgur.com/NkTQRNj.png" height="30"
-                                                                width="30"/></a>
+                                <a id="liqclearlink" href="javascript:void(0)"><img
+                                    src="https://i.imgur.com/NkTQRNj.png" height="30"
+                                    width="30"/></a>
                                 <span id="settingsButtonText">clear</span>
                             </div>
 
@@ -843,7 +974,7 @@
                             <div className="singleSettingsDiv">
 
                                 <a id="liqhidelink" href="javascript:void(0)"><img src="img/closearrow.png" height="30"
-                                                                width="30"/></a>
+                                                                                   width="30"/></a>
                                 <span id="settingsButtonText">close</span>
                             </div>
                         </div>
@@ -878,14 +1009,12 @@
                 // );
 
 
-
-
                 let donateText = document.getElementById("donateText")
 
                 donateText.onclick = function () {
 
-                    var win = window.open("https://corn.lol/eth", '_blank');
-                    win.focus();
+                    var win = window.open("https://corn.lol/eth", '_blank')
+                    win.focus()
 
                 }
 
@@ -906,7 +1035,7 @@
                 }
 
                 let bitmexLiqEnabledButton = document.getElementById("bitmexLiqEnabledButton")
-                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled")===undefined?true:getCookie("bitmexLiqEnabled")
+                bitmexLiqEnabledButton.checked = getCookie("bitmexLiqEnabled") === undefined ? true : getCookie("bitmexLiqEnabled")
 
                 bitmexLiqEnabledButton.onclick = function () {
                     bitmexLiqEnabled = !bitmexLiqEnabled
@@ -914,8 +1043,6 @@
 
                     setCookie("bitmexLiqEnabled", bitmexLiqEnabledButton.checked, 300)
                 }
-
-
 
 
                 // document.getElementById("bitmexLiqMinField").disabled = true
@@ -926,7 +1053,7 @@
 
                 liqEnabledButton.onclick = function () {
                     let liqMainDiv = document.getElementById("liqMainDiv")
-                    liqMainDiv.style.display =  liqMainDiv.style.display !== "none"?"none":"flex"
+                    liqMainDiv.style.display = liqMainDiv.style.display !== "none" ? "none" : "flex"
                     // document.getElementById("bitmexLiqMinField").disabled = !document.getElementById("bitmexLiqMinField").disabled
                     bitmexLiqEnabledButton.disabled = !bitmexLiqEnabledButton.disabled
 
@@ -945,9 +1072,8 @@
 
                 marketsEnabledButton.onclick = function () {
                     let tableandbottom = document.getElementById("tableandbottom")
-                    tableandbottom.style.display = tableandbottom.style.display === "none"?"flex":"none"
+                    tableandbottom.style.display = tableandbottom.style.display === "none" ? "flex" : "none"
                 }
-
 
 
                 let hoverEnabledbutton = document.getElementById("hoverEnabledButton")
@@ -956,8 +1082,8 @@
 
                 hoverEnabledbutton.onclick = function () {
                     hoverable = !hoverable
-                    document.getElementById("tableandbottom").style.pointerEvents = hoverable?"all":"none"
-                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable?"all":"none"
+                    document.getElementById("tableandbottom").style.pointerEvents = hoverable ? "all" : "none"
+                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable ? "all" : "none"
                 }
 
                 let pepeIcon = document.getElementById("pepeIcon")
@@ -965,7 +1091,7 @@
                 let rotation = 20
 
                 pepeIcon.onclick = function () {
-                    pepeIcon.style.transform = "rotate(" + rotation + "deg)";
+                    pepeIcon.style.transform = "rotate(" + rotation + "deg)"
                     rotation += 20
 
                     if (rotation > 360) {
@@ -976,7 +1102,7 @@
                 let cornloltext = document.getElementById("cornlolText")
 
                 cornloltext.onclick = function () {
-                    pepeIcon.style.transform = "rotate(" + rotation + "deg)";
+                    pepeIcon.style.transform = "rotate(" + rotation + "deg)"
                     rotation += 20
 
                     if (rotation > 360) {
@@ -1052,6 +1178,31 @@
                     console.log("set binanceEnabled: " + binanceEnabled)
                 }
 
+
+
+
+                let bitstampMinField = document.getElementById("bitstampMinField")
+                bitstampMinField.onchange = function () {
+                    if (bitstampMinField.value < minTradeSize) {
+                        bitstampMinField.value = minTradeSize
+                    }
+                    bitstampMinMarket = bitstampMinField.value
+
+                    console.log("setstampmin cookie to min " + bitstampMinMarket)
+
+                    setCookie("bitstampMin", bitstampMinMarket, 300)
+                }
+                document.getElementById("bitstampEnabledButton").onchange = function () {
+                    console.log("bitstampEnabledButton onchange- ")
+                    bitstampEnabled = document.getElementById("bitstampEnabledButton").checked
+                    document.getElementById("bitstampMinField").disabled = !document.getElementById("bitstampeMinField").disabled
+                    setCookie("bitstampEnabled", bitstampEnabled, 300)
+
+                    console.log("set bitstampEnabled: " + bitstampEnabled)
+                }
+
+
+
                 let settingslink = document.getElementById("settingslink")
                 settingslink.onclick = function () {
                     let modal = document.getElementById('myModal')
@@ -1106,8 +1257,6 @@
                 }
 
 
-
-
                 let savesettingsbutton = document.getElementById("savesettingsbutton")
 
                 savesettingsbutton.onclick = function () {
@@ -1135,13 +1284,13 @@
 
 
                     window.alert("saved dimensions: \n market orders: height." + $("#maintablediv").height().toFixed(0) + " width." + $("#maintablediv").width().toFixed(0)
-                    + "\n liquidations: height." + $("#liqdiv").height().toFixed(0) + " width." + $("#liqdiv").width().toFixed(0) )
+                        + "\n liquidations: height." + $("#liqdiv").height().toFixed(0) + " width." + $("#liqdiv").width().toFixed(0))
 
 
                 }
 
 
-                if (getCookie("bitmexMin")===undefined) {
+                if (getCookie("bitmexMin") === undefined) {
                     setCookie("bitmexLiqEnabled", bitmexLiqEnabled, 300)
 
                     setCookie("bitmexLiqMin", bitmexMinLiq, 300)
@@ -1150,11 +1299,13 @@
                     setCookie("bitfinexMin", bitfinexMinMarket, 300)
                     setCookie("coinbaseMin", coinbaseMinMarket, 300)
                     setCookie("binanceMin", binanceMinMarket, 300)
+                    setCookie("bitstampMin", bitstampMinMarket, 300)
 
                     setCookie("bitmexEnabled", bitmexEnabled, 300)
                     setCookie("bitfinexEnabled", bitfinexEnabled, 300)
                     setCookie("coinbaseEnabled", coinbaseEnabled, 300)
                     setCookie("binanceEnabled", binanceEnabled, 300)
+                    setCookie("bitstampEnabled", bitstampEnabled, 300)
 
 
                     setCookie("marketH", 600, 300)
@@ -1163,34 +1314,42 @@
                     setCookie("liqW", 300, 300)
                 }
 
+                // console.log("mexmin cookie: " + getCookie("bitmexMin"))
+                // console.log("stampmin cookie: " + getCookie("bitstampMin"))
+
+                if (getCookie("bitstampMin") === undefined) {
+                    setCookie("bitstampMin", bitstampMinMarket, 300)
+                    setCookie("bitstampEnabled", bitstampEnabled, 300)
+                }
 
 
-
-                if (getCookie("bitmexMin")!==undefined) {
+                if (getCookie("bitmexMin") !== undefined) {
 
                     document.getElementById('bitmexMinField').value = getCookie("bitmexMin")
                     document.getElementById('bitfinexMinField').value = getCookie("bitfinexMin")
                     document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
                     document.getElementById('binanceMinField').value = getCookie("binanceMin")
+                    document.getElementById('bitstampMinField').value = getCookie("bitstampMin")
 
-                    $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled")==="false")
-                    $('#bitfinexMinField').prop("disabled", getCookie("bitfinexEnabled")==="false")
-                    $('#coinbaseMinField').prop("disabled", getCookie("coinbaseEnabled")==="false")
-                    $('#binanceMinField').prop("disabled", getCookie("binanceEnabled")==="false")
+                    $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled") === "false")
+                    $('#bitfinexMinField').prop("disabled", getCookie("bitfinexEnabled") === "false")
+                    $('#coinbaseMinField').prop("disabled", getCookie("coinbaseEnabled") === "false")
+                    $('#binanceMinField').prop("disabled", getCookie("binanceEnabled") === "false")
+                    $('#bitstampMinField').prop("disabled", getCookie("bitstampEnabled") === "false")
 
 
-                    $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled")==="true")
-                    $('#bitfinexEnabledButton').prop("checked", getCookie("bitfinexEnabled")==="true")
-                    $('#coinbaseEnabledButton').prop("checked", getCookie("coinbaseEnabled")==="true")
-                    $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled")==="true")
-
+                    $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled") === "true")
+                    $('#bitfinexEnabledButton').prop("checked", getCookie("bitfinexEnabled") === "true")
+                    $('#coinbaseEnabledButton').prop("checked", getCookie("coinbaseEnabled") === "true")
+                    $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled") === "true")
+                    $('#bitstampEnabledButton').prop("checked", getCookie("bitstampEnabled") === "true")
 
 
                     document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
-                    $("#bitmexLiqMinField").prop("disabled", getCookie("bitmexLiqEnabled")==="false")
+                    $("#bitmexLiqMinField").prop("disabled", getCookie("bitmexLiqEnabled") === "false")
 
                     // document.getElementById("liqEnabledButton").checked = getCookie("liqEnabled")
-                    $("#bitmexLiqEnabledButton").prop("checked", getCookie("bitmexLiqEnabled")==="true")
+                    $("#bitmexLiqEnabledButton").prop("checked", getCookie("bitmexLiqEnabled") === "true")
 
                     // console.log("bitmexliiqenabled: " + getCookie("bitmexLiqEnabled"))
 
@@ -1199,6 +1358,9 @@
                     bitfinexMinMarket = getCookie("bitfinexMin")
                     coinbaseMinMarket = getCookie("coinbaseMin")
                     binanceMinMarket = getCookie("binanceMin")
+                    bitstampMinMarket = getCookie("bitstampMin")
+
+                    // console.log("bitstamp min cookie: " + getCookie("bitstampMin"))
 
                     bitmexMinLiq = getCookie("bitmexLiqMin")
 
@@ -1209,6 +1371,8 @@
 
                     binanceEnabled = getCookie("binanceEnabled")
                     console.log("binanceenabled: " + binanceEnabled)
+                    bitstampEnabled = getCookie("bitstampEnabled")
+
                     bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
 
                     $("#maintablediv").height(getCookie("marketH"))
@@ -1218,17 +1382,18 @@
                     $("#liqdiv").width(getCookie("liqW"))
 
 
-
                 } else {
                     document.getElementById('bitmexMinField').value = bitmexMinMarket
                     document.getElementById('bitfinexMinField').value = bitfinexMinMarket
                     document.getElementById('coinbaseMinField').value = coinbaseMinMarket
                     document.getElementById('binanceMinField').value = binanceMinMarket
+                    document.getElementById('bitstampMinField').value = bitstampMinMarket
 
                     document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
                     document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
                     document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
                     document.getElementById('binanceEnabledButton').checked = binanceEnabled
+                    document.getElementById('bitstampEnabledButton').checked = bitstampEnabled
                 }
 
 
@@ -1241,7 +1406,8 @@
                     'behavior': 'smooth',
                     'left': 0,
                     'top': 0
-                })}, 10000)
+                })
+            }, 10000)
         }
 
 
@@ -1252,7 +1418,9 @@
 
     function getKformat(size, iteration) {
         if (size >= 1) {
-            if (size < 1000) {return lowFormat(size)}
+            if (size < 1000) {
+                return lowFormat(size)
+            }
             let c = ["k", "m"]
             let d = (size / 100) / 10.0
             let isRound = (d * 10) % 10 === 0
@@ -1266,10 +1434,14 @@
             s = s.replace("000k", "m")
             s = s.replace(".0k", "k")
             return s
-        } else {return 0}
+        } else {
+            return 0
+        }
     }
 
-    function lowFormat(size) {return Math.abs(Math.round(size)).toFixed(0)}
+    function lowFormat(size) {
+        return Math.abs(Math.round(size)).toFixed(0)
+    }
 
     class LiquidationRow extends React.Component {
         render() {
@@ -1277,7 +1449,7 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount>0?data.highestAmount:data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount > 0 ? data.highestAmount : data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
                     <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
@@ -1291,8 +1463,8 @@
         }
 
         getTradePriceLiq(data) {
-            if (data.symbol!=="message") {
-                let slip = data.price-data.firstPrice
+            if (data.symbol !== "message") {
+                let slip = data.price - data.firstPrice
                 return ("@ " + data.price)
             } else {
                 return ""
@@ -1300,8 +1472,8 @@
         }
 
         getTradeSizeLiq(data) {
-            if (data.symbol!=="message") {
-                return getKformat(data.highestAmount, 0)  + (" liq ") +  ((data.size===0)?(((parseInt((Date.now() - data.startTime) / 1000) < 60)?"(filled!)":"")):("("+getKformat(data.size, 0) + " active)"))
+            if (data.symbol !== "message") {
+                return getKformat(data.highestAmount, 0) + (" liq ") + ((data.size === 0) ? (((parseInt((Date.now() - data.startTime) / 1000) < 60) ? "(filled!)" : "")) : ("(" + getKformat(data.size, 0) + " active)"))
             } else {
                 return data.message
             }
@@ -1322,15 +1494,18 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" : data.hide?"hide":"")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" :
+
+                    (data.hide||(data.size>5000000&&data.btcAmt<20)) ? "hide" : "")} //try to fix gdaxbug
+
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
-                    <td id="tradeSize">{ (data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
+                    <td id="tradeSize">{(data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
                     <td width="100%" id="spacer">{""}</td>
                     <td id="slip">{Row.getSlipIcon(data)}{Row.getSlip(data)}</td>
                     <td id="btcAmt">{Row.getBtcShow(data)}</td>
-                    <td id="atSign">{(Row.getBtcShow(data)===null?"":"@ ")}</td>
-                    <td id="tradePrice">{ data.exchangeName==="message"?"":parseFloat(data.lastPrice).toFixed(1) }</td>
+                    <td id="atSign">{(Row.getBtcShow(data) === null ? "" : "@ ")}</td>
+                    <td id="tradePrice">{data.exchangeName === "message" ? "" : parseFloat(data.lastPrice).toFixed(1)}</td>
                     <td id="elapsedTime" width="100%">{Row.getTimeElapsed(data)}</td>
                 </tr>
             )
@@ -1338,9 +1513,8 @@
         }
 
 
-
         static getTimeElapsed(data) {
-            if (data.exchangeName!=="message") {
+            if (data.exchangeName !== "message") {
                 var timeElapsed = parseInt((Date.now() - data.startTime) / 1000)
                 if (timeElapsed < 10) {
                     return "now"
@@ -1356,18 +1530,22 @@
         }
 
         static getBtcShow(data) {
-            if (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance") {
+            if (Math.abs(data.btcAmt)>=1 && (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp")) {
                 var abs = Math.abs(data.btcAmt)
-                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1) + " btc")
-            } else {return null}
+                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1).toString().replace('.0','') + " btc")
+            } else {
+                return null
+            }
         }
 
         static getSlip(data) {
             if (data.exchangeName !== "binance") {
                 var slip = data.lastPrice - data.firstPrice
                 if (Math.abs(slip) >= 0.5) {
-                    return ( Math.abs(slip).toFixed(1) )
-                } else {return null}
+                    return (Math.abs(slip).toFixed(1))
+                } else {
+                    return null
+                }
             }
         }
 
@@ -1382,7 +1560,9 @@
                         return "↘ "
                         // return <span className="slipIcon"><img src="img/down2.png" alt="down"/></span>
                     }
-                } else {return null}
+                } else {
+                    return null
+                }
             }
         }
 
@@ -1395,13 +1575,19 @@
                 return coinbaseMinMarket
             } else if (data.exchangeName === "binance") {
                 return binanceMinMarket
-            } else {return 0}
+            } else if (data.exchangeName === "bitstamp") {
+                return bitstampMinMarket
+            } else {
+                return 0
+            }
         }
 
         static getMinLiqForExchange(data) {
             if (data.exchangeName === "bitmex") {
                 return bitmexMinLiq
-            } else {return 0}
+            } else {
+                return 0
+            }
         }
 
         static getSizeGroup(exchangeName, size) {
@@ -1419,7 +1605,7 @@
                 } else {
                     return "size1"
                 }
-            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance") {
+            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance" || exchangeName === "bitstamp") {
                 if (Math.abs(size) >= bitfinexSize6) {
                     return "size6"
                 } else if (Math.abs(size) >= bitfinexSize5) {
@@ -1448,8 +1634,10 @@
                 return <span><img src="img/gdax25.png" alt="gdax"/></span>
             } else if (data.exchangeName === "binance") {
                 return <span><img src="img/binancenew.png" alt="safu"/></span>
+            } else if (data.exchangeName === "bitstamp") {
+                return <span><img src="img/stamp22.png" height="22" width="22" alt="stamp"/></span>
             } else if (data.exchangeName === "message") {
-                if (data.type==="liquidation") {
+                if (data.type === "liquidation") {
                     return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
                     // return <span><img src="img/arthursmall.png" height="20px" width="20px" alt="text"/></span>
                 } else {
@@ -1457,10 +1645,12 @@
                     // return <span className="rowIcon"><img src="img/pepp2good.png" height="20px" width="20px" alt="text"/></span>
                 }
             } else if (data.liq) {
-                if (!data.deleted ) {
-                    return <span><img src="img/arthursmall.png" alt="liq" id="arthuriconspin" height="20px" width="20px"/></span>
+                if (!data.deleted) {
+                    return <span><img src="img/arthursmall.png" alt="liq" id="arthuriconspin" height="20px"
+                                      width="20px"/></span>
                 } else if (data.deleted && (parseInt((Date.now() - data.endTime) / 1000) < 10)) {
-                    return <span><img src="img/arthursmall.png" alt="liq" id="arthuricon" height="20px" width="20px"/></span>
+                    return <span><img src="img/arthursmall.png" alt="liq" id="arthuricon" height="20px"
+                                      width="20px"/></span>
                 } else {
                     return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
                 }
@@ -1469,7 +1659,7 @@
 
         static getBgColor(data) {
             var side = data.side
-            var size = Math.abs(data.highestAmount>0?data.highestAmount:data.size)
+            var size = Math.abs(data.highestAmount > 0 ? data.highestAmount : data.size)
 
             var intensity = Math.abs(size) / 4200
 
@@ -1493,17 +1683,29 @@
     }
 
     class Table extends React.Component {
-        constructor(props) {super(props)}
-        render() {return (<table className="table1"><Row data={this.props.data}/></table>)}
+        constructor(props) {
+            super(props)
+        }
+
+        render() {
+            return (<table className="table1"><Row data={this.props.data}/></table>)
+        }
     }
 
     class LiqTable extends React.Component {
-        constructor(props) {super(props)}
-        render() {return (<table className="table2"><LiquidationRow data={this.props.data}/></table>)}
+        constructor(props) {
+            super(props)
+        }
+
+        render() {
+            return (<table className="table2"><LiquidationRow data={this.props.data}/></table>)
+        }
     }
 
     class Footer extends React.Component {
-        constructor(props) {super(props)}
+        constructor(props) {
+            super(props)
+        }
 
         render() {
             return (
@@ -1515,7 +1717,8 @@
                             <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                         </div>
                         <div id="footerright">
-                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span className="footerRightText"></span></a>
+                            <a href="https://github.com/boppleton/corn.lol" target="_blank"><span
+                                className="footerRightText"></span></a>
                         </div>
                     </div>
 
@@ -1578,6 +1781,15 @@
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
                                         </div>
+
+                                        <div className="settingsitem">
+                                            <input id="bitstampEnabledButton" type="checkbox"
+                                                   name="bitstampEnabledButton" className="checkboxx"/>
+                                            <b>bitstamp</b>
+                                            <input id="bitstampMinField" type="number" name="bitstampMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                        </div>
                                     </div>
 
                                     <div id="liqSettings">
@@ -1631,16 +1843,24 @@
     }
 
     class Chart extends React.Component {
-        constructor(props) {super(props)}
-        render() {return (
+        constructor(props) {
+            super(props)
+        }
 
-            <div className="tradingview-widget-container">
-                <div id="tradingview_1a86e"></div>
-                <div className="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/BITMEX-XBTUSD/" rel="noopener" target="_blank"><span className="blue-text">XBTUSD chart</span></a> by TradingView</div>
-            </div>
+        render() {
+            return (
+
+                <div className="tradingview-widget-container">
+                    <div id="tradingview_1a86e"></div>
+                    <div className="tradingview-widget-copyright"><a
+                        href="https://www.tradingview.com/symbols/BITMEX-XBTUSD/" rel="noopener" target="_blank"><span
+                        className="blue-text">XBTUSD chart</span></a> by TradingView
+                    </div>
+                </div>
 
 
-        )}
+            )
+        }
     }
 
     ReactDOM.render(<Start/>, document.getElementById('rootydiv'))
@@ -1702,7 +1922,7 @@
         width: 100%;
     }
 
-    #donate  {
+    #donate {
         padding: 10px;
         color: #ff93a0;
         text-align: center;
@@ -1719,11 +1939,11 @@
         user-select: none;
     }
 
-    #donate:hover  {
+    #donate:hover {
         color: deepskyblue;
     }
 
-    #donate2  {
+    #donate2 {
         padding: 10px;
         color: #5cb85c;
         text-align: center;
@@ -1740,7 +1960,7 @@
         user-select: none;
     }
 
-    #donate2:hover  {
+    #donate2:hover {
         color: deepskyblue;
     }
 
@@ -1821,15 +2041,10 @@
     }
 
 
-
-
     .settingsitem {
         display: flex;
         padding: 5px;
     }
-
-
-
 
 
     #rootydiv {
@@ -1955,7 +2170,6 @@
         overflow-y: scroll;
 
         resize: both;
-
 
 
     }
@@ -2086,19 +2300,19 @@
         color: rgba(164, 255, 60, 0.8);
         /*padding: 5px;*/
         /* Internet Explorer 10 */
-        display:-ms-flexbox;
-        -ms-flex-pack:center;
-        -ms-flex-align:center;
+        display: -ms-flexbox;
+        -ms-flex-pack: center;
+        -ms-flex-align: center;
 
         /* Firefox */
-        display:-moz-box;
-        -moz-box-pack:center;
-        -moz-box-align:center;
+        display: -moz-box;
+        -moz-box-pack: center;
+        -moz-box-align: center;
 
         /* Safari, Opera, and Chrome */
-        display:-webkit-box;
-        -webkit-box-pack:center;
-        -webkit-box-align:center;
+        display: -webkit-box;
+        -webkit-box-pack: center;
+        -webkit-box-align: center;
     }
 
 
@@ -2205,11 +2419,7 @@
         border: 2px solid black;
 
 
-
     }
-
-
-
 
 
     #liqSettings {
@@ -2239,7 +2449,6 @@
         color: #414141;
         font-size: 18px;
         /*border: 1px solid rgba(0, 0, 0, 0.27);*/
-
 
 
     }
@@ -2414,7 +2623,6 @@
     }
 
 
-
     #atSign {
         font-size: 11px;
         font-style: italic;
@@ -2559,7 +2767,6 @@
     }
 
 
-
     .modal-footer {
         padding: 10px;
         background-color: #418a41;
@@ -2621,11 +2828,6 @@
     }
 
 
-
-
-
-
-
     #initialTextDiv {
         display: flex;
         flex-direction: column;
@@ -2640,8 +2842,8 @@
     }
 
 
-
 </style>
 
 
-</body></html>
+</body>
+</html>
