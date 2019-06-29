@@ -68,8 +68,8 @@
         var bitmexSize5 = 500000
         var bitmexSize6 = 1000000
         var bitfinexSize1 = 1
-        var bitfinexSize2 = 1000
-        var bitfinexSize3 = 10000
+        var bitfinexSize2 = 500
+        var bitfinexSize3 = 5000
         var bitfinexSize4 = 50000
         var bitfinexSize5 = 300000
         var bitfinexSize6 = 500000
@@ -1370,7 +1370,7 @@
                     } else if (Math.abs(size) >= bitfinexSize2) {
                         return "size2"
                     } else {
-                        return "size1"
+                        return "hide"
                     }
                 } else if (exchangeName === "message") {
                     return "sizeMsg"
@@ -1469,8 +1469,7 @@
                                 <span id="settingsFooterRightLink" className="footerRightText">settings</span>
                             </div>
                             <div id="footerright">
-                                <a href="https://github.com/boppleton/corn.lol" target="_blank"><span
-                                    className="footerRightText"></span></a>
+                                <span className="footerRightText">BTC donations (thanks!): 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU</span>
                             </div>
                         </div>
 
@@ -1569,7 +1568,7 @@
                                         </div>
 
                                         <div id="donate2">
-                                            <span id="donateText2">donate btc</span>
+                                            <span id="donateText2">14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU</span>
                                         </div>
 
                                     </div>
