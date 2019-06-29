@@ -63,6 +63,8 @@
     var coinbaseMinMarket = 5000
     var binanceMinMarket = 20000
     var bitstampMinMarket = 5000
+    var bybitMinMarket = 10000
+
 
     var bitmexMinLiq = 1
     var bitmexLiqEnabled = true
@@ -72,6 +74,8 @@
     var binanceEnabled = true
 
     var bitstampEnabled = true
+    var bybitEnabled = true
+
 
     // for font/colors change
     var bitmexSize1 = 1
@@ -163,6 +167,8 @@
             // this.okexWebSocketClient(c)
 
             this.bitstampWebsocketClient(c)
+            //
+            this.bybitWebsocketClient(c)
 
             this.setupSettings()
             this.scrollUpLoop()
@@ -332,7 +338,7 @@
                                             liquidations[i].price = liq.price
                                         }
 
-                                        console.log(liquidations[i].id + " updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
+                                        // console.log(liquidations[i].id + " updated, newsize: " + liquidations[i].size + " highestsize: " + liquidations[i].highestAmount)
 
                                         // if (liquidations[i].highestAmount > 1000000) {
                                         //
@@ -657,6 +663,84 @@
                 exchangeName: "bitstamp",
                 startTime: Date.now(),
                 btcAmt: tradeRaw.amount,
+                firstPrice: tradeRaw.price,
+                lastPrice: tradeRaw.price
+            })
+            return trade
+        }
+
+        bybitWebsocketClient(c) {
+
+            var socket
+            const socketMessageListener = (event) => {
+
+
+                // if (bitfinexEnabled) {
+                let trade = JSON.parse(event.data)
+
+                // console.log("bbiut trade: " + JSON.stringify(trade))
+
+                //
+                if (trade===null) {
+                    return
+                }
+
+
+                let trade2 = Start.bybitTrade(trade.data[0])
+
+                // console.log('size:' + trade2[0].size  + " min: " +  bybitMinMarket)
+
+                if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
+
+                    // trades[0].btcAmt += trade2[0].btcAmt
+                    trades[0].size += trade2[0].size
+                    trades[0].lastPrice = trade2[0].price
+
+                } else if (trade2[0].size >= bybitMinMarket) {
+                    if (trades == null) {
+                        trades = trade2
+
+                    } else {
+                        trades = trade2.concat(trades)
+                        // console.log("adding trade " + JSON.stringify(trade2))
+                    }
+                }
+                // c.setStreamData({data: trades})
+            }
+
+
+            const socketOpenListener = (event) => {
+                console.log('bybit open')
+                socket.send('{"op":"subscribe","args":["trade.BTCUSD"]}')
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('bybit close')
+                }
+                socket = new WebSocket('wss://stream.bybit.com/realtime')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+            socketCloseListener()
+
+        }
+
+        static bybitTrade(tradeRaw) {
+
+            // console.log(tradeRaw)
+
+            let trade = []
+            trade.push({
+                symbol: "BTCUSD",
+                price: tradeRaw.price,
+                size: tradeRaw.size,
+                timestamp: tradeRaw.timestamp,
+                side: tradeRaw.side === 'Buy',
+                exchangeName: "bybit",
+                startTime: Date.now(),
+                btcAmt: 0,
                 firstPrice: tradeRaw.price,
                 lastPrice: tradeRaw.price
             })
@@ -1195,10 +1279,30 @@
                 document.getElementById("bitstampEnabledButton").onchange = function () {
                     console.log("bitstampEnabledButton onchange- ")
                     bitstampEnabled = document.getElementById("bitstampEnabledButton").checked
-                    document.getElementById("bitstampMinField").disabled = !document.getElementById("bitstampeMinField").disabled
+                    document.getElementById("bitstampMinField").disabled = !document.getElementById("bitstampMinField").disabled
                     setCookie("bitstampEnabled", bitstampEnabled, 300)
 
                     console.log("set bitstampEnabled: " + bitstampEnabled)
+                }
+
+                let bybitMinField = document.getElementById("bybitMinField")
+                bybitMinField.onchange = function () {
+                    if (bybitMinField.value < minTradeSize) {
+                        bybitMinField.value = minTradeSize
+                    }
+                    bybitMinMarket = bybitMinField.value
+
+                    console.log("setbybitpmin cookie to min " + bybitMinMarket)
+
+                    setCookie("bybitMin", bybitMinMarket, 300)
+                }
+                document.getElementById("bybitEnabledButton").onchange = function () {
+                    console.log("bybitEnabledButton onchange- ")
+                    bybitEnabled = document.getElementById("bybitEnabledButton").checked
+                    document.getElementById("bybitMinField").disabled = !document.getElementById("bybitMinField").disabled
+                    setCookie("bybitEnabled", bybitEnabled, 300)
+
+                    console.log("set bybitEnabled: " + bybitEnabled)
                 }
 
 
@@ -1300,12 +1404,15 @@
                     setCookie("coinbaseMin", coinbaseMinMarket, 300)
                     setCookie("binanceMin", binanceMinMarket, 300)
                     setCookie("bitstampMin", bitstampMinMarket, 300)
+                    setCookie("bybitMin", bybitMinMarket, 300)
 
                     setCookie("bitmexEnabled", bitmexEnabled, 300)
                     setCookie("bitfinexEnabled", bitfinexEnabled, 300)
                     setCookie("coinbaseEnabled", coinbaseEnabled, 300)
                     setCookie("binanceEnabled", binanceEnabled, 300)
                     setCookie("bitstampEnabled", bitstampEnabled, 300)
+                    setCookie("bybitEnabled", bybitEnabled, 300)
+
 
 
                     setCookie("marketH", 600, 300)
@@ -1322,6 +1429,11 @@
                     setCookie("bitstampEnabled", bitstampEnabled, 300)
                 }
 
+                if (getCookie("bybitMin") === undefined) {
+                    setCookie("bybitMin", bybitMinMarket, 300)
+                    setCookie("bybitEnabled", bybitEnabled, 300)
+                }
+
 
                 if (getCookie("bitmexMin") !== undefined) {
 
@@ -1330,12 +1442,16 @@
                     document.getElementById('coinbaseMinField').value = getCookie("coinbaseMin")
                     document.getElementById('binanceMinField').value = getCookie("binanceMin")
                     document.getElementById('bitstampMinField').value = getCookie("bitstampMin")
+                    document.getElementById('bybitMinField').value = getCookie("bybitMin")
+
 
                     $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled") === "false")
                     $('#bitfinexMinField').prop("disabled", getCookie("bitfinexEnabled") === "false")
                     $('#coinbaseMinField').prop("disabled", getCookie("coinbaseEnabled") === "false")
                     $('#binanceMinField').prop("disabled", getCookie("binanceEnabled") === "false")
                     $('#bitstampMinField').prop("disabled", getCookie("bitstampEnabled") === "false")
+                    $('#bybitMinField').prop("disabled", getCookie("bybitEnabled") === "false")
+
 
 
                     $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled") === "true")
@@ -1343,6 +1459,7 @@
                     $('#coinbaseEnabledButton').prop("checked", getCookie("coinbaseEnabled") === "true")
                     $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled") === "true")
                     $('#bitstampEnabledButton').prop("checked", getCookie("bitstampEnabled") === "true")
+                    $('#bybitEnabledButton').prop("checked", getCookie("bybitEnabled") === "true")
 
 
                     document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
@@ -1359,6 +1476,8 @@
                     coinbaseMinMarket = getCookie("coinbaseMin")
                     binanceMinMarket = getCookie("binanceMin")
                     bitstampMinMarket = getCookie("bitstampMin")
+                    bybitMinMarket = getCookie("bybitMin")
+
 
                     // console.log("bitstamp min cookie: " + getCookie("bitstampMin"))
 
@@ -1372,6 +1491,7 @@
                     binanceEnabled = getCookie("binanceEnabled")
                     console.log("binanceenabled: " + binanceEnabled)
                     bitstampEnabled = getCookie("bitstampEnabled")
+                    bybitEnabled = getCookie("bybitEnabled")
 
                     bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
 
@@ -1388,12 +1508,15 @@
                     document.getElementById('coinbaseMinField').value = coinbaseMinMarket
                     document.getElementById('binanceMinField').value = binanceMinMarket
                     document.getElementById('bitstampMinField').value = bitstampMinMarket
+                    document.getElementById('bybitMinField').value = bybitMinMarket
 
                     document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
                     document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
                     document.getElementById('coinbaseEnabledButton').checked = coinbaseEnabled
                     document.getElementById('binanceEnabledButton').checked = binanceEnabled
                     document.getElementById('bitstampEnabledButton').checked = bitstampEnabled
+                    document.getElementById('bybitEnabledButton').checked = bybitEnabled
+
                 }
 
 
@@ -1449,7 +1572,7 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount > 0 ? data.highestAmount : data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp" || data.exchangeName === 'bybit') ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount > 0 ? data.highestAmount : data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
                     <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
@@ -1494,7 +1617,7 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp") ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" :
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp" || data.exchangeName==='bybit') ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" :
 
                     (data.hide||(data.size>5000000&&data.btcAmt<20)) ? "hide" : "")} //try to fix gdaxbug
 
@@ -1530,7 +1653,7 @@
         }
 
         static getBtcShow(data) {
-            if (Math.abs(data.btcAmt)>=1 && (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp")) {
+            if (Math.abs(data.btcAmt)>=1 && (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp" ||  data.exchangeName === "bybit")) {
                 var abs = Math.abs(data.btcAmt)
                 return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1).toString().replace('.0','') + " btc")
             } else {
@@ -1541,6 +1664,9 @@
         static getSlip(data) {
             if (data.exchangeName !== "binance") {
                 var slip = data.lastPrice - data.firstPrice
+
+
+
                 if (Math.abs(slip) >= 0.5) {
                     return (Math.abs(slip).toFixed(1))
                 } else {
@@ -1577,6 +1703,8 @@
                 return binanceMinMarket
             } else if (data.exchangeName === "bitstamp") {
                 return bitstampMinMarket
+            } else if ( data.exchangeName === "bybit") {
+                return bybitMinMarket
             } else {
                 return 0
             }
@@ -1605,7 +1733,7 @@
                 } else {
                     return "size1"
                 }
-            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance" || exchangeName === "bitstamp") {
+            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance" || exchangeName === "bitstamp" ||  exchangeName === "bybit") {
                 if (Math.abs(size) >= bitfinexSize6) {
                     return "size6"
                 } else if (Math.abs(size) >= bitfinexSize5) {
@@ -1636,6 +1764,13 @@
                 return <span><img src="img/binancenew.png" alt="safu"/></span>
             } else if (data.exchangeName === "bitstamp") {
                 return <span><img src="img/stamp22.png" height="22" width="22" alt="stamp"/></span>
+            } else if (data.exchangeName === "bybit") {
+
+                return <span><img id="bybitimg" src="img/bybit3.png" height="20" width="22" alt="bybit"/></span>
+
+
+
+
             } else if (data.exchangeName === "message") {
                 if (data.type === "liquidation") {
                     return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
@@ -1718,7 +1853,7 @@
                         </div>
                         <div id="footerright">
                             <a href="https://github.com/boppleton/corn.lol" target="_blank"><span
-                                className="footerRightText"></span></a>
+                                className="footerRightText">donations ♡ BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU</span></a>
                         </div>
                     </div>
 
@@ -1790,6 +1925,16 @@
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
                                         </div>
+
+                                        <div className="settingsitem">
+                                            <input id="bybitEnabledButton" type="checkbox"
+                                                   name="bybitEnabledButton" className="checkboxx"/>
+                                            <b>bybit</b>
+                                            <input id="bybitMinField" type="number" name="bybitMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                        </div>
+
                                     </div>
 
                                     <div id="liqSettings">
@@ -1872,6 +2017,12 @@
 </script>
 
 <style>
+
+
+    #bybitimg {
+        border-radius: 8px;
+        background-color: rgb(57, 57, 57);
+    }
 
     * {
         margin: 0;
@@ -2655,7 +2806,7 @@
 
     .footerRightText {
         padding: 5px;
-        color: rgba(122, 191, 51, 0.71);
+        color: rgba(102, 145, 102, 0.5);
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
         -khtml-user-select: none; /* Konqueror HTML */
