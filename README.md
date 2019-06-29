@@ -10,5 +10,7 @@ exchange | market orders | liquidations | book
 **bitfinex** | :heavy_check_mark: | :x: |  :construction:
 **gdax** | :heavy_check_mark: | :x: |  :construction:
 **binance** | :heavy_check_mark: | :x: |  :construction:
+**bitstamp** | :heavy_check_mark: | :x: |  :construction:
+**bybit** | :heavy_check_mark: | :construction: |  :construction:
 **okex** | :construction: | :x: |  :construction:
 **deribit** | :construction: | :x: |  :construction:
