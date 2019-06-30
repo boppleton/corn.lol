@@ -14,10 +14,11 @@
         gtag('config', 'UA-115388644-2')</script>
     <meta charset="UTF-8"/>
     <title>corn.lol - bitcoin trades and liquidations ticker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description"
           content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
-    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<!--    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>-->
+<!--    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>-->
     <meta name="description" content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
     <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
@@ -61,9 +62,9 @@
     var bitmexMinMarket = 50000
     var bitfinexMinMarket = 5000
     var coinbaseMinMarket = 5000
-    var binanceMinMarket = 20000
+    var binanceMinMarket = 25000
     var bitstampMinMarket = 5000
-    var bybitMinMarket = 25000
+    var bybitMinMarket = 50000
 
 
     var bitmexMinLiq = 1
@@ -145,7 +146,7 @@
 
             // console.log("start constructor")
 
-            console.log("return: " + getCookie('return'))
+            // console.log("return: " + getCookie('return'))
 
             if (getCookie('return')) {
                 this.state.return = true
@@ -292,6 +293,8 @@
             const socketMessageListener = (event) => {
 
                 // console.log("mex msg: " + JSON.stringify(event.data) )
+
+                // console.log("mex message, enabled: " + bitmexEnabled)
 
                 if (bitmexEnabled) {
                     let tradeRaw = JSON.parse(event.data)
@@ -528,6 +531,9 @@
         bitfinexWebSocketClient(c) {
             var socket
             const socketMessageListener = (event) => {
+
+                // console.log("finex msg -- " + bitfinexEnabled)
+
                 if (bitfinexEnabled) {
                     let trade = JSON.parse(event.data)
                     if (trade == null || trade[1] !== "te") {
@@ -593,6 +599,9 @@
             var socket
             const socketMessageListener = (event) => {
 
+                if (!bitstampEnabled) {
+                    return
+                }
 
                 // if (bitfinexEnabled) {
                 let trade = JSON.parse(event.data)
@@ -673,6 +682,8 @@
 
             var socket
             const socketMessageListener = (event) => {
+
+                if (!bybitEnabled) {return}
 
 
                 // if (bitfinexEnabled) {
@@ -826,8 +837,9 @@
                         return
                     }
 
-
-                    // console.log('coinbase msg: ' + JSON.stringify(tradeRaw))
+                    if (!coinbaseEnabled) {
+                        return
+                    }
 
                     let trade = Start.coinbaseTrade(tradeRaw)
 
@@ -1572,7 +1584,7 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp" || data.exchangeName === 'bybit') ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount > 0 ? data.highestAmount : data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp") ? "bitfinex" : 'bitmex') + " " + Row.getSizeGroup(data.exchangeName, (data.highestAmount > 0 ? data.highestAmount : data.size)) + " " + (Math.abs(data.highestAmount) <= Row.getMinLiqForExchange(data) ? "hide" : "")}
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
                     <td id="tradeSize">{this.getTradeSizeLiq(data)}</td>
@@ -1719,7 +1731,7 @@
         }
 
         static getSizeGroup(exchangeName, size) {
-            if (exchangeName === "bitmex") {
+            if (exchangeName === "bitmex" || exchangeName==='bybit') {
                 if (size >= bitmexSize6) {
                     return "size6"
                 } else if (size >= bitmexSize5) {
@@ -1733,7 +1745,7 @@
                 } else {
                     return "size1"
                 }
-            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance" || exchangeName === "bitstamp" ||  exchangeName === "bybit") {
+            } else if (exchangeName === "bitfinex" || exchangeName === "coinbase" || exchangeName === "binance" || exchangeName === "bitstamp") {
                 if (Math.abs(size) >= bitfinexSize6) {
                     return "size6"
                 } else if (Math.abs(size) >= bitfinexSize5) {
@@ -1748,7 +1760,7 @@
                     return "size1"
                 }
             } else if (exchangeName === "message") {
-                return "sizeMsg"
+                return "message"
             }
         }
 
@@ -2805,6 +2817,9 @@
     }
 
     .footerRightText {
+
+        text-decoration: none;
+
         padding: 5px;
         color: rgba(102, 145, 102, 0.5);
         -webkit-touch-callout: none; /* iOS Safari */
@@ -2982,7 +2997,7 @@
     #initialTextDiv {
         display: flex;
         flex-direction: column;
-        color: coral;
+        color: rgba(134, 210, 255, 0.7);
 
         padding: 10px;
 
