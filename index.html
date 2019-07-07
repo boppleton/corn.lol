@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!--    &lt;!&ndash; Global site tag (gtag.js) - Google Analytics &ndash;&gt;-->
-    <!--    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>-->
-    <!--    <script>-->
-    <!--        window.dataLayer = window.dataLayer || []-->
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
+        <script>
+            window.dataLayer = window.dataLayer || []
 
-    <!--        function gtag() {-->
-    <!--            dataLayer.push(arguments)-->
-    <!--        }-->
+            function gtag() {
+                dataLayer.push(arguments)
+            }
 
-    <!--        gtag('js', new Date())-->
-    <!--        gtag('config', 'UA-115388644-2')</script>-->
+            gtag('js', new Date())
+            gtag('config', 'UA-115388644-2')</script>
     <meta charset="UTF-8"/>
     <title>corn.lol - bitcoin trades and liquidations ticker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -1690,6 +1690,10 @@
 
                 }
 
+                document.getElementById('soundtest').onclick = () => {
+                    sound = true
+                    console.log('sound now ' + sound)
+                }
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
@@ -2543,7 +2547,7 @@
                                         <div className="settingsitem">
                                             <input id="soundEnabledButton" type="checkbox"
                                                    name="hoverEnabledButton" className="checkboxx"/>
-                                            <b>sound <span id="newww">(testing)</span></b>
+                                            <b>sound <span id="newww">(testi<span id="soundtest">n</span>g)</span></b>
 
                                         </div>
                                     </div>
