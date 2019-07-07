@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
-    <script>
-        window.dataLayer = window.dataLayer || []
+    <!--    &lt;!&ndash; Global site tag (gtag.js) - Google Analytics &ndash;&gt;-->
+    <!--    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>-->
+    <!--    <script>-->
+    <!--        window.dataLayer = window.dataLayer || []-->
 
-        function gtag() {
-            dataLayer.push(arguments)
-        }
+    <!--        function gtag() {-->
+    <!--            dataLayer.push(arguments)-->
+    <!--        }-->
 
-        gtag('js', new Date())
-        gtag('config', 'UA-115388644-2')</script>
+    <!--        gtag('js', new Date())-->
+    <!--        gtag('config', 'UA-115388644-2')</script>-->
     <meta charset="UTF-8"/>
     <title>corn.lol - bitcoin trades and liquidations ticker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="description"
           content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
-<!--    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>-->
-<!--    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>-->
-    <meta name="description" content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
+    <!--    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>-->
+    <!--    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>-->
+    <meta name="description"
+          content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
     <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+
+    <script src="src/simpleTones.js"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
@@ -32,6 +35,7 @@
 
 <body>
 <div id="root">
+
     <div id="bbb">
         <div id="rootydiv"></div>
         <div id="rightside"></div>
@@ -49,6 +53,273 @@
     //
     /////////
 
+    //Create Audio Context
+    var AudioContext = window.AudioContext || window.webkitAudioContext
+    var context = new AudioContext()
+    var o = null
+    var g = null
+
+    //Sound Storage
+    //If you add your own sounds here, please consider
+    //submitting a pull request with your additional sounds
+    var soundObj = {
+        bump: ["triangle", 100, 0.8, 333, 0.2, 100, 0.4, 80, 0.7],
+        buzzer: ["sawtooth", 40, 0.8, 100, 0.3, 110, 0.5],
+        zip: ["sawtooth", 75, 0.8, 85, 0.2, 95, 0.4, 110, 0.6, 120, 0.7, 100, 0.8],
+        powerdown: ["sine", 300, 1.2, 150, 0.5, 1, 0.9],
+        powerup: ["sine", 30, 1, 150, 0.4, 350, 0.9],
+        bounce: ["square", 75, 0.5, 150, 0.4],
+        siren: ["sawtooth", 900, 2.5, 400, 0.5, 900, 1, 400, 1.4, 900, 2, 400, 2.5]
+    }
+
+    //Tone Storage
+    var tone = {
+        'C0': 16.35,
+        'C#0': 17.32,
+        'Db0': 17.32,
+        'D0': 18.35,
+        'D#0': 19.45,
+        'Eb0': 19.45,
+        'E0': 20.60,
+        'F0': 21.83,
+        'F#0': 23.12,
+        'Gb0': 23.12,
+        'G0': 24.50,
+        'G#0': 25.96,
+        'Ab0': 25.96,
+        'A0': 27.50,
+        'A#0': 29.14,
+        'Bb0': 29.14,
+        'B0': 30.87,
+        'C1': 32.70,
+        'C#1': 34.65,
+        'Db1': 34.65,
+        'D1': 36.71,
+        'D#1': 38.89,
+        'Eb1': 38.89,
+        'E1': 41.20,
+        'F1': 43.65,
+        'F#1': 46.25,
+        'Gb1': 46.25,
+        'G1': 49.00,
+        'G#1': 51.91,
+        'Ab1': 51.91,
+        'A1': 55.00,
+        'A#1': 58.27,
+        'Bb1': 58.27,
+        'B1': 61.74,
+        'C2': 65.41,
+        'C#2': 69.30,
+        'Db2': 69.30,
+        'D2': 73.42,
+        'D#2': 77.78,
+        'Eb2': 77.78,
+        'E2': 82.41,
+        'F2': 87.31,
+        'F#2': 92.50,
+        'Gb2': 92.50,
+        'G2': 98.00,
+        'G#2': 103.83,
+        'Ab2': 103.83,
+        'A2': 110.00,
+        'A#2': 116.54,
+        'Bb2': 116.54,
+        'B2': 123.47,
+        'C3': 130.81,
+        'C#3': 138.59,
+        'Db3': 138.59,
+        'D3': 146.83,
+        'D#3': 155.56,
+        'Eb3': 155.56,
+        'E3': 164.81,
+        'F3': 174.61,
+        'F#3': 185.00,
+        'Gb3': 185.00,
+        'G3': 196.00,
+        'G#3': 207.65,
+        'Ab3': 207.65,
+        'A3': 220.00,
+        'A#3': 233.08,
+        'Bb3': 233.08,
+        'B3': 246.94,
+        'C4': 261.63,
+        'C#4': 277.18,
+        'Db4': 277.18,
+        'D4': 293.66,
+        'D#4': 311.13,
+        'Eb4': 311.13,
+        'E4': 329.63,
+        'F4': 349.23,
+        'F#4': 369.99,
+        'Gb4': 369.99,
+        'G4': 392.00,
+        'G#4': 415.30,
+        'Ab4': 415.30,
+        'A4': 440.00,
+        'A#4': 466.16,
+        'Bb4': 466.16,
+        'B4': 493.88,
+        'C5': 523.25,
+        'C#5': 554.37,
+        'Db5': 554.37,
+        'D5': 587.33,
+        'D#5': 622.25,
+        'Eb5': 622.25,
+        'E5': 659.26,
+        'F5': 698.46,
+        'F#5': 739.99,
+        'Gb5': 739.99,
+        'G5': 783.99,
+        'G#5': 830.61,
+        'Ab5': 830.61,
+        'A5': 880.00,
+        'A#5': 932.33,
+        'Bb5': 932.33,
+        'B5': 987.77,
+        'C6': 1046.50,
+        'C#6': 1108.73,
+        'Db6': 1108.73,
+        'D6': 1174.66,
+        'D#6': 1244.51,
+        'Eb6': 1244.51,
+        'E6': 1318.51,
+        'F6': 1396.91,
+        'F#6': 1479.98,
+        'Gb6': 1479.98,
+        'G6': 1567.98,
+        'G#6': 1661.22,
+        'Ab6': 1661.22,
+        'A6': 1760.00,
+        'A#6': 1864.66,
+        'Bb6': 1864.66,
+        'B6': 1975.53,
+        'C7': 2093.00,
+        'C#7': 2217.46,
+        'Db7': 2217.46,
+        'D7': 2349.32,
+        'D#7': 2489.02,
+        'Eb7': 2489.02,
+        'E7': 2637.02,
+        'F7': 2793.83,
+        'F#7': 2959.96,
+        'Gb7': 2959.96,
+        'G7': 3135.96,
+        'G#7': 3322.44,
+        'Ab7': 3322.44,
+        'A7': 3520.00,
+        'A#7': 3729.31,
+        'Bb7': 3729.31,
+        'B7': 3951.07,
+        'C8': 4186.01,
+        'C#8': 4435,
+        'D8': 4699,
+        'Eb8': 4978,
+        'E8': 5274,
+        'F8': 5588,
+        'F#8': 5920,
+        'G8': 6272,
+        'G#8': 6645,
+        'A8': 7040,
+        'Bb8': 7459,
+        'B8': 7902
+    }
+
+    // Chord Storage
+    var chord = {
+        'C': [261.6, 329.6, 392.0],
+        'Cm': [261.6, 311.1, 392.0],
+        'C#': [277.2, 349.2, 415.3],
+        'D': [293.7, 370.0, 440.0],
+        'Dm': [293.7, 349.2, 440.0],
+        'D#': [311.1, 392.0, 466.2],
+        'E': [329.6, 415.3, 493.9],
+        'Em': [329.6, 392.0, 493.9],
+        'F': [349.2, 440.0, 523.251],
+        'Fm': [349.2, 415.3, 523.251],
+        'F#': [370.0, 554.365, 466.2],
+        'G': [392.0, 493.9, 587.330],
+        'Gm': [392.0, 466.2, 587.330],
+        'G#': [466.2, 523.251, 622.254],
+        'A': [440.0, 554.365, 659.255],
+        'Am': [440.0, 523.251, 659.255],
+        'A#': [466.2, 587.330, 698.456],
+        'B': [493.9, 622.254, 739.989],
+        'Bm': [493.9, 587.330, 739.989]
+    }
+    //Primary function
+    const playTone = (frequency, type, duration) => {
+        if (type === undefined) {
+            type = "sine"
+        }
+        if (duration === undefined) {
+            duration = 1.3
+        }
+        if (frequency === undefined) {
+            frequency = 440
+        }
+        o = context.createOscillator()
+        g = context.createGain()
+        o.connect(g)
+        o.type = type
+        if (typeof frequency === "string") {
+            if (tone[frequency] === undefined) {
+                o.frequency.value = chord[frequency][0]
+                completeChord(chord[frequency][1], type, duration)
+                completeChord(chord[frequency][2], type, duration)
+            } else if (chord[frequency] === undefined) {
+                o.frequency.value = tone[frequency]
+            }
+        } else if (typeof frequency === "object") {
+            o.frequency.value = frequency[0]
+            completeChord(frequency[1], type, duration)
+            completeChord(frequency[2], type, duration)
+        } else {
+            o.frequency.value = frequency
+        }
+        g.connect(context.destination)
+        o.start(0)
+        g.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
+    }
+
+    //This function helps complete chords and should not be used by itself
+    const completeChord = (frequency, type, duration) => {
+        let osc = context.createOscillator()
+        let gn = context.createGain()
+        osc.connect(gn)
+        osc.type = type
+        osc.frequency.value = frequency
+        gn.connect(context.destination)
+        osc.start(0)
+        gn.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
+    }
+
+
+    //This function plays sounds
+    function playSound(waveType, startFreq, endTime) {
+        if (soundObj[arguments[0]] && arguments.length === 1) {
+            var soundName = arguments[0]
+            playSound(...soundObj[soundName])
+        } else {
+            var oscillatorNode = context.createOscillator()
+            var gainNode = context.createGain()
+
+            oscillatorNode.type = waveType
+            oscillatorNode.frequency.setValueAtTime(startFreq, context.currentTime)
+
+            for (var i = 3; i < arguments.length; i += 2) {
+                oscillatorNode.frequency.exponentialRampToValueAtTime(arguments[i], context.currentTime + arguments[i + 1])
+            }
+            gainNode.gain.setValueAtTime(0.3, context.currentTime)
+            gainNode.gain.exponentialRampToValueAtTime(0.1, context.currentTime + 0.5)
+
+            oscillatorNode.connect(gainNode)
+            gainNode.connect(context.destination)
+
+            oscillatorNode.start()
+            oscillatorNode.stop(context.currentTime + endTime)
+        }
+    }
+
 
     let minTradeSize = 100
 
@@ -65,6 +336,7 @@
     var binanceMinMarket = 25000
     var bitstampMinMarket = 5000
     var bybitMinMarket = 50000
+    var deribitMinMarket = 10000
 
 
     var bitmexMinLiq = 1
@@ -74,9 +346,10 @@
     var coinbaseEnabled = true
     var binanceEnabled = true
 
+
     var bitstampEnabled = true
     var bybitEnabled = true
-
+    var deribitEnabled = true
 
     // for font/colors change
     var bitmexSize1 = 1
@@ -97,7 +370,16 @@
 
     var hoverable = true
 
+    var sound = false
+
     var currentPrice = 0
+
+
+    const beep = (size) => {
+        // playSound("sine",30, 0.2, 432, 0.2, 1440, 0.1)
+        playSound("sine", Math.abs(size) / 100)
+    }
+
 
     const setCookie = (cookieKey, cookieValue, expirationDays) => {
         let expiryDate = ''
@@ -135,6 +417,7 @@
     }
 
 
+
     class Start extends React.Component {
         constructor(props) {
 
@@ -161,21 +444,25 @@
 
             setInterval(this.clearBigTradesLoop, 1000)
             setInterval(this.setTitleLoop, 2000)
+
             this.bitmexWebSocketClient(c)
             this.bitfinexWebSocketClient(c)
             this.setupCoinbaseWebsocketClient(c)
             this.binanceWebSocketClient(c)
-            // this.okexWebSocketClient(c)
-
             this.bitstampWebsocketClient(c)
-            //
             this.bybitWebsocketClient(c)
+
+            this.deribitWebsocketClient(c)
 
             this.setupSettings()
             this.scrollUpLoop()
 
 
             setInterval(this.setStreamDataLoop, 500, c)
+
+
+            // sound = document.getElementById("audio")
+
         }
 
 
@@ -287,10 +574,16 @@
             }
         }
 
+
         bitmexWebSocketClient(c) {
             // console.log("bitmexwsfunction()")
             var socket
+
+            // let tones =
+
             const socketMessageListener = (event) => {
+
+                // playSound()
 
                 // console.log("mex msg: " + JSON.stringify(event.data) )
 
@@ -302,7 +595,6 @@
                         return
                     }
 
-
                     if (tradeRaw.table === "trade") {
                         let trade = Start.bitmexTrade(tradeRaw.data)
                         if (trade[0].size >= bitmexMinMarket) {
@@ -310,6 +602,17 @@
                                 trades = trade
                             } else {
                                 trades = trade.concat(trades)
+
+                                // this.beep(trade[0].size)
+
+                                this.tradeBeep(trade[0])
+
+                                // if (trade[0].size<100000) {
+                                //     return
+                                // }
+
+
+                                // playTone(['A','B','C','D','E','F'][trade[0].size>5000000?5:trade[0].size>1000000?4:trade[0].size>5000000?3:trade[0].size>100000?2:trade[0].size>10000?1:0]);
                             }
                             // c.setStreamData({data: trades})
                         }
@@ -327,6 +630,9 @@
                                     liquidations = liq
                                 } else {
                                     liquidations = liq.concat(liquidations)
+
+                                    this.tradeBeep(liq[0])
+
                                 }
                             } else if (liq.action === "update") {
                                 for (let i = 0; i < liquidations.length; i++) {
@@ -390,6 +696,48 @@
             }, 3000)
 
         }
+
+        tradeBeep(trade) {
+
+
+
+            let size = Math.abs(trade.size)
+
+            if (size<20000 || sound===false||sound==='false') {
+                return
+            }
+
+            let tone
+
+            if (trade.side) {
+                tone = size<100000?'C'
+                    :size<200000?'D#'
+                        :size<500000?'E#'
+                            :size<1000000?'F#'
+                                :size<5000000?'G#':'Gm'
+            } else {
+                tone = size<100000?'C3'
+                    :size<200000?'D3'
+                        :size<500000?'E3'
+                            :size<1000000?'F3'
+                                :size<5000000?'G2':'G2'
+            }
+
+
+            let len = size<100000?0.5
+                :size<200000?0.8
+                    :size<500000?1.2
+                        :size<1000000?1.5
+                            :size<5000000?1.7:3
+
+
+            playTone(tone, 'sine', len)
+
+            if (!trade.side) {
+                setTimeout(()=>{playTone(tone, 'sine', len)},100)
+            }
+        }
+
 
         static bitmexLiq(liqraw, action) {
             let liq = []
@@ -544,11 +892,14 @@
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
+                        this.tradeBeep(trade2[0])
                     } else if (trade2[0].size >= bitfinexMinMarket) {
                         if (trades == null) {
                             trades = trade2
                         } else {
                             trades = trade2.concat(trades)
+                            this.tradeBeep(trade2[0])
+
                         }
                     }
                     // c.setStreamData({data: trades})
@@ -617,11 +968,10 @@
                 if (trades[0] != null && trades[0].timestamp === trade2[0].timestamp && trades[0].side === trade2[0].side) {
 
 
-
                     trades[0].btcAmt += trade2[0].btcAmt
                     trades[0].size += trade2[0].size
                     trades[0].lastPrice = trade2[0].price
-
+                    this.tradeBeep(trade2[0])
                 } else if (trade2[0].size >= bitstampMinMarket) {
                     if (trades == null) {
                         trades = trade2
@@ -629,6 +979,9 @@
                     } else {
                         trades = trade2.concat(trades)
                         // console.log("adding trade " + JSON.stringify(trade2))
+
+                        this.tradeBeep(trade2[0])
+
                     }
                 }
                 // c.setStreamData({data: trades})
@@ -683,7 +1036,9 @@
             var socket
             const socketMessageListener = (event) => {
 
-                if (!bybitEnabled) {return}
+                if (!bybitEnabled) {
+                    return
+                }
 
 
                 // if (bitfinexEnabled) {
@@ -692,7 +1047,7 @@
                 // console.log("bbiut trade: " + JSON.stringify(trade))
 
                 //
-                if (trade===null) {
+                if (trade === null) {
                     return
                 }
 
@@ -706,7 +1061,7 @@
                     // trades[0].btcAmt += trade2[0].btcAmt
                     trades[0].size += trade2[0].size
                     trades[0].lastPrice = trade2[0].price
-
+                    this.tradeBeep(trade2[0])
                 } else if (trade2[0].size >= bybitMinMarket) {
                     if (trades == null) {
                         trades = trade2
@@ -714,6 +1069,9 @@
                     } else {
                         trades = trade2.concat(trades)
                         // console.log("adding trade " + JSON.stringify(trade2))
+
+                        this.tradeBeep(trade2[0])
+
                     }
                 }
                 // c.setStreamData({data: trades})
@@ -754,6 +1112,100 @@
                 btcAmt: 0,
                 firstPrice: tradeRaw.price,
                 lastPrice: tradeRaw.price
+            })
+            return trade
+        }
+
+        deribitWebsocketClient(c) {
+
+            var socket
+            const socketMessageListener = (event) => {
+
+                if (!deribitEnabled) {
+                    return
+                }
+                let trade = JSON.parse(event.data)
+
+                // console.log("deribit trade: " + JSON.stringify(trade))
+
+                //
+                if (trade === null) {
+                    return
+                }
+
+                let trade2 = Start.deribitTrade(trade.params.data)
+
+                // console.log('size:' + trade2[0].size  + " min: " +  deribitMinMarket)
+
+                if (trade2[0].size >= deribitMinMarket) {
+                    if (trades == null) {
+                        trades = trade
+                    } else {
+                        trades = trade2.concat(trades)
+
+
+                        this.tradeBeep(trade2[0])
+                    }
+                }
+                c.setStreamData({data: trades})
+            }
+
+
+            const socketOpenListener = (event) => {
+                console.log('deribit open')
+
+                let open = {
+                    "jsonrpc": "2.0",
+                    "id": 1785,
+                    "method": "public/subscribe",
+                    "params": {
+                        "channels": [
+                            "trades.BTC-PERPETUAL.raw"
+                        ]
+                    }
+                }
+
+                socket.send(JSON.stringify(open))
+            }
+
+            const socketCloseListener = (event) => {
+                if (socket) {
+                    console.error('deribit close')
+                }
+                socket = new WebSocket('wss://www.deribit.com/ws/api/v2')
+                socket.addEventListener('open', socketOpenListener)
+                socket.addEventListener('message', socketMessageListener)
+                socket.addEventListener('close', socketCloseListener)
+            }
+            socketCloseListener()
+
+        }
+
+        static deribitTrade(tradeRaw) {
+            let trade = []
+            let totalSize = 0
+            for (let i = 0; i < tradeRaw.length; i++) {
+                totalSize += tradeRaw[i].amount
+            }
+
+            let firstPrice = tradeRaw[0].price
+            let lastPrice = tradeRaw[tradeRaw.length - 1].price
+
+            if (tradeRaw[tradeRaw.length - 1].price !== currentPrice) {
+                currentPrice = tradeRaw[tradeRaw.length - 1].price
+            }
+
+
+            trade.push({
+                symbol: "BTCUSD",
+                price: lastPrice,
+                timestamp: tradeRaw[0].timestamp,
+                side: tradeRaw[0].direction === "buy",
+                exchangeName: "deribit",
+                startTime: Date.now(),
+                firstPrice: firstPrice,
+                lastPrice: lastPrice,
+                size: totalSize
             })
             return trade
         }
@@ -852,7 +1304,7 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-
+                        this.tradeBeep(trade[0])
                     } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
 
                         if ((parseFloat(trade[0].size) > 500000 && Math.abs(parseFloat(trade.btcAmt)) < 30)) {
@@ -860,6 +1312,9 @@
                             trades = trade
                         } else {
                             trades = trade.concat(trades)
+
+                            this.tradeBeep(trade[0])
+
                         }
                     }
                     // c.setStreamData({data: trades})
@@ -932,11 +1387,16 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
+                        this.tradeBeep(trade2[0])
+
                     } else if (trade2[0].size >= binanceMinMarket) {
                         if (trades == null) {
                             trades = trade
                         } else {
                             trades = trade2.concat(trades)
+
+                            this.tradeBeep(trade2[0])
+
                         }
                     }
 
@@ -1174,13 +1634,26 @@
 
                 let hoverEnabledbutton = document.getElementById("hoverEnabledButton")
 
-                hoverEnabledbutton.checked = true
+                // hoverEnabledbutton.checked = true
 
                 hoverEnabledbutton.onclick = function () {
-                    hoverable = !hoverable
-                    document.getElementById("tableandbottom").style.pointerEvents = hoverable ? "all" : "none"
-                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable ? "all" : "none"
+
+                    console.log('hov was ' + hoverable)
+
+                    hoverable = hoverEnabledbutton.checked
+                    document.getElementById("tableandbottom").style.pointerEvents = hoverable===true||hoverable==='true' ? "all" : "none"
+                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable===true||hoverable==='true' ? "all" : "none"
+
+                    setCookie("hoverable", hoverable, 300)
+
+                    console.log("hover now " + getCookie("hoverable"))
+
                 }
+
+
+
+
+
 
                 let pepeIcon = document.getElementById("pepeIcon")
 
@@ -1275,8 +1748,6 @@
                 }
 
 
-
-
                 let bitstampMinField = document.getElementById("bitstampMinField")
                 bitstampMinField.onchange = function () {
                     if (bitstampMinField.value < minTradeSize) {
@@ -1315,6 +1786,41 @@
                     setCookie("bybitEnabled", bybitEnabled, 300)
 
                     console.log("set bybitEnabled: " + bybitEnabled)
+                }
+
+
+
+                let deribitMinField = document.getElementById("deribitMinField")
+                deribitMinField.onchange = function () {
+                    if (deribitMinField.value < minTradeSize) {
+                        deribitMinField.value = minTradeSize
+                    }
+                    deribitMinMarket = deribitMinField.value
+
+                    console.log("setderpmin cookie to min " + deribitMinMarket)
+
+                    setCookie("deribitMin", deribitMinMarket, 300)
+                }
+                document.getElementById("deribitEnabledButton").onchange = function () {
+                    console.log("deribitEnabledButton onchange- ")
+                    deribitEnabled = document.getElementById("deribitEnabledButton").checked
+                    document.getElementById("deribitMinField").disabled = !document.getElementById("deribitMinField").disabled
+                    setCookie("deribitEnabled", deribitEnabled, 300)
+
+                    console.log("set deribitEnabled: " + deribitEnabled)
+                }
+
+
+
+
+
+                document.getElementById("soundEnabledButton").onchange = function () {
+                    console.log("soundEnabledButton onchange- ")
+                    sound = document.getElementById("soundEnabledButton").checked
+
+                    setCookie("sound", sound, 300)
+
+                    console.log("set sound: " + sound)
                 }
 
 
@@ -1417,6 +1923,7 @@
                     setCookie("binanceMin", binanceMinMarket, 300)
                     setCookie("bitstampMin", bitstampMinMarket, 300)
                     setCookie("bybitMin", bybitMinMarket, 300)
+                    setCookie("deribitMin", deribitMinMarket, 300)
 
                     setCookie("bitmexEnabled", bitmexEnabled, 300)
                     setCookie("bitfinexEnabled", bitfinexEnabled, 300)
@@ -1424,8 +1931,10 @@
                     setCookie("binanceEnabled", binanceEnabled, 300)
                     setCookie("bitstampEnabled", bitstampEnabled, 300)
                     setCookie("bybitEnabled", bybitEnabled, 300)
+                    setCookie("deribitEnabled", deribitEnabled, 300)
 
-
+                    setCookie("sound", sound, 300)
+                    setCookie("hoverable", hoverable, 300)
 
                     setCookie("marketH", 600, 300)
                     setCookie("marketW", 300, 300)
@@ -1446,6 +1955,19 @@
                     setCookie("bybitEnabled", bybitEnabled, 300)
                 }
 
+                if (getCookie("deribitMin") === undefined) {
+                    setCookie("deribitMin", deribitMinMarket, 300)
+                    setCookie("deribitEnabled", deribitEnabled, 300)
+                }
+
+                if (getCookie("sound")===undefined) {
+                    setCookie("sound", sound)
+                }
+
+                if (getCookie("hoverable")===undefined) {
+                    setCookie("hoverable", hoverable)
+                }
+
 
                 if (getCookie("bitmexMin") !== undefined) {
 
@@ -1455,6 +1977,10 @@
                     document.getElementById('binanceMinField').value = getCookie("binanceMin")
                     document.getElementById('bitstampMinField').value = getCookie("bitstampMin")
                     document.getElementById('bybitMinField').value = getCookie("bybitMin")
+                    document.getElementById('deribitMinField').value = getCookie("deribitMin")
+
+
+
 
 
                     $('#bitmexMinField').prop("disabled", getCookie("bitmexEnabled") === "false")
@@ -1463,8 +1989,7 @@
                     $('#binanceMinField').prop("disabled", getCookie("binanceEnabled") === "false")
                     $('#bitstampMinField').prop("disabled", getCookie("bitstampEnabled") === "false")
                     $('#bybitMinField').prop("disabled", getCookie("bybitEnabled") === "false")
-
-
+                    $('#deribitMinField').prop("disabled", getCookie("deribitEnabled") === "false")
 
                     $('#bitmexEnabledButton').prop("checked", getCookie("bitmexEnabled") === "true")
                     $('#bitfinexEnabledButton').prop("checked", getCookie("bitfinexEnabled") === "true")
@@ -1472,6 +1997,14 @@
                     $('#binanceEnabledButton').prop("checked", getCookie("binanceEnabled") === "true")
                     $('#bitstampEnabledButton').prop("checked", getCookie("bitstampEnabled") === "true")
                     $('#bybitEnabledButton').prop("checked", getCookie("bybitEnabled") === "true")
+                    $('#deribitEnabledButton').prop("checked", getCookie("deribitEnabled") === "true")
+
+                    $('#soundEnabledButton').prop("checked", getCookie("sound") === "true" || getCookie("sound")===true)
+
+                    document.getElementById('soundEnabledButton').disabled = true
+
+
+                    $('#hoverEnabledButton').prop("checked", getCookie("hoverable") === "true" || getCookie("sound")===true)
 
 
                     document.getElementById("bitmexLiqMinField").value = getCookie("bitmexLiqMin")
@@ -1489,6 +2022,7 @@
                     binanceMinMarket = getCookie("binanceMin")
                     bitstampMinMarket = getCookie("bitstampMin")
                     bybitMinMarket = getCookie("bybitMin")
+                    deribitMinMarket = getCookie("deribitMin")
 
 
                     // console.log("bitstamp min cookie: " + getCookie("bitstampMin"))
@@ -1504,6 +2038,14 @@
                     console.log("binanceenabled: " + binanceEnabled)
                     bitstampEnabled = getCookie("bitstampEnabled")
                     bybitEnabled = getCookie("bybitEnabled")
+                    deribitEnabled = getCookie("deribitEnabled")
+
+                    sound = getCookie("sound")
+
+                    hoverable = getCookie("hoverable")
+                    console.log("got hov, " + hoverable)
+                    document.getElementById("tableandbottom").style.pointerEvents = hoverable===true||hoverable==='true' ? "all" : "none"
+                    document.getElementById("liqMainDiv").style.pointerEvents = hoverable===true||hoverable==='true' ? "all" : "none"
 
                     bitmexLiqEnabled = getCookie("bitmexLiqEnabled")
 
@@ -1521,6 +2063,7 @@
                     document.getElementById('binanceMinField').value = binanceMinMarket
                     document.getElementById('bitstampMinField').value = bitstampMinMarket
                     document.getElementById('bybitMinField').value = bybitMinMarket
+                    document.getElementById('deribitMinField').value = deribitMinMarket
 
                     document.getElementById('bitmexEnabledButton').checked = bitmexEnabled
                     document.getElementById('bitfinexEnabledButton').checked = bitfinexEnabled
@@ -1528,6 +2071,13 @@
                     document.getElementById('binanceEnabledButton').checked = binanceEnabled
                     document.getElementById('bitstampEnabledButton').checked = bitstampEnabled
                     document.getElementById('bybitEnabledButton').checked = bybitEnabled
+                    document.getElementById('deribitEnabledButton').checked = deribitEnabled
+
+                    // document.getElementById('soundEnabledButton').checked = sound||sound==='true'
+
+                    document.getElementById('soundEnabledButton').disabled = true
+
+                    document.getElementById('hoverEnabledButton').checked = hoverable||hoverable==='true'
 
                 }
 
@@ -1629,9 +2179,9 @@
             const {data} = this.props
 
             const row = data.map((data, i) =>
-                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp" || data.exchangeName==='bybit') ? "bitfinex" : data.exchangeName) + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" :
+                <tr className={"traderow " + ((data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp") ? "bitfinex" : data.exchangeName==='message'?'message':'bitmex') + " " + Row.getSizeGroup(data.exchangeName, data.size) + " " + (Math.abs(data.size) < Row.getMinMarketForExchange(data) ? "hide" :
 
-                    (data.hide||(data.size>5000000&&data.btcAmt<20)) ? "hide" : "")} //try to fix gdaxbug
+                    (data.hide || (data.size > 5000000 && data.btcAmt < 20)) ? "hide" : "")} //try to fix gdaxbug
 
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
@@ -1665,9 +2215,9 @@
         }
 
         static getBtcShow(data) {
-            if (Math.abs(data.btcAmt)>=1 && (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp" ||  data.exchangeName === "bybit")) {
+            if (Math.abs(data.btcAmt) >= 1 && (data.exchangeName === "bitfinex" || data.exchangeName === "coinbase" || data.exchangeName === "binance" || data.exchangeName === "bitstamp")) {
                 var abs = Math.abs(data.btcAmt)
-                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1).toString().replace('.0','') + " btc")
+                return " " + abs > 9 ? (abs.toFixed(0) + " btc") : (abs.toFixed(1).toString().replace('.0', '') + " btc")
             } else {
                 return null
             }
@@ -1676,7 +2226,6 @@
         static getSlip(data) {
             if (data.exchangeName !== "binance") {
                 var slip = data.lastPrice - data.firstPrice
-
 
 
                 if (Math.abs(slip) >= 0.5) {
@@ -1715,8 +2264,10 @@
                 return binanceMinMarket
             } else if (data.exchangeName === "bitstamp") {
                 return bitstampMinMarket
-            } else if ( data.exchangeName === "bybit") {
+            } else if (data.exchangeName === "bybit") {
                 return bybitMinMarket
+            } else if (data.exchangeName === "deribit") {
+                return deribitMinMarket
             } else {
                 return 0
             }
@@ -1731,7 +2282,7 @@
         }
 
         static getSizeGroup(exchangeName, size) {
-            if (exchangeName === "bitmex" || exchangeName==='bybit') {
+            if (exchangeName === "bitmex" || exchangeName === 'bybit' || exchangeName === 'deribit') {
                 if (size >= bitmexSize6) {
                     return "size6"
                 } else if (size >= bitmexSize5) {
@@ -1780,7 +2331,9 @@
 
                 return <span><img id="bybitimg" src="img/bybit3.png" height="20" width="22" alt="bybit"/></span>
 
+            } else if (data.exchangeName === "deribit") {
 
+                return <span><img id="deribitimg" src="img/deribit.png" height="20" width="20" alt="deribit"/></span>
 
 
             } else if (data.exchangeName === "message") {
@@ -1884,7 +2437,10 @@
 
                                 <div className="mainSettingsDiv">
 
+
+
                                     <div id="marketSettings">
+
 
 
                                         <div className="settingsitem header">
@@ -1947,6 +2503,15 @@
 
                                         </div>
 
+                                        <div className="settingsitem">
+                                            <input id="deribitEnabledButton" type="checkbox"
+                                                   name="deribitEnabledButton" className="checkboxx"/>
+                                            <b>deribit</b>
+                                            <input id="deribitMinField" type="number" name="deribitMinField"
+                                                   className="minAmount" min="0" max="10000000" step="1000"/>
+
+                                        </div>
+
                                     </div>
 
                                     <div id="liqSettings">
@@ -1971,6 +2536,15 @@
                                             <input id="hoverEnabledButton" type="checkbox"
                                                    name="hoverEnabledButton" className="checkboxx"/>
                                             <b>show scroll/resize</b>
+                                        </div>
+                                    </div>
+
+                                    <div id="otherSettings">
+                                        <div className="settingsitem">
+                                            <input id="soundEnabledButton" type="checkbox"
+                                                   name="hoverEnabledButton" className="checkboxx"/>
+                                            <b>sound <span id="newww">(testing)</span></b>
+
                                         </div>
                                     </div>
 
@@ -2032,8 +2606,8 @@
 
 
     #bybitimg {
-        border-radius: 8px;
-        background-color: rgb(57, 57, 57);
+        /*border-radius: 8px;*/
+        /*background-color: rgb(57, 57, 57);*/
     }
 
     * {
@@ -2086,10 +2660,10 @@
     }
 
     #donate {
-        padding: 10px;
+        padding: 2px;
         color: #ff93a0;
         text-align: center;
-        font-size: 22px;
+        font-size: 16px;
 
 
         font-weight: bold;
@@ -2132,10 +2706,10 @@
         font-weight: bold;
 
 
-        padding: 15px;
+        padding: 2px;
         color: #5cb85c;
         text-align: center;
-        font-size: 20px;
+        font-size: 16px;
 
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
@@ -2601,6 +3175,7 @@
         vertical-align: middle;
     }
 
+
     .bitmex.size1 {
         color: #5d5d5d;
         font-style: italic;
@@ -2706,6 +3281,12 @@
     .hide {
         display: none;
     }
+
+    #newww {
+        font-weight: bold;
+        color: orangered;
+    }
+
 
     #btcAmt {
         /*color: rgba(43, 43, 43, 0.83);*/
