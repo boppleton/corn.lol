@@ -47,7 +47,7 @@
 
     /////////
     //
-    // corn.lol beta v1.72
+    // corn.lol beta v1.8
     //
     // © 2019 boppleton industries   All rights reserved.
     //
@@ -1574,13 +1574,13 @@
 
                 }
 
-                let donate2Text = document.getElementById("donateText2")
-
-                donate2Text.onclick = function () {
-
-                    window.alert("BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU")
-
-                }
+                // let donate2Text = document.getElementById("donateText2")
+                //
+                // donate2Text.onclick = function () {
+                //
+                //     window.alert("BTC: 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU")
+                //
+                // }
 
                 let bitmexLiqMinAmountField = document.getElementById("bitmexLiqMinField")
                 bitmexLiqMinAmountField.value = bitmexMinLiq
@@ -2322,22 +2322,22 @@
         static getIcon(data) {
 
             if (data.exchangeName === "bitmex" && !data.liq) {
-                return <span><img src="img/bitmex22new.png" alt="bitmex"/></span>
+                return <span><img src="img/bitmexnew1.png" alt="bitmex" height="20" width="22" /></span>
             } else if (data.exchangeName === "bitfinex") {
-                return <span><img src="img/bitfinex22.png" alt="finex"/></span>
+                return <span><img src="img/bitfinex22.png" alt="finex" height="20" width="22"/></span>
             } else if (data.exchangeName === "coinbase") {
                 return <span><img src="img/gdax25.png" alt="gdax"/></span>
             } else if (data.exchangeName === "binance") {
-                return <span><img src="img/binancenew.png" alt="safu"/></span>
+                return <span><img src="img/binancenew1.png" height="20" width="22" alt="safu"/></span>
             } else if (data.exchangeName === "bitstamp") {
-                return <span><img src="img/stamp22.png" height="22" width="22" alt="stamp"/></span>
+                return <span><img src="img/stampnew1.png" height="20" width="22" alt="stamp"/></span>
             } else if (data.exchangeName === "bybit") {
 
-                return <span><img id="bybitimg" src="img/bybit3.png" height="20" width="22" alt="bybit"/></span>
+                return <span><img id="bybitimg" src="img/bybitnew1.png" height="20" width="22" alt="bybit"/></span>
 
             } else if (data.exchangeName === "deribit") {
 
-                return <span><img id="deribitimg" src="img/deribit.png" height="20" width="20" alt="deribit"/></span>
+                return <span><img id="deribitimg" src="img/deribit2.png" height="20" width="20" alt="deribit"/></span>
 
 
             } else if (data.exchangeName === "message") {
@@ -2457,7 +2457,7 @@
 
                                             <input id="bitmexEnabledButton" type="checkbox"
                                                    name="bitmexEnabledButton" className="checkboxx"/>
-                                            <b>bitmex</b>
+                                            <img id="settingsIcons" src="img/bitmexnew1.png" height="20" width="22" /><b>bitmex</b>
                                             <input id="bitmexMinField" type="number" name="bitmexMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
                                         </div>
@@ -2465,7 +2465,7 @@
                                         <div className="settingsitem">
                                             <input id="bitfinexEnabledButton" type="checkbox"
                                                    name="bitfinexEnabledButton" className="checkboxx"/>
-                                            <b>bitfinex</b>
+                                            <img id="settingsIcons" src="img/finexnew1.png" height="20" width="22" /> <b>bitfinex</b>
                                             <input id="bitfinexMinField" type="number" name="bitfinexMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
@@ -2474,7 +2474,7 @@
                                         <div className="settingsitem">
                                             <input id="coinbaseEnabledButton" type="checkbox"
                                                    name="coinbaseEnabledButton" className="checkboxx"/>
-                                            <b>coinbase</b>
+                                            <img id="settingsIcons" src="img/gdax25.png" height="20" width="22" /><b>coinbase</b>
                                             <input id="coinbaseMinField" type="number" name="coinbaseMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
@@ -2483,7 +2483,7 @@
                                         <div className="settingsitem">
                                             <input id="binanceEnabledButton" type="checkbox"
                                                    name="binanceEnabledButton" className="checkboxx"/>
-                                            <b>binance</b>
+                                            <img id="settingsIcons" src="img/binancenew1.png" height="20" width="22" /><b>binance</b>
                                             <input id="binanceMinField" type="number" name="binanceMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
@@ -2492,7 +2492,7 @@
                                         <div className="settingsitem">
                                             <input id="bitstampEnabledButton" type="checkbox"
                                                    name="bitstampEnabledButton" className="checkboxx"/>
-                                            <b>bitstamp</b>
+                                            <img id="settingsIcons" src="img/stampnew1.png" height="20" width="22" /><b>bitstamp</b>
                                             <input id="bitstampMinField" type="number" name="bitstampMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
@@ -2501,7 +2501,7 @@
                                         <div className="settingsitem">
                                             <input id="bybitEnabledButton" type="checkbox"
                                                    name="bybitEnabledButton" className="checkboxx"/>
-                                            <b>bybit</b>
+                                            <img id="settingsIcons" src="img/bybitnew1.png" height="20" width="22" /><b>bybit</b>
                                             <input id="bybitMinField" type="number" name="bybitMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
@@ -2510,7 +2510,7 @@
                                         <div className="settingsitem">
                                             <input id="deribitEnabledButton" type="checkbox"
                                                    name="deribitEnabledButton" className="checkboxx"/>
-                                            <b>deribit</b>
+                                            <img id="settingsIcons" src="img/deribit2.png" height="20" width="22" /><b>deribit</b>
                                             <input id="deribitMinField" type="number" name="deribitMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
 
@@ -2529,7 +2529,7 @@
 
                                             <input id="bitmexLiqEnabledButton" type="checkbox"
                                                    name="bitmexLiqEnabledButton" className="checkboxx"/>
-                                            <b>bitmex</b>
+                                            <img id="settingsIcons" src="img/bitmexnew1.png" height="20" width="22" /><b>bitmex</b>
                                             <input id="bitmexLiqMinField" type="number" name="bitmexLiqMinField"
                                                    className="minAmount" min="0" max="10000000" step="1000"/>
                                         </div>
@@ -2544,7 +2544,7 @@
                                     </div>
 
                                     <div id="otherSettings">
-                                        <div className="settingsitem">
+                                        <div className="settingstem">
                                             <input id="soundEnabledButton" type="checkbox"
                                                    name="hoverEnabledButton" className="checkboxx"/>
                                             <b>sound <span id="newww">(testi<span id="soundtest">n</span>g)</span></b>
@@ -2560,8 +2560,12 @@
                                         <span id="donateText">corn.lol/eth</span>
                                     </div>
 
+                                    <div>
+                                        <span id="donateTitle">donate BTC:</span>
+                                    </div>
+
                                     <div id="donate2">
-                                        <span id="donateText2">donate btc</span>
+                                        <span id="donateText2">14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU</span>
                                     </div>
 
                                 </div>
@@ -2684,21 +2688,31 @@
         color: deepskyblue;
     }
 
+    #donateTitle {
+        opacity: 0.5;
+        color: #ffffff
+    }
+
+    #donateTitle:hover {
+        opacity: 0.8;
+    }
+
+
     #donate2 {
-        padding: 10px;
+        padding: 2px;
         color: #5cb85c;
         text-align: center;
-        font-size: 16px;
+        font-size: 14px;
 
 
         font-weight: bold;
 
-        -webkit-touch-callout: none; /* iOS Safari */
-        -webkit-user-select: none; /* Safari */
-        -khtml-user-select: none; /* Konqueror HTML */
-        -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-        user-select: none;
+        /*-webkit-touch-callout: none; !* iOS Safari *!*/
+        /*-webkit-user-select: none; !* Safari *!*/
+        /*-khtml-user-select: none; !* Konqueror HTML *!*/
+        /*-moz-user-select: none; !* Firefox *!*/
+        /*-ms-user-select: none; !* Internet Explorer/Edge *!*/
+        /*user-select: none;*/
     }
 
     #donate2:hover {
@@ -3056,6 +3070,9 @@
         -webkit-box-align: center;
     }
 
+    #settingsIcons {
+        padding-left: 5px;
+    }
 
     .singleSettingsDiv {
         vertical-align: middle;
@@ -3306,7 +3323,7 @@
 
     #tradeIcon {
         padding: 0px;
-        padding-left: 4px;
+        padding-left: 5px;
     }
 
     #elapsedTime {
