@@ -716,11 +716,11 @@
                             :size<1000000?'F#'
                                 :size<5000000?'G#':'Gm'
             } else {
-                tone = size<100000?'C3'
-                    :size<200000?'D3'
-                        :size<500000?'E3'
-                            :size<1000000?'F3'
-                                :size<5000000?'G2':'G2'
+                tone = size<100000?'B3'
+                    :size<200000?'C3'
+                        :size<500000?'D3'
+                            :size<1000000?'E2'
+                                :size<5000000?'F2':'F2'
             }
 
 
@@ -734,7 +734,8 @@
             playTone(tone, 'sine', len)
 
             if (!trade.side) {
-                setTimeout(()=>{playTone(tone, 'sine', len)},100)
+                // setTimeout(()=>{playTone(tone, 'sine', len)},50)
+                setTimeout(()=>{playTone(tone, 'sine', len)},80)
             }
         }
 
@@ -2005,7 +2006,7 @@
 
                     $('#soundEnabledButton').prop("checked", getCookie("sound") === "true" || getCookie("sound")===true)
 
-                    document.getElementById('soundEnabledButton').disabled = true
+                    // document.getElementById('soundEnabledButton').disabled = true
 
 
                     $('#hoverEnabledButton').prop("checked", getCookie("hoverable") === "true" || getCookie("sound")===true)
@@ -2077,9 +2078,9 @@
                     document.getElementById('bybitEnabledButton').checked = bybitEnabled
                     document.getElementById('deribitEnabledButton').checked = deribitEnabled
 
-                    // document.getElementById('soundEnabledButton').checked = sound||sound==='true'
+                    document.getElementById('soundEnabledButton').checked = sound||sound==='true'
 
-                    document.getElementById('soundEnabledButton').disabled = true
+                    // document.getElementById('soundEnabledButton').disabled = true
 
                     document.getElementById('hoverEnabledButton').checked = hoverable||hoverable==='true'
 
