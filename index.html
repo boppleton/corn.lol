@@ -2004,9 +2004,11 @@
                     $('#bybitEnabledButton').prop("checked", getCookie("bybitEnabled") === "true")
                     $('#deribitEnabledButton').prop("checked", getCookie("deribitEnabled") === "true")
 
-                    $('#soundEnabledButton').prop("checked", getCookie("sound") === "true" || getCookie("sound")===true)
+                    // $('#soundEnabledButton').prop("checked", getCookie("sound") === "true" || getCookie("sound")===true)
 
-                    // document.getElementById('soundEnabledButton').disabled = true
+
+                    
+                    document.getElementById('soundEnabledButton').disabled = true
 
 
                     $('#hoverEnabledButton').prop("checked", getCookie("hoverable") === "true" || getCookie("sound")===true)
@@ -2078,9 +2080,9 @@
                     document.getElementById('bybitEnabledButton').checked = bybitEnabled
                     document.getElementById('deribitEnabledButton').checked = deribitEnabled
 
-                    document.getElementById('soundEnabledButton').checked = sound||sound==='true'
+                    // document.getElementById('soundEnabledButton').checked = sound||sound==='true'
 
-                    // document.getElementById('soundEnabledButton').disabled = true
+                    document.getElementById('soundEnabledButton').disabled = true
 
                     document.getElementById('hoverEnabledButton').checked = hoverable||hoverable==='true'
 
