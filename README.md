@@ -13,6 +13,6 @@ exchange | market orders | liquidations | book
 **bitstamp** | :heavy_check_mark: | :x: |  :construction:
 **bybit** | :heavy_check_mark: | :construction: |  :construction:
 **okex** | :construction: | :x: |  :construction:
-**deribit** | :construction: | :x: |  :construction:
+**deribit** | :heavy_check_mark: | :x: |  :construction:
 
 bls for my familia: BTC - 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU
