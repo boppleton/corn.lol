@@ -15,4 +15,4 @@ exchange | market orders | liquidations | book
 **okex** | :construction: | :x: |  :construction:
 **deribit** | :heavy_check_mark: | :x: |  :construction:
 
-bls for my familia: BTC - 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU
+donate btc ♥ 14mzYBZZyMQGP7ksCS2YPSpnV6uMNgfKtU
