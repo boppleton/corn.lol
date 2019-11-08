@@ -1,33 +1,17 @@
+<!-- |../ boppleton@corn.lol \..| -->
 <!DOCTYPE html>
-<html>
-<head>
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
-        <script>
-            window.dataLayer = window.dataLayer || []
-
-            function gtag() {
-                dataLayer.push(arguments)
-            }
-
-            gtag('js', new Date())
-            gtag('config', 'UA-115388644-2')</script>
+<html><head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-115388644-2"></script>
+    <script>window.dataLayer = window.dataLayer || []function gtag() {dataLayer.push(arguments)}gtag('js', new Date())gtag('config', 'UA-115388644-2')</script>
     <meta charset="UTF-8"/>
     <title>corn.lol - bitcoin trades and liquidations ticker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description"
-          content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
-    <!--    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>-->
-    <!--    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>-->
-    <meta name="description"
-          content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase and binance.  watch out for arthur!"/>
-    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <meta name="description" content="view large market orders and liquidations for bitcoin on bitmex, bitfinex, coinbase, FTX and more.  watch out for arthur!"/>
+    <script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
-
-    <script src="src/simpleTones.js"></script>
-
     <link href="https://fonts.googleapis.com/css?family=Rubik" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
@@ -45,6 +29,104 @@
 
 <script type="text/babel">
 
+    //can't get this to unpkg import right https://github.com/wle8300/uifx
+    class UIfx {
+        constructor(file, config) {
+            const namespace = "uifx";
+            const throttle = (fn, delay) => {
+                let lastCall = 0;
+                return function(...args) {
+                    const now = new Date().getTime();
+                    if (now - lastCall < delay) {
+                        return;
+                    }
+                    lastCall = now;
+                    return fn(...args);
+                };
+            };
+            const validateURI = file => {
+                if (!file) {
+                    throw Error('Requires valid URI path for "file"');
+                } else return file;
+            };
+            const validateVolume = volume => {
+                const message = '"Volume" must be an number between 0.0 and 1.0';
+
+                if (volume && typeof volume !== "number") throw Error(message);
+                if (volume < 0 || volume > 1) throw Error(message);
+
+                return volume ? volume : 1.0;
+            };
+            const validateThrottleMs = throttleMs => {
+                const message = '"throttleMs" must be a number greater than zero';
+
+                if (throttleMs && typeof throttleMs !== "number") throw Error(message);
+                if (throttleMs < 0) throw Error(message);
+
+                return throttleMs ? throttleMs : 0;
+            };
+            const volume = validateVolume(config && config.volume);
+            const throttleMs = validateThrottleMs(config && config.throttleMs);
+            const appendAudioElement = file => {
+                // hack to force browser
+                // to preload audio file
+
+                // hash function: https://stackoverflow.com/a/8831937/11330825
+                const hash = str => {
+                    var hash = 0;
+                    if (str.length === 0) {
+                        return hash;
+                    }
+                    for (var i = 0; i < str.length; i++) {
+                        var char = str.charCodeAt(i);
+                        hash = (hash << 5) - hash + char;
+                        hash = hash & hash; // Convert to 32bit integer
+                    }
+                    return Math.abs(hash);
+                };
+                const id = `${namespace}-${hash(file)}`;
+                let audioElement = document.createElement("audio");
+
+                audioElement.id = id;
+                audioElement.src = file;
+                audioElement.preload = "auto";
+
+                document.body.appendChild(audioElement);
+                return file;
+            };
+
+            this.file = appendAudioElement(validateURI(file));
+            this.volume = volume;
+            this.throttleMs = throttleMs;
+            this.play = throttleMs > 0 ? throttle(this.play, throttleMs) : this.play;
+            this.setVolume = this.setVolume;
+            this.validateVolume = validateVolume;
+        }
+
+        play = volume => {
+            this.validateVolume(volume);
+
+            const audioElement = new Audio(this.file);
+            audioElement.load();
+
+            audioElement.addEventListener("loadeddata", () => {
+                audioElement.volume = volume >= 0 && volume <= 1 ? volume : this.volume;
+                audioElement.play();
+            });
+
+            return this;
+        };
+
+        setVolume = volume => {
+            this.validateVolume(volume);
+
+            this.volume = volume;
+
+            return this;
+        };
+    }
+
+
     /////////
     //
     // corn.lol beta v1.8
@@ -52,273 +134,6 @@
     // © 2019 boppleton industries   All rights reserved.
     //
     /////////
-
-    //Create Audio Context
-    var AudioContext = window.AudioContext || window.webkitAudioContext
-    var context = new AudioContext()
-    var o = null
-    var g = null
-
-    //Sound Storage
-    //If you add your own sounds here, please consider
-    //submitting a pull request with your additional sounds
-    var soundObj = {
-        bump: ["triangle", 100, 0.8, 333, 0.2, 100, 0.4, 80, 0.7],
-        buzzer: ["sawtooth", 40, 0.8, 100, 0.3, 110, 0.5],
-        zip: ["sawtooth", 75, 0.8, 85, 0.2, 95, 0.4, 110, 0.6, 120, 0.7, 100, 0.8],
-        powerdown: ["sine", 300, 1.2, 150, 0.5, 1, 0.9],
-        powerup: ["sine", 30, 1, 150, 0.4, 350, 0.9],
-        bounce: ["square", 75, 0.5, 150, 0.4],
-        siren: ["sawtooth", 900, 2.5, 400, 0.5, 900, 1, 400, 1.4, 900, 2, 400, 2.5]
-    }
-
-    //Tone Storage
-    var tone = {
-        'C0': 16.35,
-        'C#0': 17.32,
-        'Db0': 17.32,
-        'D0': 18.35,
-        'D#0': 19.45,
-        'Eb0': 19.45,
-        'E0': 20.60,
-        'F0': 21.83,
-        'F#0': 23.12,
-        'Gb0': 23.12,
-        'G0': 24.50,
-        'G#0': 25.96,
-        'Ab0': 25.96,
-        'A0': 27.50,
-        'A#0': 29.14,
-        'Bb0': 29.14,
-        'B0': 30.87,
-        'C1': 32.70,
-        'C#1': 34.65,
-        'Db1': 34.65,
-        'D1': 36.71,
-        'D#1': 38.89,
-        'Eb1': 38.89,
-        'E1': 41.20,
-        'F1': 43.65,
-        'F#1': 46.25,
-        'Gb1': 46.25,
-        'G1': 49.00,
-        'G#1': 51.91,
-        'Ab1': 51.91,
-        'A1': 55.00,
-        'A#1': 58.27,
-        'Bb1': 58.27,
-        'B1': 61.74,
-        'C2': 65.41,
-        'C#2': 69.30,
-        'Db2': 69.30,
-        'D2': 73.42,
-        'D#2': 77.78,
-        'Eb2': 77.78,
-        'E2': 82.41,
-        'F2': 87.31,
-        'F#2': 92.50,
-        'Gb2': 92.50,
-        'G2': 98.00,
-        'G#2': 103.83,
-        'Ab2': 103.83,
-        'A2': 110.00,
-        'A#2': 116.54,
-        'Bb2': 116.54,
-        'B2': 123.47,
-        'C3': 130.81,
-        'C#3': 138.59,
-        'Db3': 138.59,
-        'D3': 146.83,
-        'D#3': 155.56,
-        'Eb3': 155.56,
-        'E3': 164.81,
-        'F3': 174.61,
-        'F#3': 185.00,
-        'Gb3': 185.00,
-        'G3': 196.00,
-        'G#3': 207.65,
-        'Ab3': 207.65,
-        'A3': 220.00,
-        'A#3': 233.08,
-        'Bb3': 233.08,
-        'B3': 246.94,
-        'C4': 261.63,
-        'C#4': 277.18,
-        'Db4': 277.18,
-        'D4': 293.66,
-        'D#4': 311.13,
-        'Eb4': 311.13,
-        'E4': 329.63,
-        'F4': 349.23,
-        'F#4': 369.99,
-        'Gb4': 369.99,
-        'G4': 392.00,
-        'G#4': 415.30,
-        'Ab4': 415.30,
-        'A4': 440.00,
-        'A#4': 466.16,
-        'Bb4': 466.16,
-        'B4': 493.88,
-        'C5': 523.25,
-        'C#5': 554.37,
-        'Db5': 554.37,
-        'D5': 587.33,
-        'D#5': 622.25,
-        'Eb5': 622.25,
-        'E5': 659.26,
-        'F5': 698.46,
-        'F#5': 739.99,
-        'Gb5': 739.99,
-        'G5': 783.99,
-        'G#5': 830.61,
-        'Ab5': 830.61,
-        'A5': 880.00,
-        'A#5': 932.33,
-        'Bb5': 932.33,
-        'B5': 987.77,
-        'C6': 1046.50,
-        'C#6': 1108.73,
-        'Db6': 1108.73,
-        'D6': 1174.66,
-        'D#6': 1244.51,
-        'Eb6': 1244.51,
-        'E6': 1318.51,
-        'F6': 1396.91,
-        'F#6': 1479.98,
-        'Gb6': 1479.98,
-        'G6': 1567.98,
-        'G#6': 1661.22,
-        'Ab6': 1661.22,
-        'A6': 1760.00,
-        'A#6': 1864.66,
-        'Bb6': 1864.66,
-        'B6': 1975.53,
-        'C7': 2093.00,
-        'C#7': 2217.46,
-        'Db7': 2217.46,
-        'D7': 2349.32,
-        'D#7': 2489.02,
-        'Eb7': 2489.02,
-        'E7': 2637.02,
-        'F7': 2793.83,
-        'F#7': 2959.96,
-        'Gb7': 2959.96,
-        'G7': 3135.96,
-        'G#7': 3322.44,
-        'Ab7': 3322.44,
-        'A7': 3520.00,
-        'A#7': 3729.31,
-        'Bb7': 3729.31,
-        'B7': 3951.07,
-        'C8': 4186.01,
-        'C#8': 4435,
-        'D8': 4699,
-        'Eb8': 4978,
-        'E8': 5274,
-        'F8': 5588,
-        'F#8': 5920,
-        'G8': 6272,
-        'G#8': 6645,
-        'A8': 7040,
-        'Bb8': 7459,
-        'B8': 7902
-    }
-
-    // Chord Storage
-    var chord = {
-        'C': [261.6, 329.6, 392.0],
-        'Cm': [261.6, 311.1, 392.0],
-        'C#': [277.2, 349.2, 415.3],
-        'D': [293.7, 370.0, 440.0],
-        'Dm': [293.7, 349.2, 440.0],
-        'D#': [311.1, 392.0, 466.2],
-        'E': [329.6, 415.3, 493.9],
-        'Em': [329.6, 392.0, 493.9],
-        'F': [349.2, 440.0, 523.251],
-        'Fm': [349.2, 415.3, 523.251],
-        'F#': [370.0, 554.365, 466.2],
-        'G': [392.0, 493.9, 587.330],
-        'Gm': [392.0, 466.2, 587.330],
-        'G#': [466.2, 523.251, 622.254],
-        'A': [440.0, 554.365, 659.255],
-        'Am': [440.0, 523.251, 659.255],
-        'A#': [466.2, 587.330, 698.456],
-        'B': [493.9, 622.254, 739.989],
-        'Bm': [493.9, 587.330, 739.989]
-    }
-    //Primary function
-    const playTone = (frequency, type, duration) => {
-        if (type === undefined) {
-            type = "sine"
-        }
-        if (duration === undefined) {
-            duration = 1.3
-        }
-        if (frequency === undefined) {
-            frequency = 440
-        }
-        o = context.createOscillator()
-        g = context.createGain()
-        o.connect(g)
-        o.type = type
-        if (typeof frequency === "string") {
-            if (tone[frequency] === undefined) {
-                o.frequency.value = chord[frequency][0]
-                completeChord(chord[frequency][1], type, duration)
-                completeChord(chord[frequency][2], type, duration)
-            } else if (chord[frequency] === undefined) {
-                o.frequency.value = tone[frequency]
-            }
-        } else if (typeof frequency === "object") {
-            o.frequency.value = frequency[0]
-            completeChord(frequency[1], type, duration)
-            completeChord(frequency[2], type, duration)
-        } else {
-            o.frequency.value = frequency
-        }
-        g.connect(context.destination)
-        o.start(0)
-        g.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
-    }
-
-    //This function helps complete chords and should not be used by itself
-    const completeChord = (frequency, type, duration) => {
-        let osc = context.createOscillator()
-        let gn = context.createGain()
-        osc.connect(gn)
-        osc.type = type
-        osc.frequency.value = frequency
-        gn.connect(context.destination)
-        osc.start(0)
-        gn.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
-    }
-
-
-    //This function plays sounds
-    function playSound(waveType, startFreq, endTime) {
-        if (soundObj[arguments[0]] && arguments.length === 1) {
-            var soundName = arguments[0]
-            playSound(...soundObj[soundName])
-        } else {
-            var oscillatorNode = context.createOscillator()
-            var gainNode = context.createGain()
-
-            oscillatorNode.type = waveType
-            oscillatorNode.frequency.setValueAtTime(startFreq, context.currentTime)
-
-            for (var i = 3; i < arguments.length; i += 2) {
-                oscillatorNode.frequency.exponentialRampToValueAtTime(arguments[i], context.currentTime + arguments[i + 1])
-            }
-            gainNode.gain.setValueAtTime(0.3, context.currentTime)
-            gainNode.gain.exponentialRampToValueAtTime(0.1, context.currentTime + 0.5)
-
-            oscillatorNode.connect(gainNode)
-            gainNode.connect(context.destination)
-
-            oscillatorNode.start()
-            oscillatorNode.stop(context.currentTime + endTime)
-        }
-    }
 
 
     let minTradeSize = 100
@@ -330,13 +145,13 @@
     let over250mem = 50
 
     // default startup settings
-    var bitmexMinMarket = 50000
+    var bitmexMinMarket = 75000
     var bitfinexMinMarket = 5000
     var coinbaseMinMarket = 5000
-    var binanceMinMarket = 25000
+    var binanceMinMarket = 50000
     var bitstampMinMarket = 5000
-    var bybitMinMarket = 50000
-    var deribitMinMarket = 10000
+    var bybitMinMarket = 75000
+    var deribitMinMarket = 75000
 
 
     var bitmexMinLiq = 1
@@ -370,15 +185,10 @@
 
     var hoverable = true
 
-    var sound = false
+    var sound = true
 
     var currentPrice = 0
 
-
-    const beep = (size) => {
-        // playSound("sine",30, 0.2, 432, 0.2, 1440, 0.1)
-        playSound("sine", Math.abs(size) / 100)
-    }
 
 
     const setCookie = (cookieKey, cookieValue, expirationDays) => {
@@ -422,7 +232,17 @@
         constructor(props) {
 
             super(props)
-            this.state = {marketdata: [], liqdata: []}
+            this.state = {marketdata: [], liqdata: [],
+                beeps: {
+                    buy: [
+                        new UIfx('./sound/5.wav'),
+                        new UIfx('./sound/7.wav')
+                    ],
+                    sell: [
+                        new UIfx('./sound/1.wav'),
+                        new UIfx('./sound/4.wav')
+                    ]
+                }}
             this.instance = this
 
             let c = this.instance
@@ -458,11 +278,33 @@
             this.scrollUpLoop()
 
 
+
             setInterval(this.setStreamDataLoop, 500, c)
 
 
             // sound = document.getElementById("audio")
 
+        }
+
+
+
+
+        beep(size) {
+            if (sound) {
+
+                if (size >= 500000) {
+                    this.state.beeps.buy[1].play()
+                } else if (size >= 100000) {
+                    this.state.beeps.buy[0].play()
+                }
+
+                if (size <= -500000) {
+                    this.state.beeps.sell[1].play()
+                } else if (size <= -100000) {
+                    this.state.beeps.sell[0].play()
+                }
+
+            }
         }
 
 
@@ -605,7 +447,6 @@
 
                                 // this.beep(trade[0].size)
 
-                                this.tradeBeep(trade[0])
 
                                 // if (trade[0].size<100000) {
                                 //     return
@@ -614,6 +455,7 @@
 
                                 // playTone(['A','B','C','D','E','F'][trade[0].size>5000000?5:trade[0].size>1000000?4:trade[0].size>5000000?3:trade[0].size>100000?2:trade[0].size>10000?1:0]);
                             }
+                            this.beep(trade[0].size)
                             // c.setStreamData({data: trades})
                         }
                     } else if (tradeRaw.table === "liquidation") {
@@ -630,10 +472,9 @@
                                     liquidations = liq
                                 } else {
                                     liquidations = liq.concat(liquidations)
-
-                                    this.tradeBeep(liq[0])
-
                                 }
+                                this.beep(liq.size)
+
                             } else if (liq.action === "update") {
                                 for (let i = 0; i < liquidations.length; i++) {
                                     if (liquidations[i].id === liq.id) {
@@ -697,47 +538,7 @@
 
         }
 
-        tradeBeep(trade) {
 
-
-
-            let size = Math.abs(trade.size)
-
-            if (size<20000 || sound===false||sound==='false') {
-                return
-            }
-
-            let tone
-
-            if (trade.side) {
-                tone = size<100000?'C'
-                    :size<200000?'D#'
-                        :size<500000?'E#'
-                            :size<1000000?'F#'
-                                :size<5000000?'G#':'Gm'
-            } else {
-                tone = size<100000?'B3'
-                    :size<200000?'C3'
-                        :size<500000?'D3'
-                            :size<1000000?'E2'
-                                :size<5000000?'F2':'F2'
-            }
-
-
-            let len = size<100000?0.5
-                :size<200000?0.8
-                    :size<500000?1.2
-                        :size<1000000?1.5
-                            :size<5000000?1.7:3
-
-
-            playTone(tone, 'sine', len)
-
-            if (!trade.side) {
-                // setTimeout(()=>{playTone(tone, 'sine', len)},50)
-                setTimeout(()=>{playTone(tone, 'sine', len)},80)
-            }
-        }
 
 
         static bitmexLiq(liqraw, action) {
@@ -893,15 +694,15 @@
                         trades[0].btcAmt += trade2[0].btcAmt
                         trades[0].size += trade2[0].size
                         trades[0].lastPrice = trade2[0].price
-                        this.tradeBeep(trade2[0])
                     } else if (trade2[0].size >= bitfinexMinMarket) {
                         if (trades == null) {
                             trades = trade2
                         } else {
                             trades = trade2.concat(trades)
-                            this.tradeBeep(trade2[0])
 
                         }
+                        this.beep(trade[0].size)
+
                     }
                     // c.setStreamData({data: trades})
                 }
@@ -972,7 +773,6 @@
                     trades[0].btcAmt += trade2[0].btcAmt
                     trades[0].size += trade2[0].size
                     trades[0].lastPrice = trade2[0].price
-                    this.tradeBeep(trade2[0])
                 } else if (trade2[0].size >= bitstampMinMarket) {
                     if (trades == null) {
                         trades = trade2
@@ -980,10 +780,9 @@
                     } else {
                         trades = trade2.concat(trades)
                         // console.log("adding trade " + JSON.stringify(trade2))
-
-                        this.tradeBeep(trade2[0])
-
                     }
+                    this.beep(trade[0].size)
+
                 }
                 // c.setStreamData({data: trades})
             }
@@ -1062,7 +861,6 @@
                     // trades[0].btcAmt += trade2[0].btcAmt
                     trades[0].size += trade2[0].size
                     trades[0].lastPrice = trade2[0].price
-                    this.tradeBeep(trade2[0])
                 } else if (trade2[0].size >= bybitMinMarket) {
                     if (trades == null) {
                         trades = trade2
@@ -1070,10 +868,8 @@
                     } else {
                         trades = trade2.concat(trades)
                         // console.log("adding trade " + JSON.stringify(trade2))
-
-                        this.tradeBeep(trade2[0])
-
                     }
+                    this.beep(trade2[0].size)
                 }
                 // c.setStreamData({data: trades})
             }
@@ -1143,10 +939,9 @@
                         trades = trade
                     } else {
                         trades = trade2.concat(trades)
-
-
-                        this.tradeBeep(trade2[0])
                     }
+                    this.beep(trade[0].size)
+
                 }
                 c.setStreamData({data: trades})
             }
@@ -1305,7 +1100,6 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade.btcAmt)
                         trades[0].size = parseFloat(trades[0].size) + parseFloat(trade.size)
                         trades[0].lastPrice = parseFloat(trade.price)
-                        this.tradeBeep(trade[0])
                     } else if (parseFloat(trade[0].size) >= coinbaseMinMarket) {
 
                         if ((parseFloat(trade[0].size) > 500000 && Math.abs(parseFloat(trade.btcAmt)) < 30)) {
@@ -1313,10 +1107,9 @@
                             trades = trade
                         } else {
                             trades = trade.concat(trades)
-
-                            this.tradeBeep(trade[0])
-
                         }
+                        this.beep(trade[0].size)
+
                     }
                     // c.setStreamData({data: trades})
                 }
@@ -1388,17 +1181,15 @@
                         trades[0].btcAmt = parseFloat(trades[0].btcAmt) + parseFloat(trade2.btcAmt)
                         trades[0].size = trades[0].size + trade2.size
                         trades[0].lastPrice = trade2.price
-                        this.tradeBeep(trade2[0])
 
                     } else if (trade2[0].size >= binanceMinMarket) {
                         if (trades == null) {
                             trades = trade
                         } else {
                             trades = trade2.concat(trades)
-
-                            this.tradeBeep(trade2[0])
-
                         }
+                        this.beep(trade[0].size)
+
                     }
 
                     // c.setStreamData({data: trades})
@@ -1654,6 +1445,24 @@
 
 
 
+                let soundEnabledbutton = document.getElementById("soundEnabledButton")
+
+                // hoverEnabledbutton.checked = true
+
+                soundEnabledbutton.onclick = function () {
+
+                    console.log('sound was ' + sound)
+
+                    sound = soundEnabledbutton.checked
+                    // document.getElementById("tableandbottom").style.pointerEvents = sound===true||sound==='true' ? "all" : "none"
+                    // document.getElementById("liqMainDiv").style.pointerEvents = sound===true||sound==='true' ? "all" : "none"
+
+                    setCookie("sound", sound, 300)
+
+                    console.log("sound now " + sound)
+
+                }
+
 
 
                 let pepeIcon = document.getElementById("pepeIcon")
@@ -1691,10 +1500,6 @@
 
                 }
 
-                document.getElementById('soundtest').onclick = () => {
-                    sound = true
-                    console.log('sound now ' + sound)
-                }
 
                 document.getElementById("bitmexEnabledButton").onchange = function () {
                     bitmexEnabled = document.getElementById("bitmexEnabledButton").checked
@@ -1817,16 +1622,6 @@
 
 
 
-
-
-                document.getElementById("soundEnabledButton").onchange = function () {
-                    console.log("soundEnabledButton onchange- ")
-                    sound = document.getElementById("soundEnabledButton").checked
-
-                    setCookie("sound", sound, 300)
-
-                    console.log("set sound: " + sound)
-                }
 
 
 
@@ -2004,11 +1799,11 @@
                     $('#bybitEnabledButton').prop("checked", getCookie("bybitEnabled") === "true")
                     $('#deribitEnabledButton').prop("checked", getCookie("deribitEnabled") === "true")
 
-                    // $('#soundEnabledButton').prop("checked", getCookie("sound") === "true" || getCookie("sound")===true)
+                    $('#soundEnabledButton').prop("checked", getCookie("sound") === "true" || getCookie("sound")===true)
 
 
-                    
-                    document.getElementById('soundEnabledButton').disabled = true
+
+                    // document.getElementById('soundEnabledButton').disabled = true
 
 
                     $('#hoverEnabledButton').prop("checked", getCookie("hoverable") === "true" || getCookie("sound")===true)
@@ -2048,6 +1843,8 @@
                     deribitEnabled = getCookie("deribitEnabled")
 
                     sound = getCookie("sound")
+                    // document.getElementById('soundEnabledButton').disabled = true
+
 
                     hoverable = getCookie("hoverable")
                     console.log("got hov, " + hoverable)
@@ -2080,9 +1877,9 @@
                     document.getElementById('bybitEnabledButton').checked = bybitEnabled
                     document.getElementById('deribitEnabledButton').checked = deribitEnabled
 
-                    // document.getElementById('soundEnabledButton').checked = sound||sound==='true'
+                    document.getElementById('soundEnabledButton').checked = sound||sound==='true'
 
-                    document.getElementById('soundEnabledButton').disabled = true
+                    // document.getElementById('soundEnabledButton').disabled = true
 
                     document.getElementById('hoverEnabledButton').checked = hoverable||hoverable==='true'
 
@@ -2192,6 +1989,7 @@
 
                     key={i} bgcolor={Row.getBgColor(data)}>
                     <td id="tradeIcon">{Row.getIcon(data)}</td>
+
                     <td id="tradeSize">{(data.symbol === "message" ? data.message : getKformat(Math.abs(parseFloat(data.size)), 0))}</td>
                     <td width="100%" id="spacer">{""}</td>
                     <td id="slip">{Row.getSlipIcon(data)}{Row.getSlip(data)}</td>
@@ -2546,11 +2344,12 @@
                                         </div>
                                     </div>
 
+
                                     <div id="otherSettings">
                                         <div className="settingstem">
                                             <input id="soundEnabledButton" type="checkbox"
                                                    name="hoverEnabledButton" className="checkboxx"/>
-                                            <b>sound <span id="newww">(testi<span id="soundtest">n</span>g)</span></b>
+                                            <b>sound</b>
 
                                         </div>
                                     </div>
@@ -2558,6 +2357,8 @@
                                     <div id="savesettings">
                                         <span id="savesettingsbutton">save window sizes</span>
                                     </div>
+
+
 
                                     <div id="donate">
                                         <span id="donateText">corn.lol/eth</span>
@@ -2726,6 +2527,7 @@
 
         font-weight: bold;
 
+        margin-bottom: 5px;
 
         padding: 2px;
         color: #5cb85c;
